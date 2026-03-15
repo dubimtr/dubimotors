@@ -313,77 +313,92 @@ IMPORTANT: Never return an error just because the image is partial. Always attem
 
 /* ── /api/price-estimate — AI market price estimation ── */
 // ── Scrape live prices from Dubicars ──
-async function scrapeDubicarsPrice(brand, model, year) {
+// ── Helper: fetch a URL and return body text ──
+function fetchUrl(url) {
   const https = require('https');
-  const brandSlug = brand.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-');
-  const modelSlug = model.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-');
-  const url = `https://www.dubicars.com/uae/used/${brandSlug}/${modelSlug}`;
-
+  const http = require('http');
+  const lib = url.startsWith('https') ? https : http;
   return new Promise((resolve) => {
     const options = {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
         'Accept': 'text/html,application/xhtml+xml',
         'Accept-Language': 'en-US,en;q=0.9',
-      }
+      },
+      timeout: 12000,
     };
-    https.get(url, options, (res2) => {
+    lib.get(url, options, (res2) => {
       let data = '';
       res2.on('data', c => data += c);
-      res2.on('end', () => {
-        try {
-          const USD_TO_AED = 3.6725;
-          const brandCap = brand.charAt(0).toUpperCase() + brand.slice(1);
-          const modelCap = model.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
-
-          // Extract listings with year and USD price
-          const pattern = new RegExp(
-            `(?:Used|New) ${brandCap} ${modelCap} (\\d{4})[^$]*?\\$([\\d,]+)`,
-            'gs'
-          );
-          const matches = [...data.matchAll(pattern)];
-
-          // Also try AED prices
-          const patternAed = new RegExp(
-            `(?:Used|New) ${brandCap} ${modelCap} (\\d{4})[^A]*?AED\\s*([\\d,]+)`,
-            'gs'
-          );
-          const matchesAed = [...data.matchAll(patternAed)];
-
-          const prices = [];
-          const targetYear = parseInt(year);
-
-          for (const m of matches) {
-            const listYear = parseInt(m[1]);
-            const usd = parseInt(m[2].replace(/,/g, ''));
-            if (usd > 5000 && usd < 10000000) {
-              const aed = Math.round(usd * USD_TO_AED);
-              prices.push({ year: listYear, aed, source: 'dubicars' });
-            }
-          }
-          for (const m of matchesAed) {
-            const listYear = parseInt(m[1]);
-            const aed = parseInt(m[2].replace(/,/g, ''));
-            if (aed > 5000 && aed < 50000000) {
-              prices.push({ year: listYear, aed, source: 'dubicars' });
-            }
-          }
-
-          // Prefer exact year, fall back to ±2 years
-          let filtered = prices.filter(p => p.year === targetYear);
-          if (filtered.length < 2) {
-            filtered = prices.filter(p => Math.abs(p.year - targetYear) <= 2);
-          }
-          if (filtered.length === 0) filtered = prices;
-
-          const aedPrices = [...new Set(filtered.map(p => p.aed))].sort((a, b) => a - b);
-          resolve({ prices: aedPrices, url, count: aedPrices.length });
-        } catch (e) {
-          resolve({ prices: [], url, count: 0 });
-        }
-      });
-    }).on('error', () => resolve({ prices: [], url, count: 0 }));
+      res2.on('end', () => resolve(data));
+    }).on('error', () => resolve(''));
   });
+}
+
+// ── Extract AED prices from page text, filtered by year ──
+function extractAedPrices(text, brand, model, year) {
+  const USD_TO_AED = 3.6725;
+  const targetYear = parseInt(year);
+  const prices = [];
+
+  // Strategy 1: "Brand Model YEAR" followed by AED price (handles multi-word models)
+  // Use case-insensitive brand/model matching
+  const brandEsc = brand.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const modelEsc = model.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+  const patAed = new RegExp(
+    `${brandEsc}\\s+${modelEsc}\\s+(\\d{4})[\\s\\S]{0,600}?AED[\\s]*(\\d[\\d,]+)`,
+    'gi'
+  );
+  for (const m of text.matchAll(patAed)) {
+    const yr = parseInt(m[1]);
+    const aed = parseInt(m[2].replace(/,/g, ''));
+    if (aed > 5000 && aed < 50000000) prices.push({ year: yr, aed });
+  }
+
+  // Strategy 2: "Brand Model YEAR" followed by USD price
+  const patUsd = new RegExp(
+    `${brandEsc}\\s+${modelEsc}\\s+(\\d{4})[\\s\\S]{0,600}?\\$([\\d,]+)`,
+    'gi'
+  );
+  for (const m of text.matchAll(patUsd)) {
+    const yr = parseInt(m[1]);
+    const usd = parseInt(m[2].replace(/,/g, ''));
+    if (usd > 5000 && usd < 15000000) prices.push({ year: yr, aed: Math.round(usd * USD_TO_AED) });
+  }
+
+  // Strategy 3: Fallback — all AED prices on the page (used when no year-specific match)
+  if (prices.length === 0) {
+    const allAed = [...text.matchAll(/AED\s*(\d[\d,]+)/g)]
+      .map(m => parseInt(m[1].replace(/,/g, '')))
+      .filter(p => p > 5000 && p < 50000000);
+    const allUsd = [...text.matchAll(/\$([\d,]+)/g)]
+      .map(m => parseInt(m[1].replace(/,/g, '')))
+      .filter(p => p > 5000 && p < 15000000)
+      .map(p => Math.round(p * USD_TO_AED));
+    for (const aed of [...allAed, ...allUsd]) {
+      prices.push({ year: targetYear, aed });
+    }
+  }
+
+  // Filter by year preference
+  let filtered = prices.filter(p => p.year === targetYear);
+  if (filtered.length < 2) filtered = prices.filter(p => Math.abs(p.year - targetYear) <= 2);
+  if (filtered.length === 0) filtered = prices;
+
+  return [...new Set(filtered.map(p => p.aed))].sort((a, b) => a - b);
+}
+
+async function scrapeDubicarsPrice(brand, model, year) {
+  const brandSlug = brand.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-');
+  const modelSlug = model.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-');
+  const url = `https://www.dubicars.com/uae/used/${brandSlug}/${modelSlug}`;
+
+  const text = await fetchUrl(url);
+  if (!text) return { prices: [], url, count: 0 };
+
+  const prices = extractAedPrices(text, brand, model, year);
+  return { prices, url, count: prices.length };
 }
 
 async function handlePriceEstimate(req, res) {
@@ -416,33 +431,39 @@ async function handlePriceEstimate(req, res) {
       : 'Very low mileage: slight premium possible')
     : 'Mileage unknown';
 
-  const prompt = `You are a UAE car market expert. Provide an accurate price estimate for:
-- Vehicle: ${vehicleDesc}
+  const prompt = `You are a UAE used car market pricing expert with deep knowledge of current Dubai/UAE market prices.
+
+Vehicle to price:
+- Make/Model/Trim: ${vehicleDesc}
 - Condition: ${condition || 'Used'}
 - Mileage: ${kmNum ? kmNum.toLocaleString() + ' km' : 'unknown'}
 
 ${priceContext}
 
-Adjust for:
+IMPORTANT PRICING RULES:
 1. ${mileageNote}
-2. Trim "${trim || 'standard'}" vs base model pricing
-3. Current UAE market demand for this specific vehicle
+2. Give USED market prices (not new/dealer prices) unless condition is "New"
+3. Be CONSERVATIVE and REALISTIC — do not overestimate
+4. For exotic/luxury cars (Ferrari, Lamborghini, McLaren, Porsche, etc.), used prices in UAE are typically 30-50% below new MSRP
+5. A 2023 Ferrari SF90 Stradale used = approx AED 1.4M-1.6M (not 2.8M+)
+6. Always factor in the specific trim level — higher trims command 5-20% premium
+7. UAE market prices: factor in no import tax, strong demand for luxury, GCC spec premium
 
-Return ONLY this JSON (no markdown):
+Return ONLY this JSON (no markdown, no explanation):
 {
-  "low": <lowest realistic AED price as integer>,
-  "high": <highest realistic AED price as integer>,
+  "low": <lowest realistic AED used price as integer>,
+  "high": <highest realistic AED used price as integer>,
   "median": <most likely AED price as integer>,
-  "insight": "<2-3 sentences about current UAE market for this specific vehicle, mentioning real price range>",
+  "insight": "<2-3 sentences about current UAE market for this specific vehicle, mentioning realistic price range>",
   "demand": "<High/Medium/Low>",
-  "source": "${liveData.length > 0 ? 'Live data from Dubicars.com (' + liveData.length + ' listings)' : 'AI market knowledge'}"
+  "source": "${liveData.length > 0 ? 'UAE market data (' + liveData.length + ' live listings)' : 'UAE market analysis'}"
 }`;
 
   try {
     const completion = await openai.chat.completions.create({
-      model: 'gpt-4.1-mini',
+      model: 'gemini-2.5-flash',
       messages: [{ role: 'user', content: prompt }],
-      max_tokens: 400,
+      max_tokens: 600,
     });
     const text = completion.choices[0].message.content.trim();
     const jsonMatch = text.match(/\{[\s\S]*\}/);
