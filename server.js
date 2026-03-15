@@ -201,41 +201,147 @@ ABSOLUTE RULES:
 }
 
 /* ── /api/vin-lookup — VIN decode ── */
+// ── Helper: decode VIN via NHTSA free public API ──
+async function decodeVinNHTSA(vin) {
+  const url = `https://vpic.nhtsa.dot.gov/api/vehicles/decodevin/${vin}?format=json`;
+  const text = await fetchUrl(url);
+  if (!text) return null;
+  try {
+    const data = JSON.parse(text);
+    const results = data.Results || [];
+    const get = (variable) => {
+      const r = results.find(x => x.Variable === variable);
+      return (r && r.Value && r.Value !== 'null' && r.Value !== 'Not Applicable') ? r.Value : null;
+    };
+
+    const make = get('Make');
+    const model = get('Model');
+    const year = get('Model Year');
+    // Must have at least make + model to be useful
+    if (!make || !model) return null;
+
+    const cylinders = get('Engine Number of Cylinders');
+    const dispL = get('Displacement (L)');
+    const hpFrom = get('Engine Brake (hp) From');
+    const hpTo = get('Engine Brake (hp) To');
+    const hp = hpFrom ? (hpTo && hpTo !== hpFrom ? `${hpFrom}-${hpTo}` : hpFrom) : null;
+    const fuelType = get('Fuel Type - Primary');
+    const engineConfig = get('Engine Configuration');
+    const turbo = get('Turbo');
+    const isTurbo = turbo && turbo.toLowerCase().includes('yes');
+    const series = get('Series') || get('Series 2');
+    const trim = get('Trim') || get('Trim2') || series || null;
+    const bodyClass = get('Body Class');
+    const doors = get('Doors');
+    const seats = get('Number of Seats');
+    const transStyle = get('Transmission Style');
+    const transSpeeds = get('Transmission Speeds');
+    const transmission = transStyle ? (transSpeeds ? `${transSpeeds}-speed ${transStyle}` : transStyle) : null;
+    const driveType = get('Drive Type');
+    const country = get('Plant Country');
+    const plant = get('Plant City');
+
+    // Build engine description
+    let engine = null;
+    if (dispL) {
+      const dispRound = parseFloat(dispL).toFixed(1);
+      const configShort = engineConfig === 'V-Shaped' ? 'V' + cylinders : engineConfig === 'In-Line' ? 'Inline-' + cylinders : (engineConfig || '');
+      const turboStr = isTurbo ? ' Turbo' : '';
+      const fuelStr = fuelType === 'Gasoline' ? '' : (fuelType ? ` ${fuelType}` : '');
+      engine = `${dispRound}L ${configShort}${turboStr}${fuelStr}`.trim();
+    }
+
+    return {
+      brand: make.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' '),
+      model,
+      trim: trim || null,
+      year: year || null,
+      bodyType: bodyClass || null,
+      engine: engine || null,
+      transmission: transmission || null,
+      cylinders: cylinders || null,
+      hp: hp || null,
+      condition: 'Used',
+      country: country || 'Italy',
+      plant: plant || null,
+      doors: doors || null,
+      seats: seats || null,
+      source: 'nhtsa'
+    };
+  } catch (e) {
+    return null;
+  }
+}
+
 async function handleVINLookup(req, res) {
   const { vin } = await parseBody(req);
   if (!vin || vin.length !== 17) return jsonRes(res, { error: 'Invalid VIN. Must be 17 characters.' }, 400);
 
-  const prompt = `You are a professional automotive VIN decoder with access to full WMI/VDS/VIS knowledge. Decode this VIN precisely: ${vin}
+  // Step 1: Try NHTSA API (free, accurate, no key needed)
+  try {
+    const nhtsaResult = await decodeVinNHTSA(vin);
+    if (nhtsaResult && nhtsaResult.brand && nhtsaResult.model) {
+      // NHTSA succeeded — enrich with AI for any missing fields (trim, hp if not in NHTSA)
+      const missing = [];
+      if (!nhtsaResult.trim) missing.push('trim');
+      if (!nhtsaResult.hp) missing.push('hp');
+      if (!nhtsaResult.engine) missing.push('engine');
 
-The VIN encodes: World Manufacturer Identifier (positions 1-3), Vehicle Descriptor Section (4-9) including model, body, engine, and restraint, and Vehicle Identifier Section (10-17) including model year and plant.
+      if (missing.length > 0) {
+        // Ask AI to fill in only the missing fields
+        const enrichPrompt = `For a ${nhtsaResult.year} ${nhtsaResult.brand} ${nhtsaResult.model} with VIN ${vin}, provide ONLY these missing fields as JSON:
+${missing.map(f => `"${f}": "..."`).join(',\n')}
+Return ONLY the JSON object with those fields.`;
+        try {
+          const completion = await openai.chat.completions.create({
+            model: 'gemini-2.5-flash',
+            messages: [{ role: 'user', content: enrichPrompt }],
+            max_tokens: 150,
+          });
+          const enrichText = completion.choices[0].message.content.trim();
+          const enrichMatch = enrichText.match(/\{[\s\S]*\}/);
+          if (enrichMatch) {
+            const enriched = JSON.parse(enrichMatch[0]);
+            for (const f of missing) {
+              if (enriched[f]) nhtsaResult[f] = enriched[f];
+            }
+          }
+        } catch (_) { /* enrichment optional */ }
+      }
 
-Return a JSON object — every field must be filled accurately:
+      return jsonRes(res, nhtsaResult);
+    }
+  } catch (e) {
+    console.error('NHTSA lookup error:', e.message);
+  }
+
+  // Step 2: Fallback to Gemini 2.5 Flash if NHTSA fails
+  const prompt = `You are a professional automotive VIN decoder. Decode this VIN precisely: ${vin}
+
+Return ONLY this JSON object:
 {
-  "brand": "Exact manufacturer name e.g. BMW, Mercedes-Benz, Toyota",
-  "model": "Exact model name e.g. M3, C63, Land Cruiser — decode from VDS characters, NOT just the base model family",
-  "trim": "Exact trim/variant e.g. Competition, AMG, S-Line, Sport — decode from VDS and cross-reference with known configurations for this VIN pattern",
-  "year": "Model year as 4-digit string — decode from position 10",
+  "brand": "Exact manufacturer name",
+  "model": "Exact model name — be specific (e.g. F8 Spider not just F8)",
+  "trim": "Exact trim/variant",
+  "year": "Model year as 4-digit string",
   "bodyType": "Body style e.g. Sedan, Coupe, SUV, Convertible",
-  "engine": "Engine description e.g. 3.0L Inline-6 Twin-Turbo",
+  "engine": "Engine description e.g. 3.9L V8 Twin-Turbo",
   "transmission": "Automatic or Manual",
   "cylinders": "Number of cylinders as string",
-  "hp": "Horsepower as string for this specific trim",
+  "hp": "Horsepower as string",
   "condition": "Used",
-  "country": "Country of manufacture from WMI",
-  "plant": "Assembly plant if determinable",
+  "country": "Country of manufacture",
   "doors": "Number of doors as string",
   "seats": "Number of seats as string"
 }
-
-CRITICAL: The model field must reflect the SPECIFIC model (e.g. M3, not just 3 Series). The trim must reflect the specific variant. For example WBS = BMW M model. Use your full VIN knowledge.
 If the VIN is invalid: {"error": "VIN not recognized. Please check and try again."}
 Return ONLY the raw JSON object.`;
 
   try {
     const completion = await openai.chat.completions.create({
-      model: 'gpt-4.1-mini',
+      model: 'gemini-2.5-flash',
       messages: [{ role: 'user', content: prompt }],
-      max_tokens: 300,
+      max_tokens: 400,
     });
     const text = completion.choices[0].message.content.trim();
     const jsonMatch = text.match(/\{[\s\S]*\}/);
