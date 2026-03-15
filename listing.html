@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Listing Detail — DUBIMOTORS</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .listing-detail-layout {
+      display: grid;
+      grid-template-columns: 1fr 380px;
+      gap: 32px;
+      padding: 36px 0 72px;
+      align-items: start;
+    }
+    .gallery-main {
+      border-radius: 16px;
+      overflow: hidden;
+      height: 460px;
+      background: #EEE;
+      position: relative;
+    }
+    .gallery-main img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .gallery-badge {
+      position: absolute;
+      top: 16px;
+      left: 16px;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 5px 14px;
+      border-radius: 20px;
+    }
+    .gallery-verified {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      background: rgba(0,180,80,0.9);
+      color: var(--white);
+      font-size: 12px;
+      font-weight: 700;
+      padding: 5px 14px;
+      border-radius: 20px;
+    }
+    .gallery-thumbs {
+      display: flex;
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .gallery-thumb {
+      flex: 1;
+      height: 80px;
+      border-radius: 10px;
+      overflow: hidden;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: border-color 0.2s;
+    }
+    .gallery-thumb.active { border-color: var(--orange); }
+    .gallery-thumb img { width: 100%; height: 100%; object-fit: cover; }
+    /* Carousel nav arrows */
+    .gallery-nav { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.55); color: #fff; border: none; border-radius: 50%; width: 40px; height: 40px; font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 5; transition: background 0.2s; }
+    .gallery-nav:hover { background: rgba(0,0,0,0.8); }
+    .gallery-nav.prev { left: 12px; }
+    .gallery-nav.next { right: 12px; }
+    .gallery-counter { position: absolute; bottom: 14px; right: 14px; background: rgba(0,0,0,0.6); color: #fff; font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 20px; }
+
+    /* BREADCRUMB */
+    .breadcrumb-bar {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 20px 0 8px;
+      font-size: 13px;
+      color: var(--grey);
+      flex-wrap: wrap;
+    }
+    .breadcrumb-bar a {
+      color: var(--grey);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .breadcrumb-bar a:hover { color: var(--orange); }
+    .breadcrumb-bar .bc-sep {
+      color: #ccc;
+      font-size: 11px;
+    }
+    .breadcrumb-bar .bc-current {
+      color: var(--dark);
+      font-weight: 600;
+    }
+    .breadcrumb-bar .bc-icon {
+      width: 18px;
+      height: 18px;
+      border-radius: 4px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      margin-right: 2px;
+    }
+
+    .listing-info { margin-top: 28px; }
+    .listing-info-title { font-size: 26px; font-weight: 900; color: var(--dark); margin-bottom: 8px; }
+    .listing-info-meta { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; }
+    .listing-info-price { font-size: 32px; font-weight: 900; color: var(--orange); }
+
+    .specs-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 28px;
+    }
+    .spec-card {
+      background: var(--light-grey);
+      border-radius: 12px;
+      padding: 16px;
+      text-align: center;
+    }
+    .spec-icon { font-size: 22px; margin-bottom: 6px; }
+    .spec-label { font-size: 10px; color: var(--grey); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+    .spec-value { font-size: 14px; font-weight: 800; color: var(--dark); }
+
+    .detail-section { margin-bottom: 28px; }
+    .detail-section-title { font-size: 16px; font-weight: 800; color: var(--dark); margin-bottom: 14px; padding-bottom: 10px; border-bottom: 2px solid var(--border); }
+    .specs-table { width: 100%; border-collapse: collapse; }
+    .specs-table tr { border-bottom: 1px solid var(--border); }
+    .specs-table tr:last-child { border-bottom: none; }
+    .specs-table td { padding: 10px 0; font-size: 14px; }
+    .specs-table td:first-child { color: var(--grey); width: 45%; }
+    .specs-table td:last-child { font-weight: 600; color: var(--dark); }
+
+    .description-text { font-size: 14px; color: #555; line-height: 1.8; }
+
+    /* SIDEBAR */
+    .detail-sidebar {}
+    .price-card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 16px;
+    }
+    .price-card-price { font-size: 30px; font-weight: 900; color: var(--orange); margin-bottom: 4px; }
+    .price-card-sub { font-size: 13px; color: var(--grey); margin-bottom: 20px; }
+    .price-card-actions { display: flex; flex-direction: column; gap: 10px; }
+    .btn-call {
+      background: var(--orange);
+      color: var(--white);
+      border: none;
+      border-radius: 10px;
+      padding: 14px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: background 0.2s;
+      text-decoration: none;
+    }
+    .btn-call:hover { background: var(--orange-hover); }
+    .btn-whatsapp {
+      background: #25D366;
+      color: var(--white);
+      border: none;
+      border-radius: 10px;
+      padding: 14px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      text-decoration: none;
+    }
+    .btn-whatsapp:hover { background: #1ebe5d; }
+    .btn-save {
+      background: transparent;
+      color: var(--dark);
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+    .btn-save:hover { border-color: var(--orange); color: var(--orange); }
+
+    .seller-card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+    .seller-card-title { font-size: 12px; font-weight: 700; color: var(--grey); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; }
+    .seller-info { display: flex; align-items: center; gap: 12px; }
+    .seller-avatar { width: 48px; height: 48px; background: var(--orange); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+    .seller-name { font-size: 15px; font-weight: 800; color: var(--dark); }
+    .seller-badge { font-size: 11px; color: #00B450; font-weight: 600; margin-top: 2px; }
+
+    /* FINANCE CARD */
+    .finance-card {
+      background: var(--dark);
+      border-radius: 16px;
+      padding: 22px;
+    }
+    .finance-title { font-size: 15px; font-weight: 800; color: var(--white); margin-bottom: 4px; }
+    .finance-sub { font-size: 12px; color: #888; margin-bottom: 18px; }
+    .finance-monthly { font-size: 30px; font-weight: 900; color: var(--orange); margin-bottom: 2px; }
+    .finance-note { font-size: 11px; color: #666; margin-bottom: 18px; }
+
+    .finance-sliders { display: flex; flex-direction: column; gap: 14px; margin-bottom: 18px; }
+    .slider-row { display: flex; flex-direction: column; gap: 5px; }
+    .slider-label-row { display: flex; justify-content: space-between; align-items: center; }
+    .slider-label { font-size: 11px; color: #aaa; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+    .slider-value { font-size: 12px; color: var(--orange); font-weight: 700; }
+    input[type=range].fin-slider {
+      width: 100%;
+      -webkit-appearance: none;
+      height: 4px;
+      border-radius: 2px;
+      background: #333;
+      outline: none;
+      cursor: pointer;
+    }
+    input[type=range].fin-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--orange);
+      cursor: pointer;
+      border: 2px solid #fff;
+      box-shadow: 0 0 4px rgba(232,69,10,0.5);
+    }
+    .btn-finance {
+      width: 100%;
+      background: var(--orange);
+      color: var(--white);
+      border: none;
+      border-radius: 8px;
+      padding: 13px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn-finance:hover { background: var(--orange-hover); }
+
+    /* FINANCE QUOTE MODAL */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.65);
+      z-index: 9000;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal-box {
+      background: var(--white);
+      border-radius: 20px;
+      padding: 32px;
+      width: 100%;
+      max-width: 520px;
+      max-height: 90vh;
+      overflow-y: auto;
+      position: relative;
+    }
+    .modal-close {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      background: var(--light-grey);
+      border: none;
+      border-radius: 50%;
+      width: 32px;
+      height: 32px;
+      font-size: 18px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--dark);
+    }
+    .modal-title { font-size: 20px; font-weight: 900; color: var(--dark); margin-bottom: 4px; }
+    .modal-sub { font-size: 13px; color: var(--grey); margin-bottom: 24px; }
+    .modal-autofill {
+      background: var(--light-grey);
+      border-radius: 10px;
+      padding: 14px 16px;
+      margin-bottom: 20px;
+      font-size: 13px;
+      color: var(--dark);
+    }
+    .modal-autofill strong { display: block; font-size: 11px; color: var(--grey); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+    .modal-form-group { margin-bottom: 16px; }
+    .modal-form-group label { display: block; font-size: 12px; font-weight: 700; color: var(--dark); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .modal-form-group input {
+      width: 100%;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      padding: 11px 14px;
+      font-size: 14px;
+      font-family: inherit;
+      outline: none;
+      box-sizing: border-box;
+      transition: border-color 0.2s;
+    }
+    .modal-form-group input:focus { border-color: var(--orange); }
+    .upload-box {
+      border: 2px dashed var(--border);
+      border-radius: 10px;
+      padding: 18px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      position: relative;
+    }
+    .upload-box:hover { border-color: var(--orange); background: rgba(232,69,10,0.03); }
+    .upload-box input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+    .upload-box-icon { font-size: 24px; margin-bottom: 6px; }
+    .upload-box-label { font-size: 13px; font-weight: 600; color: var(--dark); }
+    .upload-box-sub { font-size: 11px; color: var(--grey); margin-top: 2px; }
+    .upload-box.uploaded { border-color: #00B450; background: rgba(0,180,80,0.05); }
+    .upload-box.uploaded .upload-box-icon::after { content: ' ✓'; color: #00B450; }
+    .modal-disclaimer {
+      font-size: 11px;
+      color: var(--grey);
+      line-height: 1.6;
+      margin-bottom: 20px;
+      padding: 12px;
+      background: #fffbe6;
+      border-radius: 8px;
+      border-left: 3px solid #f0b429;
+    }
+    .btn-submit-quote {
+      width: 100%;
+      background: var(--orange);
+      color: var(--white);
+      border: none;
+      border-radius: 10px;
+      padding: 15px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn-submit-quote:hover { background: var(--orange-hover); }
+
+    .similar-section { padding-bottom: 72px; }
+
+    /* Mobile */
+    @media (max-width: 768px) {
+      .listing-detail-layout { grid-template-columns: 1fr; gap: 0; padding: 20px 0 48px; }
+      .gallery-main { height: 260px; border-radius: 12px; }
+      .gallery-thumbs { gap: 6px; }
+      .gallery-thumb { height: 60px; }
+      .specs-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+      .listing-info-title { font-size: 20px; }
+      .listing-info-price { font-size: 26px; }
+      .price-card { position: static; }
+      .detail-sidebar { margin-top: 24px; }
+      .modal-box { padding: 24px 18px; }
+    }
+    @media (max-width: 480px) {
+      .gallery-main { height: 220px; }
+      .specs-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+
+<div id="navbar-placeholder"></div>
+
+<div class="container">
+  <div id="breadcrumb-bar" class="breadcrumb-bar"></div>
+  <div class="listing-detail-layout">
+    <!-- LEFT: GALLERY + INFO -->
+    <div>
+      <div class="gallery-main" id="gallery-main">
+        <img id="main-img" src="" alt="" />
+        <span id="gallery-badge" class="gallery-badge badge-new"></span>
+        <span id="gallery-verified" class="gallery-verified" style="display:none;">✓ Verified Dealer</span>
+        <button class="gallery-nav prev" onclick="galleryNav(-1)" aria-label="Previous">&#8249;</button>
+        <button class="gallery-nav next" onclick="galleryNav(1)" aria-label="Next">&#8250;</button>
+        <div class="gallery-counter" id="gallery-counter">1 / 1</div>
+      </div>
+      <div class="gallery-thumbs" id="gallery-thumbs"></div>
+
+      <div class="listing-info">
+        <div class="listing-info-title" id="detail-title"></div>
+        <div class="listing-info-meta">
+          <div class="listing-info-price" id="detail-price"></div>
+          <span class="pill" id="detail-condition"></span>
+          <span class="pill" id="detail-location">📍 </span>
+        </div>
+
+        <div class="specs-grid" id="specs-grid"></div>
+
+        <div class="detail-section">
+          <div class="detail-section-title">Full Specifications</div>
+          <table class="specs-table" id="specs-table"></table>
+        </div>
+
+        <div class="detail-section">
+          <div class="detail-section-title">Description</div>
+          <div class="description-text" id="detail-desc"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: SIDEBAR -->
+    <div class="detail-sidebar">
+      <div class="price-card">
+        <div class="price-card-price" id="sidebar-price"></div>
+        <div class="price-card-sub" id="sidebar-sub"></div>
+        <div class="price-card-actions">
+          <a class="btn-call" id="btn-call" href="#">📞 Call Seller</a>
+          <a class="btn-whatsapp" id="btn-whatsapp" href="#" target="_blank">💬 WhatsApp</a>
+          <button class="btn-save" onclick="showToast('Saved to your favourites!')">🤍 Save Listing</button>
+        </div>
+      </div>
+
+      <div class="seller-card">
+        <div class="seller-card-title">Listed By</div>
+        <div class="seller-info">
+          <div class="seller-avatar">🏪</div>
+          <div>
+            <div class="seller-name" id="seller-name"></div>
+            <div class="seller-badge" id="seller-badge"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- FINANCE CARD WITH SLIDERS -->
+      <div class="finance-card">
+        <div class="finance-title">Finance This Vehicle</div>
+        <div class="finance-sub">Adjust the sliders to estimate your monthly payment</div>
+
+        <div class="finance-sliders">
+          <div class="slider-row">
+            <div class="slider-label-row">
+              <span class="slider-label">Car Price (AED)</span>
+              <span class="slider-value" id="fin-price-val">—</span>
+            </div>
+            <input type="range" class="fin-slider" id="fin-price" min="10000" max="2000000" step="5000" oninput="syncPriceInput()" />
+            <input type="number" id="fin-price-manual" placeholder="Or type exact amount" min="10000" max="2000000" step="1000" oninput="syncPriceSlider()" style="width:100%;margin-top:8px;padding:7px 10px;border:1px solid var(--border);border-radius:8px;font-size:13px;color:var(--dark);background:var(--dark-2);color:#fff;outline:none;" />
+          </div>
+          <div class="slider-row">
+            <div class="slider-label-row">
+              <span class="slider-label">Down Payment</span>
+              <span class="slider-value" id="fin-dp-val">20%</span>
+            </div>
+            <input type="range" class="fin-slider" id="fin-dp" min="5" max="50" step="5" value="20" oninput="calcFinance()" />
+          </div>
+          <div class="slider-row">
+            <div class="slider-label-row">
+              <span class="slider-label">Interest Rate</span>
+              <span class="slider-value" id="fin-rate-val">3.5%</span>
+            </div>
+            <input type="range" class="fin-slider" id="fin-rate" min="1" max="12" step="0.5" value="3.5" oninput="calcFinance()" />
+          </div>
+          <div class="slider-row">
+            <div class="slider-label-row">
+              <span class="slider-label">Loan Period</span>
+              <span class="slider-value" id="fin-term-val">60 months</span>
+            </div>
+            <input type="range" class="fin-slider" id="fin-term" min="12" max="60" step="12" value="60" oninput="calcFinance()" />
+          </div>
+        </div>
+
+        <div class="finance-monthly" id="finance-monthly">AED —</div>
+        <div class="finance-note" id="finance-note">per month</div>
+        <button class="btn-finance" onclick="openFinanceModal()">Get Finance Quote →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SIMILAR LISTINGS -->
+<section class="similar-section section-alt" style="padding:48px 0 72px;">
+  <div class="container">
+    <div class="section-header">
+      <div>
+        <div class="section-eyebrow">You May Also Like</div>
+        <div class="section-title">Similar Listings</div>
+      </div>
+      <a class="section-link" id="similar-link" href="cars.html">View All →</a>
+    </div>
+    <div class="listings-grid" id="similar-grid"></div>
+  </div>
+</section>
+
+<div id="footer-placeholder"></div>
+<div id="toast" class="toast"></div>
+
+<!-- FINANCE QUOTE MODAL -->
+<div class="modal-overlay" id="finance-modal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeFinanceModal()">✕</button>
+    <div class="modal-title">Get a Finance Quote</div>
+    <div class="modal-sub">Fill in your details and we will connect you with our partner finance companies.</div>
+
+    <div class="modal-autofill" id="modal-car-info">
+      <strong>Vehicle Details (Auto-filled)</strong>
+      <span id="modal-car-text">—</span>
+    </div>
+
+    <div class="modal-form-group">
+      <label>Full Name *</label>
+      <input type="text" id="fq-name" placeholder="e.g. Ahmed Al Mansouri" />
+    </div>
+    <div class="modal-form-group">
+      <label>Phone Number *</label>
+      <input type="tel" id="fq-phone" placeholder="+971 50 000 0000" />
+    </div>
+    <div class="modal-form-group">
+      <label>Upload Emirates ID *</label>
+      <div class="upload-box" id="eid-box">
+        <input type="file" accept="image/*,.pdf" onchange="markUploaded('eid-box','eid-status','Emirates ID uploaded')" />
+        <div class="upload-box-icon">🪪</div>
+        <div class="upload-box-label">Click to upload Emirates ID</div>
+        <div class="upload-box-sub">JPG, PNG or PDF — max 5MB</div>
+      </div>
+      <div id="eid-status" style="font-size:12px;color:#00B450;margin-top:4px;display:none;"></div>
+    </div>
+    <div class="modal-form-group">
+      <label>Upload Driving Licence *</label>
+      <div class="upload-box" id="dl-box">
+        <input type="file" accept="image/*,.pdf" onchange="markUploaded('dl-box','dl-status','Driving Licence uploaded')" />
+        <div class="upload-box-icon">🪪</div>
+        <div class="upload-box-label">Click to upload Driving Licence</div>
+        <div class="upload-box-sub">JPG, PNG or PDF — max 5MB</div>
+      </div>
+      <div id="dl-status" style="font-size:12px;color:#00B450;margin-top:4px;display:none;"></div>
+    </div>
+
+    <div class="modal-disclaimer">
+      By submitting this form, your details will be shared with our partner finance companies. A representative will contact you within 1 business day. No commitment required.
+    </div>
+
+    <button class="btn-submit-quote" onclick="submitFinanceQuote()">Submit Finance Request</button>
+  </div>
+</div>
+
+<script src="shared.js"></script>
+<script src="components.js"></script>
+<script>
+  renderNavbar('');
+  renderFooter();
+
+  const params = new URLSearchParams(window.location.search);
+  const id = params.get('id');
+  const listing = DM.getById(id);
+
+  // Seller phone (demo — in production this comes from the listing)
+  const SELLER_PHONE = '+971501234567';
+
+  if (!listing) {
+    document.body.innerHTML += '<div style="text-align:center;padding:100px 20px;"><h2>Listing not found</h2><a href="index.html">Back to Home</a></div>';
+  } else {
+    document.title = listing.title + ' — DUBIMOTORS';
+
+    // ── BREADCRUMB: Home > Category > Make > Model > Trim ──
+    const catLabels = { cars: 'Cars', boats: 'Boats', bikes: 'Motorcycles', jetski: 'Jet Skis' };
+    const catPages  = { cars: 'cars.html', boats: 'boats.html', bikes: 'bikes.html', jetski: 'jetski.html' };
+
+    // Parse title parts: "2024 Volkswagen Golf GTI P1RTG" → make=Volkswagen, model=Golf, trim=GTI P1RTG
+    const titleParts = listing.title.replace(/^\d{4}\s+/, '').split(' ');
+    const make  = titleParts[0] || '';
+    const model = titleParts[1] || '';
+    const trim  = titleParts.slice(2).join(' ') || '';
+
+    let bcHTML = `
+      <a href="index.html">🏠 Home</a>
+      <span class="bc-sep">›</span>
+      <a href="${catPages[listing.category]}">${catLabels[listing.category]}</a>`;
+    if (make) bcHTML += `<span class="bc-sep">›</span><a href="${catPages[listing.category]}?make=${encodeURIComponent(make)}">${make}</a>`;
+    if (model) bcHTML += `<span class="bc-sep">›</span><a href="${catPages[listing.category]}?make=${encodeURIComponent(make)}&model=${encodeURIComponent(model)}">${model}</a>`;
+    if (trim) bcHTML += `<span class="bc-sep">›</span><span class="bc-current">${trim}</span>`;
+    else if (model) bcHTML = bcHTML.replace(`>${model}</a>`, `>${model}</a><span class="bc-sep">›</span><span class="bc-current">${listing.title.match(/^\d{4}/)?.[0] || ''} ${model}</span>`);
+
+    document.getElementById('breadcrumb-bar').innerHTML = bcHTML;
+
+    // ── GALLERY ──
+    document.getElementById('main-img').src = listing.img;
+    document.getElementById('main-img').alt = listing.title;
+    const badge = document.getElementById('gallery-badge');
+    badge.textContent = listing.condition;
+    badge.className = 'gallery-badge ' + (listing.condition === 'Brand New' ? 'badge-new' : 'badge-used');
+    if (listing.verified) document.getElementById('gallery-verified').style.display = 'block';
+
+    // Build gallery images array (use listing.images if available, else repeat main img)
+    window._galleryImages = listing.images && listing.images.length > 1 ? listing.images : [listing.img, listing.img, listing.img, listing.img];
+    window._galleryIdx = 0;
+
+    const thumbs = document.getElementById('gallery-thumbs');
+    window._galleryImages.forEach((src, i) => {
+      thumbs.innerHTML += `<div class="gallery-thumb${i===0?' active':''}" onclick="switchImgIdx(${i})"><img src="${src}" alt="" /></div>`;
+    });
+    updateGalleryCounter();
+
+    // ── INFO ──
+    document.getElementById('detail-title').textContent = listing.title;
+    document.getElementById('detail-price').textContent = DM.formatPrice(listing.price);
+    document.getElementById('detail-condition').textContent = listing.condition;
+    document.getElementById('detail-location').textContent = '📍 ' + listing.location;
+    document.getElementById('sidebar-price').textContent = DM.formatPrice(listing.price);
+    document.getElementById('sidebar-sub').textContent = listing.condition + ' · ' + listing.year + ' · ' + listing.location;
+    document.getElementById('seller-name').textContent = listing.seller;
+    document.getElementById('seller-badge').textContent = listing.verified ? '✓ Verified Dealer' : 'Private Seller';
+
+    // ── CALL & WHATSAPP BUTTONS ──
+    const phone = (listing.phone || SELLER_PHONE).replace(/\s+/g, '');
+    document.getElementById('btn-call').href = 'tel:' + phone;
+
+    const waMsg = encodeURIComponent(
+      `Hi, I'm interested in your listing: ${listing.title} (${DM.formatPrice(listing.price)}) on DUBIMOTORS.\n` +
+      `View listing: ${window.location.href}`
+    );
+    document.getElementById('btn-whatsapp').href = `https://wa.me/${phone.replace('+','')}?text=${waMsg}`;
+
+    // ── KEY SPECS HIGHLIGHT BOXES (Year / Mileage / Engine / Regional Spec) ──
+    const specsGrid = document.getElementById('specs-grid');
+    const keySpecs = [
+      { icon: '📅', label: 'Year',          value: listing.year },
+      { icon: '🛣️', label: 'Mileage',       value: (listing.km === 0 ? '0' : listing.km.toLocaleString()) + ' KM' },
+      { icon: '⚙️', label: 'Engine',        value: listing.engine },
+      { icon: '🌍', label: 'Regional Spec', value: listing.regionalSpec || 'GCC Specs' },
+    ];
+    keySpecs.forEach(s => {
+      specsGrid.innerHTML += `<div class="spec-card"><div class="spec-icon">${s.icon}</div><div class="spec-label">${s.label}</div><div class="spec-value">${s.value}</div></div>`;
+    });
+
+    // ── FULL SPECIFICATIONS TABLE (expanded to match filter fields) ──
+    const specsTable = document.getElementById('specs-table');
+    // Derive clean model and trim from listing data
+    const cleanModel = listing.model || (listing.title.replace(listing.year + ' ', '').replace(make + ' ', '').split(' ').slice(0, 2).join(' '));
+    const cleanTrim  = listing.trim || '';
+
+    const fullSpecs = [
+      ['Make',              make || listing.title.split(' ')[0]],
+      ['Model',             cleanModel],
+      ...(cleanTrim ? [['Trim', cleanTrim]] : []),
+      ['Year',              listing.year],
+      ['Condition',         listing.condition],
+      ['Mileage',           (listing.km === 0 ? '0' : listing.km.toLocaleString()) + ' KM'],
+      ['Regional Spec',     listing.regionalSpec || 'GCC Specs'],
+      ['Body Type',         listing.bodyType || 'Sedan'],
+      ['Engine',            listing.engine],
+      ['Horsepower',        listing.hp ? listing.hp + ' hp' : null],
+      ['Cylinders',         listing.cylinders ? listing.cylinders.toString() : null],
+      ['Transmission',      listing.transmission],
+      ['Drive Type',        listing.driveType || null],
+      ['Doors',             listing.doors ? listing.doors.toString() : null],
+      ['Seats',             listing.seats ? listing.seats.toString() : null],
+      ['Exterior Color',    listing.extColor || null],
+      ['Interior Color',    listing.intColor || null],
+      ['Warranty',          listing.warranty !== undefined ? (listing.warranty ? 'Yes' : 'No') : null],
+      ['Service Contract',  listing.serviceContract !== undefined ? (listing.serviceContract ? 'Yes' : 'No') : null],
+      ['Location',          listing.location],
+      ['Seller',            listing.seller],
+      ['Listed By',         listing.verified ? 'Verified Dealer' : 'Private Seller'],
+    ].filter(([, v]) => v !== null && v !== undefined && v !== '');
+
+    fullSpecs.forEach(([k, v]) => {
+      specsTable.innerHTML += `<tr><td>${k}</td><td>${v}</td></tr>`;
+    });
+
+    // ── DESCRIPTION ──
+    document.getElementById('detail-desc').innerHTML = `
+      This ${listing.title} is available for sale in ${listing.location}, UAE.
+      The vehicle is in ${listing.condition.toLowerCase()} condition with ${listing.km === 0 ? '0' : listing.km.toLocaleString()} KM on the odometer.
+      Powered by a ${listing.engine} engine with ${listing.transmission} transmission, this is an excellent opportunity for buyers looking for quality and value in the UAE market.
+      <br /><br />
+      The listing is ${listing.verified ? 'from a <strong>verified dealer</strong> — Khaled Audi Showroom, a trusted name in the UAE automotive market' : 'from a private seller'}.
+      Contact us today to arrange a viewing or test drive.`;
+
+    // ── FINANCE SLIDERS ──
+    const priceSlider = document.getElementById('fin-price');
+    priceSlider.value = listing.price;
+    priceSlider.max = Math.min(2000000, Math.max(listing.price * 1.5, 200000));
+    calcFinance();
+
+    // ── SIMILAR LISTINGS ──
+    const similar = DM.getByCategory(listing.category).filter(l => l.id !== listing.id).slice(0, 4);
+    const simGrid = document.getElementById('similar-grid');
+    similar.forEach(l => simGrid.innerHTML += DM.renderCard(l));
+    document.getElementById('similar-link').href = catPages[listing.category];
+
+    // ── MODAL CAR INFO ──
+    document.getElementById('modal-car-text').textContent =
+      `${listing.title} · ${DM.formatPrice(listing.price)} · ${listing.year} · ${listing.location}`;
+  }
+
+  function switchImgIdx(idx) {
+    const imgs = window._galleryImages;
+    if (!imgs || idx < 0 || idx >= imgs.length) return;
+    window._galleryIdx = idx;
+    document.getElementById('main-img').src = imgs[idx];
+    document.querySelectorAll('.gallery-thumb').forEach((t, i) => {
+      t.classList.toggle('active', i === idx);
+    });
+    updateGalleryCounter();
+  }
+
+  function galleryNav(dir) {
+    const imgs = window._galleryImages || [];
+    const newIdx = (window._galleryIdx + dir + imgs.length) % imgs.length;
+    switchImgIdx(newIdx);
+  }
+
+  function updateGalleryCounter() {
+    const imgs = window._galleryImages || [];
+    const el = document.getElementById('gallery-counter');
+    if (el) el.textContent = (window._galleryIdx + 1) + ' / ' + imgs.length;
+  }
+
+  // Touch swipe support for gallery
+  (function() {
+    let startX = 0;
+    const gm = document.getElementById('gallery-main');
+    if (!gm) return;
+    gm.addEventListener('touchstart', e => { startX = e.touches[0].clientX; }, { passive: true });
+    gm.addEventListener('touchend', e => {
+      const dx = e.changedTouches[0].clientX - startX;
+      if (Math.abs(dx) > 40) galleryNav(dx < 0 ? 1 : -1);
+    }, { passive: true });
+  })();
+
+  function syncPriceInput() {
+    const val = document.getElementById('fin-price').value;
+    document.getElementById('fin-price-manual').value = val;
+    calcFinance();
+  }
+
+  function syncPriceSlider() {
+    const val = parseFloat(document.getElementById('fin-price-manual').value) || 0;
+    const clamped = Math.min(2000000, Math.max(10000, val));
+    document.getElementById('fin-price').value = clamped;
+    calcFinance();
+  }
+
+  function calcFinance() {
+    const price  = parseFloat(document.getElementById('fin-price').value) || 0;
+    const dp     = parseFloat(document.getElementById('fin-dp').value) || 20;
+    const rate   = parseFloat(document.getElementById('fin-rate').value) || 3.5;
+    const term   = parseInt(document.getElementById('fin-term').value) || 60;
+
+    document.getElementById('fin-price-val').textContent = 'AED ' + price.toLocaleString();
+    const dpAED = Math.round(price * dp / 100);
+    document.getElementById('fin-dp-val').textContent    = dp + '% (AED ' + dpAED.toLocaleString() + ')';
+    document.getElementById('fin-rate-val').textContent  = rate + '%';
+    document.getElementById('fin-term-val').textContent  = term + ' months';
+
+    const principal = price * (1 - dp / 100);
+    const monthlyRate = (rate / 100) / 12;
+    let monthly;
+    if (monthlyRate === 0) {
+      monthly = principal / term;
+    } else {
+      monthly = principal * (monthlyRate * Math.pow(1 + monthlyRate, term)) / (Math.pow(1 + monthlyRate, term) - 1);
+    }
+
+    document.getElementById('finance-monthly').textContent = 'AED ' + Math.round(monthly).toLocaleString() + '/mo';
+    document.getElementById('finance-note').textContent =
+      `${dp}% down · ${rate}% p.a. · ${term}-month term`;
+  }
+
+  function openFinanceModal() {
+    document.getElementById('finance-modal').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeFinanceModal() {
+    document.getElementById('finance-modal').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  function markUploaded(boxId, statusId, msg) {
+    document.getElementById(boxId).classList.add('uploaded');
+    const el = document.getElementById(statusId);
+    el.textContent = '✓ ' + msg;
+    el.style.display = 'block';
+  }
+
+  function submitFinanceQuote() {
+    const name  = document.getElementById('fq-name').value.trim();
+    const phone = document.getElementById('fq-phone').value.trim();
+    if (!name || !phone) {
+      showToast('Please fill in your name and phone number.');
+      return;
+    }
+    closeFinanceModal();
+    showToast('Finance request submitted! A representative will contact you within 1 business day.');
+  }
+
+  // Close modal on overlay click
+  document.getElementById('finance-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeFinanceModal();
+  });
+</script>
+</body>
+</html>

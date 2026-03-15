@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DUBIMOTORS — Buy &amp; Sell Vehicles in the UAE</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    /* ─── HERO ─── */
+    .hero {
+      position: relative;
+      min-height: 620px;
+      display: flex;
+      align-items: center;
+      overflow: hidden;
+      background: var(--dark);
+    }
+    .hero-bg {
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(to bottom, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.75) 100%),
+        url('https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=1800&q=85&fit=crop') center/cover no-repeat;
+    }
+    .hero-content {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      padding: 80px 0 60px;
+    }
+    .hero-content .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+    .hero-eyebrow {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      color: var(--orange);
+      background: rgba(232,69,10,0.15);
+      border: 1px solid rgba(232,69,10,0.3);
+      padding: 5px 16px;
+      border-radius: 20px;
+      margin-bottom: 20px;
+    }
+    .hero-title {
+      font-size: 56px;
+      font-weight: 900;
+      color: var(--white);
+      line-height: 1.1;
+      margin-bottom: 16px;
+      max-width: 760px;
+    }
+    .hero-title span { color: var(--orange); }
+    .hero-subtitle {
+      font-size: 17px;
+      color: rgba(255,255,255,0.65);
+      margin-bottom: 40px;
+      max-width: 520px;
+      line-height: 1.65;
+    }
+
+    /* ─── SEARCH BAR ─── */
+    .search-wrap {
+      width: 100%;
+      max-width: 820px;
+      background: var(--white);
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.45);
+    }
+    .search-tabs-row {
+      display: flex;
+      border-bottom: 1px solid var(--border);
+      padding: 0 6px;
+    }
+    .s-tab {
+      padding: 12px 18px;
+      font-size: 13px;
+      font-weight: 700;
+      color: #999;
+      background: transparent;
+      border: none;
+      border-bottom: 3px solid transparent;
+      margin-bottom: -1px;
+      cursor: pointer;
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .s-tab:hover { color: var(--dark); }
+    .s-tab.active { color: var(--orange); border-bottom-color: var(--orange); }
+    .search-input-row {
+      display: flex;
+      align-items: center;
+      padding: 10px 10px 10px 20px;
+      gap: 10px;
+    }
+    .search-icon { color: #AAAAAA; font-size: 18px; flex-shrink: 0; }
+    .search-main-input {
+      flex: 1;
+      border: none;
+      outline: none;
+      font-size: 15px;
+      font-family: 'Inter', sans-serif;
+      color: var(--dark);
+      background: transparent;
+    }
+    .search-main-input::placeholder { color: #BBBBB; }
+    .search-divider { width: 1px; height: 28px; background: var(--border); flex-shrink: 0; }
+    .search-location {
+      border: none;
+      outline: none;
+      font-size: 14px;
+      font-family: 'Inter', sans-serif;
+      color: var(--dark);
+      background: transparent;
+      width: 140px;
+      padding: 0 10px;
+    }
+    .search-btn {
+      background: var(--orange);
+      color: var(--white);
+      border: none;
+      border-radius: 10px;
+      padding: 13px 28px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: background 0.2s;
+    }
+    .search-btn:hover { background: var(--orange-hover); }
+
+    /* ─── HERO STATS ─── */
+    .hero-stats {
+      display: flex;
+      gap: 0;
+      margin-top: 36px;
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 14px;
+      overflow: hidden;
+      backdrop-filter: blur(8px);
+    }
+    .hero-stat {
+      padding: 18px 36px;
+      text-align: center;
+      border-right: 1px solid rgba(255,255,255,0.1);
+    }
+    .hero-stat:last-child { border-right: none; }
+    .hero-stat-value {
+      font-size: 26px;
+      font-weight: 900;
+      color: var(--white);
+    }
+    .hero-stat-label {
+      font-size: 11px;
+      color: rgba(255,255,255,0.45);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-top: 3px;
+    }
+
+    /* ─── CATEGORY STRIP ─── */
+    .cat-strip {
+      background: var(--dark2);
+      border-bottom: 1px solid #1E1E1E;
+    }
+    .cat-strip .container {
+      display: flex;
+    }
+    .cat-item {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      padding: 20px 16px;
+      border-right: 1px solid #222;
+      cursor: pointer;
+      transition: background 0.2s;
+      text-decoration: none;
+      position: relative;
+    }
+    .cat-item:last-child { border-right: none; }
+    .cat-item:hover { background: #1A1A1A; }
+    .cat-item.active::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: var(--orange);
+    }
+    .cat-icon-box {
+      width: 42px;
+      height: 42px;
+      border-radius: 10px;
+      background: #222;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+      transition: background 0.2s;
+    }
+    .cat-item.active .cat-icon-box { background: rgba(232,69,10,0.2); }
+    .cat-item-text {}
+    .cat-item-label {
+      font-size: 14px;
+      font-weight: 700;
+      color: #CCC;
+    }
+    .cat-item.active .cat-item-label { color: var(--white); }
+    .cat-item-count {
+      font-size: 11px;
+      color: #555;
+      margin-top: 1px;
+    }
+
+    /* ─── POST AD BANNER ─── */
+    .post-ad-banner {
+      background: var(--orange);
+      padding: 56px 0;
+    }
+    .post-ad-banner .container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 40px;
+    }
+    .post-ad-eyebrow {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.7);
+      margin-bottom: 10px;
+    }
+    .post-ad-title {
+      font-size: 36px;
+      font-weight: 900;
+      color: var(--white);
+      line-height: 1.2;
+      margin-bottom: 10px;
+    }
+    .post-ad-sub {
+      font-size: 15px;
+      color: rgba(255,255,255,0.8);
+      max-width: 500px;
+      line-height: 1.6;
+    }
+    .post-ad-steps {
+      display: flex;
+      gap: 24px;
+      margin-top: 24px;
+    }
+    .post-ad-step {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .step-num {
+      width: 30px;
+      height: 30px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--white);
+      flex-shrink: 0;
+    }
+    .step-label { font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.9); }
+    .post-ad-cta { flex-shrink: 0; text-align: center; }
+    .post-ad-note { font-size: 12px; color: rgba(255,255,255,0.6); margin-top: 10px; }
+
+    /* ─── SHOWCASE GRID ─── */
+    .showcase-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+    .showcase-card {
+      border-radius: 14px;
+      overflow: hidden;
+      position: relative;
+      height: 250px;
+      cursor: pointer;
+      text-decoration: none;
+    }
+    .showcase-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.4s;
+    }
+    .showcase-card:hover img { transform: scale(1.06); }
+    .showcase-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 55%);
+    }
+    .showcase-arrow {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      width: 32px;
+      height: 32px;
+      background: rgba(255,255,255,0.15);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      color: var(--white);
+      backdrop-filter: blur(4px);
+    }
+    .showcase-label {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 20px 18px 18px;
+    }
+    .showcase-cat { font-size: 18px; font-weight: 900; color: var(--white); }
+    .showcase-count { font-size: 12px; color: rgba(255,255,255,0.6); margin-top: 2px; }
+
+    /* ─── TRUST CARDS ─── */
+    .trust-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+    .trust-card {
+      background: var(--white);
+      border-radius: 16px;
+      padding: 32px 28px;
+      border: 1px solid var(--border);
+      position: relative;
+      overflow: hidden;
+    }
+    .trust-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: var(--orange);
+    }
+    .trust-icon { font-size: 36px; margin-bottom: 16px; }
+    .trust-title { font-size: 18px; font-weight: 800; color: var(--dark); margin-bottom: 8px; }
+    .trust-text { font-size: 14px; color: var(--grey); line-height: 1.7; }
+
+    /* ─── EDITORIAL ─── */
+    .editorial {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      min-height: 480px;
+    }
+    .editorial-img {
+      position: relative;
+      overflow: hidden;
+    }
+    .editorial-img img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .editorial-content {
+      background: var(--dark);
+      padding: 64px 56px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .editorial-content-light {
+      background: var(--white);
+    }
+    .editorial-tag {
+      display: inline-block;
+      background: rgba(232,69,10,0.15);
+      color: var(--orange);
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      padding: 5px 14px;
+      border-radius: 20px;
+      border: 1px solid rgba(232,69,10,0.25);
+      margin-bottom: 20px;
+      align-self: flex-start;
+    }
+    .editorial-title {
+      font-size: 30px;
+      font-weight: 900;
+      color: var(--white);
+      line-height: 1.25;
+      margin-bottom: 16px;
+    }
+    .editorial-title-dark { color: var(--dark); }
+    .editorial-text {
+      font-size: 14px;
+      color: rgba(255,255,255,0.6);
+      line-height: 1.8;
+      margin-bottom: 28px;
+    }
+    .editorial-text-dark { color: var(--grey); }
+
+    /* ─── CONTACT ─── */
+    .contact-section {
+      background: var(--dark);
+      padding: 72px 0;
+    }
+    .contact-section .container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 64px;
+      align-items: center;
+    }
+    .contact-form-card {
+      background: #161616;
+      border-radius: 20px;
+      padding: 40px;
+      border: 1px solid #2A2A2A;
+    }
+    .form-row-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+    .contact-info-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+    .contact-icon {
+      width: 44px;
+      height: 44px;
+      background: #1A1A1A;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      border: 1px solid #2A2A2A;
+      flex-shrink: 0;
+    }
+    .contact-info-label { font-size: 11px; color: #555; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+    .contact-info-value { font-size: 14px; color: #CCC; font-weight: 600; margin-top: 2px; }
+
+    /* ─── MOBILE RESPONSIVE ─── */
+    @media (max-width: 768px) {
+      /* Hero */
+      .hero { min-height: auto; }
+      .hero-content { padding: 56px 0 40px; }
+      .hero-title { font-size: 32px; }
+      .hero-subtitle { font-size: 14px; margin-bottom: 28px; }
+
+      /* Search bar */
+      .search-wrap { border-radius: 12px; }
+      .search-tabs-row { overflow-x: auto; -webkit-overflow-scrolling: touch; padding: 0 4px; }
+      .s-tab { padding: 10px 14px; font-size: 12px; white-space: nowrap; }
+      .search-input-row { flex-wrap: wrap; gap: 8px; padding: 10px; }
+      .search-divider { display: none; }
+      .search-location { width: 100%; padding: 8px 10px; border: 1.5px solid #E8E8E8; border-radius: 8px; font-size: 13px; }
+      .search-main-input { width: 100%; font-size: 14px; }
+      .search-btn { width: 100%; padding: 13px; border-radius: 8px; font-size: 15px; }
+
+      /* Hero stats */
+      .hero-stats { flex-wrap: wrap; margin-top: 24px; border-radius: 12px; }
+      .hero-stat { flex: 1; min-width: 80px; padding: 14px 16px; }
+      .hero-stat-value { font-size: 20px; }
+      .hero-stat-label { font-size: 10px; }
+
+      /* Category strip */
+      .cat-strip .container { overflow-x: auto; -webkit-overflow-scrolling: touch; gap: 0; }
+      .cat-item { flex: 0 0 auto; padding: 14px 16px; gap: 8px; }
+      .cat-icon-box { width: 34px; height: 34px; font-size: 16px; }
+      .cat-item-label { font-size: 12px; }
+      .cat-item-count { font-size: 10px; }
+
+      /* Post ad banner */
+      .post-ad-banner .container { flex-direction: column; gap: 24px; }
+      .post-ad-title { font-size: 26px; }
+      .post-ad-steps { flex-direction: column; gap: 12px; }
+      .post-ad-cta { width: 100%; }
+      .post-ad-cta .btn-white { width: 100%; }
+
+      /* Showcase grid */
+      .showcase-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+      .showcase-card { height: 180px; }
+      .showcase-cat { font-size: 15px; }
+
+      /* Trust grid */
+      .trust-grid { grid-template-columns: 1fr; gap: 16px; }
+
+      /* Editorial */
+      .editorial { grid-template-columns: 1fr; min-height: auto; }
+      .editorial-img { height: 240px; order: -1; }
+      .editorial-content { padding: 36px 20px; }
+      .editorial-title { font-size: 22px; }
+
+      /* Contact */
+      .contact-section { padding: 48px 0; }
+      .contact-section .container { grid-template-columns: 1fr; gap: 36px; }
+      .contact-form-card { padding: 24px 20px; }
+      .form-row-2 { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 480px) {
+      .hero-title { font-size: 26px; }
+      .showcase-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+      .showcase-card { height: 150px; }
+      .hero-stat { min-width: 70px; padding: 12px 10px; }
+      .hero-stat-value { font-size: 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="navbar-placeholder"></div>
+
+<!-- ── HERO ── -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-content">
+    <div class="container">
+      <div class="hero-eyebrow">✦ UAE's First AI-Powered Vehicle Marketplace</div>
+      <h1 class="hero-title">Buy &amp; Sell Vehicles with <span>Confidence</span> in the UAE</h1>
+      <p class="hero-subtitle">Thousands of verified listings across cars, boats, motorcycles and jet skis — all in one place.</p>
+
+      <!-- SEARCH BAR -->
+      <div class="search-wrap">
+        <div class="search-tabs-row">
+          <button class="s-tab active" onclick="setTab(this,'cars')">● Cars</button>
+          <button class="s-tab" onclick="setTab(this,'boats')">Boats</button>
+          <button class="s-tab" onclick="setTab(this,'bikes')">Motorcycles</button>
+          <button class="s-tab" onclick="setTab(this,'jetski')">Jet Skis</button>
+        </div>
+        <div class="search-input-row">
+          <span class="search-icon">🔍</span>
+          <input class="search-main-input" id="searchInput" type="text" placeholder="Search make, model, year, price..." />
+          <div class="search-divider"></div>
+          <select class="search-location" id="searchLocation" style="border:none;outline:none;font-size:14px;font-family:inherit;color:var(--dark);background:transparent;width:140px;padding:0 10px;cursor:pointer;">
+            <option value="">All Emirates</option>
+            <option>Dubai</option>
+            <option>Abu Dhabi</option>
+            <option>Sharjah</option>
+            <option>Ajman</option>
+            <option>Fujairah</option>
+            <option>Ras Al Khaimah</option>
+            <option>Umm Al Quwain</option>
+          </select>
+          <button class="search-btn" onclick="doSearch()">Search</button>
+        </div>
+      </div>
+
+      <!-- STATS -->
+      <div class="hero-stats" id="hero-stats">
+        <div class="hero-stat">
+          <div class="hero-stat-value" id="stat-total">—</div>
+          <div class="hero-stat-label">Active Listings</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-value" id="stat-cars">—</div>
+          <div class="hero-stat-label">Cars</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-value" id="stat-boats">—</div>
+          <div class="hero-stat-label">Boats &amp; Yachts</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-value" id="stat-bikes">—</div>
+          <div class="hero-stat-label">Motorcycles</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-value">Free</div>
+          <div class="hero-stat-label">To List</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── CATEGORY STRIP ── -->
+<div class="cat-strip">
+  <div class="container">
+    <a class="cat-item active" href="cars.html">
+      <div class="cat-icon-box">🚗</div>
+      <div class="cat-item-text">
+        <div class="cat-item-label">Cars</div>
+        <div class="cat-item-count" id="count-cars">Loading...</div>
+      </div>
+    </a>
+    <a class="cat-item" href="boats.html">
+      <div class="cat-icon-box">⛵</div>
+      <div class="cat-item-text">
+        <div class="cat-item-label">Boats &amp; Yachts</div>
+        <div class="cat-item-count" id="count-boats">Loading...</div>
+      </div>
+    </a>
+    <a class="cat-item" href="bikes.html">
+      <div class="cat-icon-box">🏍️</div>
+      <div class="cat-item-text">
+        <div class="cat-item-label">Motorcycles</div>
+        <div class="cat-item-count" id="count-bikes">Loading...</div>
+      </div>
+    </a>
+    <a class="cat-item" href="jetski.html">
+      <div class="cat-icon-box">🚤</div>
+      <div class="cat-item-text">
+        <div class="cat-item-label">Jet Skis</div>
+        <div class="cat-item-count" id="count-jetski">Loading...</div>
+      </div>
+    </a>
+  </div>
+</div>
+
+<!-- ── HOT DEALS ── -->
+<section class="section">
+  <div class="container">
+    <div class="section-header">
+      <div>
+        <div class="section-eyebrow">Featured Listings</div>
+        <div class="section-title">🔥 Hot Deals</div>
+        <div class="section-subtitle">Hand-picked vehicles at exceptional prices from verified sellers across the UAE.</div>
+      </div>
+      <a class="section-link" href="cars.html">View All Listings →</a>
+    </div>
+    <div class="listings-grid" id="hot-deals-grid"></div>
+  </div>
+</section>
+
+<!-- ── POST YOUR AD ── -->
+<div class="post-ad-banner">
+  <div class="container">
+    <div>
+      <div class="post-ad-eyebrow">Sell Faster Than Ever</div>
+      <div class="post-ad-title">Turn Your Vehicle Into Cash Today</div>
+      <div class="post-ad-sub">Connect instantly with thousands of serious buyers across the UAE. No middlemen, no hidden fees, no complications.</div>
+      <div class="post-ad-steps">
+        <div class="post-ad-step"><div class="step-num">1</div><div class="step-label">Create your listing</div></div>
+        <div class="post-ad-step"><div class="step-num">2</div><div class="step-label">Get buyer inquiries</div></div>
+        <div class="post-ad-step"><div class="step-num">3</div><div class="step-label">Close the deal</div></div>
+      </div>
+    </div>
+    <div class="post-ad-cta">
+      <button class="btn-white" style="font-size:16px;padding:18px 40px;" onclick="window.location.href='place-ad.html'">+ Post Your Ad Free</button>
+      <div class="post-ad-note">No credit card required · Takes 2 minutes</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── BROWSE BY CATEGORY ── -->
+<section class="section section-alt">
+  <div class="container">
+    <div class="section-header">
+      <div>
+        <div class="section-eyebrow">Browse by Category</div>
+        <div class="section-title">Find Your Perfect Ride</div>
+        <div class="section-subtitle">From luxury supercars to ocean-ready yachts — explore every category in the UAE.</div>
+      </div>
+    </div>
+    <div class="showcase-grid">
+      <a class="showcase-card" href="cars.html">
+        <img src="https://static.wixstatic.com/media/3789f2_84f3594ef715400089ce1988d4593d3b~mv2.jpeg/v1/fill/w_600,h_400,al_c,q_80,enc_avif,quality_auto/provide_attractive_luxury_orange_mercedes_benz_g63%20(1).jpeg" alt="Cars" loading="lazy" />
+        <div class="showcase-overlay"></div>
+        <div class="showcase-arrow">→</div>
+        <div class="showcase-label">
+          <div class="showcase-cat">Cars</div>
+          <div class="showcase-count" id="sc-cars">Loading...</div>
+        </div>
+      </a>
+      <a class="showcase-card" href="boats.html">
+        <img src="https://static.wixstatic.com/media/3789f2_9add890e49654c8e80825bde87d1b891~mv2.jpeg/v1/fill/w_600,h_400,al_c,q_80,enc_avif,quality_auto/selling_luxury_yachts_generate_nice_luxury_yachts%20(3).jpeg" alt="Boats" loading="lazy" />
+        <div class="showcase-overlay"></div>
+        <div class="showcase-arrow">→</div>
+        <div class="showcase-label">
+          <div class="showcase-cat">Boats &amp; Yachts</div>
+          <div class="showcase-count" id="sc-boats">Loading...</div>
+        </div>
+      </a>
+      <a class="showcase-card" href="bikes.html">
+        <img src="https://static.wixstatic.com/media/3789f2_49b4a1e9e90f45baba339c1a7abcca8f~mv2.jpeg/v1/fill/w_600,h_400,al_c,q_80,enc_avif,quality_auto/nice_orange_color_motorcycle_in_front_of.jpeg" alt="Motorcycles" loading="lazy" />
+        <div class="showcase-overlay"></div>
+        <div class="showcase-arrow">→</div>
+        <div class="showcase-label">
+          <div class="showcase-cat">Motorcycles</div>
+          <div class="showcase-count" id="sc-bikes">Loading...</div>
+        </div>
+      </a>
+      <a class="showcase-card" href="jetski.html">
+        <img src="https://static.wixstatic.com/media/3789f2_596de8555e414d1eb7887eb790828aa3~mv2.jpeg/v1/fill/w_600,h_400,al_c,q_80,enc_avif,quality_auto/provide_attractive_orange_color_luxury_jet_ski.jpeg" alt="Jet Skis" loading="lazy" />
+        <div class="showcase-overlay"></div>
+        <div class="showcase-arrow">→</div>
+        <div class="showcase-label">
+          <div class="showcase-cat">Jet Skis</div>
+          <div class="showcase-count" id="sc-jetski">Loading...</div>
+        </div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ── TRUST ── -->
+<section class="section">
+  <div class="container">
+    <div class="section-header">
+      <div>
+        <div class="section-eyebrow">Why Choose Us</div>
+        <div class="section-title">Real Cars. Real Prices. Real Trust.</div>
+        <div class="section-subtitle">100% real listings from real people and verified dealers across the UAE.</div>
+      </div>
+    </div>
+    <div class="trust-grid">
+      <div class="trust-card">
+        <div class="trust-icon">✅</div>
+        <div class="trust-title">Verified Listings</div>
+        <div class="trust-text">Every listing goes through our verification process. No fake ads, no bait-and-switch. What you see is exactly what you get.</div>
+      </div>
+      <div class="trust-card">
+        <div class="trust-icon">💰</div>
+        <div class="trust-title">Real Market Prices</div>
+        <div class="trust-text">Our price intelligence tools ensure listings reflect true UAE market value — so you always get a fair deal as a buyer or seller.</div>
+      </div>
+      <div class="trust-card">
+        <div class="trust-icon">🛡️</div>
+        <div class="trust-title">Secure Transactions</div>
+        <div class="trust-text">From first inquiry to final handshake, DubiMotors provides a safe, transparent process with no hidden fees or middlemen.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── MCLAREN EDITORIAL ── -->
+<div class="editorial">
+  <div class="editorial-content">
+    <div class="editorial-tag">Luxury Cars · Dubai</div>
+    <div class="editorial-title">Feel the Power of McLaren on Dubai's Roads</div>
+    <div class="editorial-text">There's nothing quite like driving a McLaren in Dubai, where world-class engineering meets the city of speed and style. With its striking skyline, smooth highways, and stunning coastal roads, Dubai offers the perfect backdrop to unleash the full power of McLaren's performance machines.<br /><br />Whether you're cruising down Sheikh Zayed Road or turning heads in Downtown Dubai, a McLaren isn't just a car. It's an experience.</div>
+    <button class="btn-primary" onclick="window.location.href='cars.html'">Browse Luxury Cars →</button>
+  </div>
+  <div class="editorial-img">
+    <img src="https://static.wixstatic.com/media/3789f2_1ad16c7f05794d03acee4a1efd89f33d~mv2.jpeg/v1/fill/w_800,h_600,al_c,q_80,enc_avif,quality_auto/provide_attractive_luxury_white_mercedes_benz_g63%20(2).jpeg" alt="Luxury car Dubai" loading="lazy" />
+  </div>
+</div>
+
+<!-- ── BOATS EDITORIAL ── -->
+<div class="editorial">
+  <div class="editorial-img">
+    <img src="https://static.wixstatic.com/media/3789f2_be7e0012dc024553b9b7ff696d12e413~mv2.jpeg/v1/fill/w_800,h_600,al_c,q_80,enc_avif,quality_auto/selling_luxury_yachts_generate_nice_luxury_yachts%20(4).jpeg" alt="Yacht UAE" loading="lazy" />
+  </div>
+  <div class="editorial-content editorial-content-light">
+    <div class="editorial-tag" style="background:#FFF3EE;border-color:#FFD5C2;">Boats &amp; Yachts · UAE</div>
+    <div class="editorial-title editorial-title-dark">From Dubai's Iconic Shores to Fujairah's Deep Blue Oceans</div>
+    <div class="editorial-text editorial-text-dark">Sail from the vibrant beaches of Dubai to the serene, crystal-clear waters of Fujairah. Whether you're enjoying a luxury yacht cruise, diving into marine adventures, or simply escaping the city, the UAE coastline offers unmatched beauty and endless possibilities.</div>
+    <button class="btn-primary" onclick="window.location.href='boats.html'">Browse Boats &amp; Yachts →</button>
+  </div>
+</div>
+
+<!-- ── MOTORCYCLES EDITORIAL ── -->
+<div class="editorial">
+  <div class="editorial-content">
+    <div class="editorial-tag">Motorcycles · UAE</div>
+    <div class="editorial-title">Ride the Extraordinary — Luxury Motorcycles in the UAE</div>
+    <div class="editorial-text">Discover the thrill of high-performance luxury motorcycles designed for style, speed, and precision. From iconic brands like Ducati, Harley-Davidson, and BMW to cutting-edge models, these bikes combine engineering excellence with unmatched elegance.<br /><br />Whether cruising city streets or exploring desert roads, a luxury motorcycle is more than a ride. It's a lifestyle statement.</div>
+    <button class="btn-primary" onclick="window.location.href='bikes.html'">Browse Motorcycles →</button>
+  </div>
+  <div class="editorial-img">
+    <img src="https://static.wixstatic.com/media/3789f2_91b66bf7c55745d991242dcbbbcf32ec~mv2.jpeg/v1/fill/w_800,h_600,al_c,q_80,enc_avif,quality_auto/provide_attractive_luxury_red_harley_motorcycle_in.jpeg" alt="Luxury motorcycle UAE" loading="lazy" />
+  </div>
+</div>
+
+<!-- ── CONTACT ── -->
+<div class="contact-section">
+  <div class="container">
+    <div>
+      <div class="section-eyebrow">Get In Touch</div>
+      <div class="section-title section-title-white" style="font-size:36px;margin-bottom:16px;">Let's Work Together</div>
+      <div class="section-subtitle section-subtitle-white" style="max-width:380px;">Have a question, a partnership idea, or need help with your listing? Our team is ready to help you across the UAE.</div>
+      <div style="margin-top:36px;">
+        <div class="contact-info-item">
+          <div class="contact-icon">📧</div>
+          <div><div class="contact-info-label">Email</div><div class="contact-info-value">hello@dubimotors.ae</div></div>
+        </div>
+        <div class="contact-info-item">
+          <div class="contact-icon">📍</div>
+          <div><div class="contact-info-label">Location</div><div class="contact-info-value">Dubai, United Arab Emirates</div></div>
+        </div>
+        <div class="contact-info-item">
+          <div class="contact-icon">💬</div>
+          <div><div class="contact-info-label">WhatsApp</div><div class="contact-info-value">+971 50 000 0000</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="contact-form-card">
+      <div style="font-size:18px;font-weight:800;color:var(--white);margin-bottom:6px;">Send Us a Message</div>
+      <div style="font-size:13px;color:#555;margin-bottom:24px;">We'll get back to you within 24 hours.</div>
+      <div class="form-row-2">
+        <div class="form-group">
+          <label class="form-label form-label-white">First Name</label>
+          <input class="form-input form-input-dark" type="text" placeholder="Ahmed" />
+        </div>
+        <div class="form-group">
+          <label class="form-label form-label-white">Last Name</label>
+          <input class="form-input form-input-dark" type="text" placeholder="Al Rashid" />
+        </div>
+      </div>
+      <div class="form-group" style="margin-bottom:14px;">
+        <label class="form-label form-label-white">Email Address</label>
+        <input class="form-input form-input-dark" type="email" placeholder="you@example.com" />
+      </div>
+      <div class="form-group" style="margin-bottom:20px;">
+        <label class="form-label form-label-white">Message</label>
+        <textarea class="form-input form-input-dark" placeholder="Tell us how we can help..."></textarea>
+      </div>
+      <button class="btn-primary" style="width:100%;justify-content:center;" onclick="showToast('Message sent! We will get back to you shortly.')">Send Message →</button>
+    </div>
+  </div>
+</div>
+
+<div id="footer-placeholder"></div>
+<div id="toast" class="toast"></div>
+
+<script src="shared.js"></script>
+<script src="components.js"></script>
+<script>
+  renderNavbar('home');
+  renderFooter();
+
+  // Populate counts from real data
+  const counts = DM.getCounts();
+  document.getElementById('stat-total').textContent = counts.total;
+  document.getElementById('stat-cars').textContent = counts.cars;
+  document.getElementById('stat-boats').textContent = counts.boats;
+  document.getElementById('stat-bikes').textContent = counts.bikes;
+  document.getElementById('count-cars').textContent = counts.cars + ' listings';
+  document.getElementById('count-boats').textContent = counts.boats + ' listings';
+  document.getElementById('count-bikes').textContent = counts.bikes + ' listings';
+  document.getElementById('count-jetski').textContent = counts.jetski + ' listings';
+  document.getElementById('sc-cars').textContent = counts.cars + ' listings';
+  document.getElementById('sc-boats').textContent = counts.boats + ' listings';
+  document.getElementById('sc-bikes').textContent = counts.bikes + ' listings';
+  document.getElementById('sc-jetski').textContent = counts.jetski + ' listings';
+
+  // Render hot deals (first 4 listings)
+  const hotGrid = document.getElementById('hot-deals-grid');
+  DM.listings.slice(0, 4).forEach(l => {
+    hotGrid.innerHTML += DM.renderCard(l);
+  });
+
+  // Search tab state
+  let activeTab = 'cars';
+  function setTab(btn, tab) {
+    document.querySelectorAll('.s-tab').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    activeTab = tab;
+  }
+
+  function doSearch() {
+    const q = document.getElementById('searchInput').value.trim();
+    const loc = document.getElementById('searchLocation').value;
+    const params = new URLSearchParams({ cat: activeTab });
+    if (q) params.set('q', q);
+    if (loc) params.set('location', loc);
+    const pages = { cars: 'cars.html', boats: 'boats.html', bikes: 'bikes.html', jetski: 'jetski.html' };
+    window.location.href = (pages[activeTab] || 'cars.html') + '?' + params.toString();
+  }
+
+  document.getElementById('searchInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') doSearch();
+  });
+</script>
+</body>
+</html>

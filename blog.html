@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Blog — DUBIMOTORS</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .blog-hero { background: var(--dark); padding: 56px 0 48px; }
+    .blog-hero-title { font-size: 40px; font-weight: 900; color: var(--white); margin-bottom: 8px; }
+    .blog-hero-title span { color: var(--orange); }
+    .blog-hero-sub { font-size: 15px; color: #666; }
+
+    .blog-cats { display: flex; gap: 10px; flex-wrap: wrap; margin: 32px 0 40px; }
+    .blog-cat { background: var(--white); border: 1.5px solid var(--border); border-radius: 20px; padding: 7px 18px; font-size: 13px; font-weight: 700; color: #555; cursor: pointer; transition: all 0.2s; }
+    .blog-cat:hover, .blog-cat.active { background: var(--orange); border-color: var(--orange); color: #fff; }
+
+    .blog-featured { display: grid; grid-template-columns: 1.6fr 1fr; gap: 24px; margin-bottom: 48px; }
+    .blog-card { background: var(--white); border-radius: var(--radius); overflow: hidden; border: 1px solid var(--border); cursor: pointer; transition: box-shadow 0.2s; }
+    .blog-card:hover { box-shadow: 0 8px 32px rgba(0,0,0,0.1); }
+    .blog-card-img { height: 240px; overflow: hidden; background: #ddd; }
+    .blog-card-img img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s; }
+    .blog-card:hover .blog-card-img img { transform: scale(1.04); }
+    .blog-card-body { padding: 20px; }
+    .blog-card-cat { display: inline-block; background: rgba(232,69,10,0.1); color: var(--orange); font-size: 11px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; padding: 3px 10px; border-radius: 20px; margin-bottom: 10px; }
+    .blog-card-title { font-size: 17px; font-weight: 800; color: var(--dark); margin-bottom: 8px; line-height: 1.3; }
+    .blog-card-excerpt { font-size: 13px; color: #666; line-height: 1.6; margin-bottom: 14px; }
+    .blog-card-meta { display: flex; align-items: center; gap: 12px; font-size: 12px; color: #999; }
+    .blog-card-author { font-weight: 700; color: #555; }
+
+    .blog-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+    .blog-grid .blog-card-img { height: 180px; }
+    .blog-grid .blog-card-title { font-size: 15px; }
+
+    @media (max-width: 768px) {
+      .blog-hero-title { font-size: 26px; }
+      .blog-featured { grid-template-columns: 1fr; }
+      .blog-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+<div id="navbar-placeholder"></div>
+
+<div class="blog-hero">
+  <div class="container">
+    <div class="blog-hero-title">DUBIMOTORS <span>Blog</span></div>
+    <div class="blog-hero-sub">News, guides, and market insights for UAE vehicle buyers and sellers.</div>
+  </div>
+</div>
+
+<div class="container" style="padding-top:40px;padding-bottom:72px;">
+  <div class="blog-cats">
+    <div class="blog-cat active">All</div>
+    <div class="blog-cat">Buying Guides</div>
+    <div class="blog-cat">Selling Tips</div>
+    <div class="blog-cat">Market News</div>
+    <div class="blog-cat">Finance</div>
+    <div class="blog-cat">Boats</div>
+    <div class="blog-cat">Motorcycles</div>
+    <div class="blog-cat">AI &amp; Tech</div>
+  </div>
+
+  <!-- FEATURED -->
+  <div class="blog-featured">
+    <div class="blog-card">
+      <div class="blog-card-img"><img src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=800&q=80" alt="Car buying guide" /></div>
+      <div class="blog-card-body">
+        <div class="blog-card-cat">Buying Guide</div>
+        <div class="blog-card-title">The Complete Guide to Buying a Used Car in the UAE in 2025</div>
+        <div class="blog-card-excerpt">From checking the Mulkiya to negotiating the price, here is everything you need to know before signing anything.</div>
+        <div class="blog-card-meta"><span class="blog-card-author">Ahmed Al Rashidi</span><span>·</span><span>8 min read</span><span>·</span><span>Mar 10, 2025</span></div>
+      </div>
+    </div>
+    <div class="blog-card">
+      <div class="blog-card-img"><img src="https://images.unsplash.com/photo-1677442135703-1787eea5ce01?w=600&q=80" alt="AI car listing" /></div>
+      <div class="blog-card-body">
+        <div class="blog-card-cat">AI &amp; Tech</div>
+        <div class="blog-card-title">How AI is Changing the Way UAE Residents Sell Their Cars</div>
+        <div class="blog-card-excerpt">Upload three photos and let AI handle the rest — we explain how DUBIMOTORS' AI listing tool works.</div>
+        <div class="blog-card-meta"><span class="blog-card-author">Sara Khalil</span><span>·</span><span>5 min read</span><span>·</span><span>Mar 5, 2025</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- GRID -->
+  <div class="section-header" style="margin-bottom:24px;"><div class="section-title">Latest Articles</div></div>
+  <div class="blog-grid">
+    <div class="blog-card">
+      <div class="blog-card-img"><img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80" alt="Car finance UAE" /></div>
+      <div class="blog-card-body">
+        <div class="blog-card-cat">Finance</div>
+        <div class="blog-card-title">Car Finance in the UAE: What Banks Won't Tell You</div>
+        <div class="blog-card-excerpt">Interest rates, down payments, and the hidden fees — a no-nonsense breakdown.</div>
+        <div class="blog-card-meta"><span class="blog-card-author">Omar Farooq</span><span>·</span><span>6 min read</span></div>
+      </div>
+    </div>
+    <div class="blog-card">
+      <div class="blog-card-img"><img src="https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=600&q=80" alt="Yacht Dubai" /></div>
+      <div class="blog-card-body">
+        <div class="blog-card-cat">Boats</div>
+        <div class="blog-card-title">Top 5 Yachts for Sale in Dubai Under AED 500,000</div>
+        <div class="blog-card-excerpt">You do not need to be a billionaire to own a boat in Dubai. Here are our top picks.</div>
+        <div class="blog-card-meta"><span class="blog-card-author">Layla Hassan</span><span>·</span><span>4 min read</span></div>
+      </div>
+    </div>
+    <div class="blog-card">
+      <div class="blog-card-img"><img src="https://images.unsplash.com/photo-1558981403-c5f9899a28bc?w=600&q=80" alt="Motorcycle UAE" /></div>
+      <div class="blog-card-body">
+        <div class="blog-card-cat">Motorcycles</div>
+        <div class="blog-card-title">Best Motorcycles for UAE Roads in 2025</div>
+        <div class="blog-card-excerpt">From daily commuters to weekend sport bikes — our picks for every rider type.</div>
+        <div class="blog-card-meta"><span class="blog-card-author">Khalid Nasser</span><span>·</span><span>7 min read</span></div>
+      </div>
+    </div>
+    <div class="blog-card">
+      <div class="blog-card-img"><img src="https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=600&q=80" alt="Selling car UAE" /></div>
+      <div class="blog-card-body">
+        <div class="blog-card-cat">Selling Tips</div>
+        <div class="blog-card-title">7 Things That Will Get Your Car Sold Faster in the UAE</div>
+        <div class="blog-card-excerpt">The right photos, the right price, and the right timing make all the difference.</div>
+        <div class="blog-card-meta"><span class="blog-card-author">Rania Al Marzouqi</span><span>·</span><span>5 min read</span></div>
+      </div>
+    </div>
+    <div class="blog-card">
+      <div class="blog-card-img"><img src="https://images.unsplash.com/photo-1486325212027-8081e485255e?w=600&q=80" alt="UAE car market" /></div>
+      <div class="blog-card-body">
+        <div class="blog-card-cat">Market News</div>
+        <div class="blog-card-title">UAE Used Car Prices: Q1 2025 Market Report</div>
+        <div class="blog-card-excerpt">Prices are up 8% year-on-year. Here is what is driving demand and which models are holding value best.</div>
+        <div class="blog-card-meta"><span class="blog-card-author">DUBIMOTORS Research</span><span>·</span><span>10 min read</span></div>
+      </div>
+    </div>
+    <div class="blog-card">
+      <div class="blog-card-img"><img src="https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?w=600&q=80" alt="Jet ski UAE" /></div>
+      <div class="blog-card-body">
+        <div class="blog-card-cat">Buying Guide</div>
+        <div class="blog-card-title">Buying a Jet Ski in the UAE: Licences, Rules &amp; Best Brands</div>
+        <div class="blog-card-excerpt">Everything you need to know before buying a personal watercraft in the UAE.</div>
+        <div class="blog-card-meta"><span class="blog-card-author">Tariq Al Blooshi</span><span>·</span><span>6 min read</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="footer-placeholder"></div>
+<script src="shared.js"></script>
+<script src="components.js"></script>
+<script>renderNavbar(); renderFooter();</script>
+</body>
+</html>

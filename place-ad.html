@@ -1,0 +1,1099 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Place Your Ad — DUBIMOTORS</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+  <style>
+    /* ── Hero ── */
+    .place-ad-hero { background: var(--dark); padding: 48px 0; text-align: center; }
+    .place-ad-hero-title { font-size: 38px; font-weight: 900; color: var(--white); margin-bottom: 10px; }
+    .place-ad-hero-title span { color: var(--orange); }
+    .place-ad-hero-sub { font-size: 15px; color: #888; max-width: 480px; margin: 0 auto; }
+
+    /* ── Mode selector landing ── */
+    #mode-select-screen { padding: 60px 0 80px; }
+    .mode-title { text-align: center; font-size: 26px; font-weight: 900; color: var(--dark); margin-bottom: 8px; }
+    .mode-sub { text-align: center; font-size: 14px; color: var(--grey); margin-bottom: 40px; }
+    .mode-cards { display: grid; grid-template-columns: repeat(3,1fr); gap: 20px; max-width: 900px; margin: 0 auto; }
+    .mode-card {
+      border: 2px solid var(--border); border-radius: 20px; padding: 36px 28px;
+      text-align: center; cursor: pointer; transition: all 0.2s;
+      background: var(--white); position: relative; overflow: hidden;
+    }
+    .mode-card:hover { border-color: var(--orange); box-shadow: 0 12px 40px rgba(232,69,10,0.12); transform: translateY(-4px); }
+    .mode-card.recommended { border-color: var(--orange); }
+    .mode-badge {
+      position: absolute; top: 14px; right: 14px;
+      background: var(--orange); color: #fff; font-size: 10px; font-weight: 800;
+      padding: 3px 10px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .mode-icon { font-size: 48px; margin-bottom: 16px; }
+    .mode-card-title { font-size: 18px; font-weight: 900; color: var(--dark); margin-bottom: 8px; }
+    .mode-card-desc { font-size: 13px; color: var(--grey); line-height: 1.6; margin-bottom: 20px; }
+    .mode-card-features { text-align: left; margin-bottom: 24px; }
+    .mode-feature { font-size: 12px; color: #555; display: flex; align-items: center; gap: 7px; margin-bottom: 6px; }
+    .mode-feature::before { content: '✓'; color: var(--orange); font-weight: 800; flex-shrink: 0; }
+    .mode-btn {
+      width: 100%; background: var(--orange); color: #fff; border: none;
+      border-radius: 10px; padding: 12px; font-size: 14px; font-weight: 700;
+      cursor: pointer; transition: background 0.2s;
+    }
+    .mode-btn.outline { background: transparent; border: 2px solid var(--orange); color: var(--orange); }
+    .mode-btn:hover { background: var(--orange-hover); }
+    .mode-btn.outline:hover { background: var(--orange); color: #fff; }
+
+    /* ── Steps bar ── */
+    .steps-bar {
+      background: var(--white); border-bottom: 1px solid var(--border);
+      padding: 18px 0; position: sticky; top: 68px; z-index: 50;
+    }
+    .steps-bar .container { display: flex; align-items: center; justify-content: center; gap: 0; }
+    .step-item { display: flex; align-items: center; gap: 10px; padding: 0 20px; position: relative; }
+    .step-item:not(:last-child)::after {
+      content: ''; position: absolute; right: -1px; top: 50%;
+      transform: translateY(-50%); width: 36px; height: 1px; background: var(--border);
+    }
+    .step-circle {
+      width: 30px; height: 30px; border-radius: 50%;
+      background: var(--light-grey); border: 2px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 800; color: var(--grey); flex-shrink: 0;
+    }
+    .step-item.active .step-circle { background: var(--orange); border-color: var(--orange); color: #fff; }
+    .step-item.done .step-circle { background: #00B450; border-color: #00B450; color: #fff; }
+    .step-label { font-size: 12px; font-weight: 600; color: var(--grey); }
+    .step-item.active .step-label { color: var(--dark); }
+
+    /* ── Main form layout ── */
+    .ad-form-layout { display: grid; grid-template-columns: 1fr 320px; gap: 28px; padding: 36px 0 80px; align-items: start; }
+    .form-card { background: var(--white); border: 1px solid var(--border); border-radius: 16px; padding: 28px; margin-bottom: 18px; }
+    .form-card-title { font-size: 17px; font-weight: 800; color: var(--dark); margin-bottom: 4px; }
+    .form-card-sub { font-size: 13px; color: var(--grey); margin-bottom: 22px; }
+    .form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+    .form-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+    .form-full { margin-bottom: 14px; }
+    .form-group { display: flex; flex-direction: column; gap: 5px; }
+    .form-label { font-size: 12px; font-weight: 700; color: var(--dark); text-transform: uppercase; letter-spacing: 0.4px; }
+    .form-input {
+      border: 1.5px solid var(--border); border-radius: 9px; padding: 10px 13px;
+      font-size: 13px; font-family: 'Inter',sans-serif; outline: none;
+      background: var(--white); transition: border-color 0.2s;
+    }
+    .form-input:focus { border-color: var(--orange); }
+    select.form-input {
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23888' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 12px center;
+      padding-right: 32px;
+    }
+    select:disabled { opacity: 0.45; cursor: not-allowed; }
+    textarea.form-input { resize: vertical; min-height: 100px; }
+
+    /* ── Category tiles ── */
+    .cat-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; }
+    .cat-tile { border: 2px solid var(--border); border-radius: 12px; padding: 16px 8px; text-align: center; cursor: pointer; transition: all 0.2s; }
+    .cat-tile:hover, .cat-tile.selected { border-color: var(--orange); background: #FFF8F6; }
+    .cat-tile-icon { font-size: 26px; margin-bottom: 5px; }
+    .cat-tile-label { font-size: 12px; font-weight: 700; color: var(--dark); }
+
+    /* ── AI Photo upload zone ── */
+    .ai-upload-zone {
+      border: 2.5px dashed var(--orange); border-radius: 16px;
+      padding: 48px 24px; text-align: center; cursor: pointer;
+      background: #FFF8F6; transition: background 0.2s;
+      position: relative;
+    }
+    .ai-upload-zone:hover { background: #FFE8E0; }
+    .ai-upload-zone input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+    .ai-upload-icon { font-size: 48px; margin-bottom: 14px; }
+    .ai-upload-title { font-size: 18px; font-weight: 800; color: var(--dark); margin-bottom: 6px; }
+    .ai-upload-sub { font-size: 13px; color: var(--grey); margin-bottom: 16px; }
+    .ai-upload-btn { background: var(--orange); color: #fff; border: none; border-radius: 9px; padding: 11px 24px; font-size: 13px; font-weight: 700; cursor: pointer; }
+    .ai-preview-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; margin-top: 16px; }
+    .ai-preview-thumb { width: 100%; aspect-ratio: 4/3; object-fit: cover; border-radius: 8px; border: 2px solid var(--border); }
+    .ai-analyzing {
+      display: none; align-items: center; gap: 14px;
+      background: #0D0D0D; border-radius: 12px; padding: 18px 20px; margin-top: 16px;
+    }
+    .ai-analyzing.show { display: flex; }
+    .ai-spinner { width: 24px; height: 24px; border: 3px solid #333; border-top-color: var(--orange); border-radius: 50%; animation: spin 0.8s linear infinite; flex-shrink: 0; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .ai-analyzing-text { font-size: 13px; color: #fff; font-weight: 600; }
+    .ai-analyzing-sub { font-size: 11px; color: #666; margin-top: 2px; }
+    .ai-result-banner {
+      display: none; background: linear-gradient(135deg,#0D0D0D,#1A1A1A);
+      border: 1px solid #E8450A33; border-radius: 12px; padding: 16px 18px;
+      margin-top: 14px; align-items: center; gap: 14px;
+    }
+    .ai-result-banner.show { display: flex; }
+    .ai-result-icon { font-size: 28px; flex-shrink: 0; }
+    .ai-result-text { font-size: 13px; color: #fff; font-weight: 600; }
+    .ai-result-sub { font-size: 11px; color: #888; margin-top: 2px; }
+
+    /* ── VIN lookup ── */
+    .vin-row { display: flex; gap: 10px; }
+    .vin-input { flex: 1; border: 1.5px solid var(--border); border-radius: 9px; padding: 12px 14px; font-size: 14px; font-family: 'Inter',sans-serif; outline: none; text-transform: uppercase; letter-spacing: 1px; }
+    .vin-input:focus { border-color: var(--orange); }
+    .vin-btn { background: var(--orange); color: #fff; border: none; border-radius: 9px; padding: 12px 20px; font-size: 13px; font-weight: 700; cursor: pointer; white-space: nowrap; }
+    .vin-btn:hover { background: var(--orange-hover); }
+    .vin-status { font-size: 13px; margin-top: 10px; min-height: 20px; }
+    .vin-status.loading { color: var(--grey); }
+    .vin-status.success { color: #00B450; font-weight: 600; }
+    .vin-status.error { color: #E8450A; }
+
+    /* ── Price estimator ── */
+    .price-estimator-card {
+      background: linear-gradient(135deg, #0D0D0D, #1A1A1A);
+      border: 1px solid #333; border-radius: 16px; padding: 22px;
+      margin-bottom: 16px;
+    }
+    .pe-title { font-size: 14px; font-weight: 800; color: #fff; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; }
+    .pe-badge { background: var(--orange); color: #fff; font-size: 9px; font-weight: 800; padding: 2px 8px; border-radius: 20px; text-transform: uppercase; }
+    .pe-sub { font-size: 11px; color: #666; margin-bottom: 16px; }
+    .pe-estimate-btn {
+      width: 100%; background: var(--orange); color: #fff; border: none;
+      border-radius: 9px; padding: 11px; font-size: 13px; font-weight: 700;
+      cursor: pointer; transition: background 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .pe-estimate-btn:hover { background: var(--orange-hover); }
+    .pe-estimate-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+    .pe-result { display: none; margin-top: 14px; }
+    .pe-result.show { display: block; }
+    .pe-range-label { font-size: 11px; color: #888; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .pe-range { font-size: 22px; font-weight: 900; color: var(--orange); margin-bottom: 10px; }
+    .pe-bar { height: 6px; background: #2A2A2A; border-radius: 3px; margin-bottom: 14px; overflow: hidden; }
+    .pe-bar-fill { height: 100%; background: linear-gradient(90deg, #E8450A, #FF6B35); border-radius: 3px; width: 60%; }
+    .pe-insight { font-size: 11px; color: #888; line-height: 1.6; }
+    .pe-insight strong { color: #CCC; }
+
+    /* ── Sidebar ── */
+    .sidebar-col { display: flex; flex-direction: column; gap: 16px; }
+    .preview-card { background: var(--dark); border-radius: 16px; padding: 22px; }
+    .preview-title { font-size: 13px; font-weight: 800; color: #fff; margin-bottom: 14px; }
+    .preview-img { width: 100%; height: 150px; background: #1A1A1A; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 32px; margin-bottom: 12px; overflow: hidden; }
+    .preview-img img { width: 100%; height: 100%; object-fit: cover; border-radius: 10px; }
+    .preview-price { font-size: 20px; font-weight: 900; color: var(--orange); margin-bottom: 3px; }
+    .preview-name { font-size: 13px; font-weight: 700; color: #fff; margin-bottom: 7px; }
+    .preview-pills { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 8px; }
+    .preview-pill { background: #2A2A2A; color: #888; font-size: 10px; font-weight: 600; padding: 3px 9px; border-radius: 20px; }
+    .preview-loc { font-size: 11px; color: #555; }
+    .pricing-card { background: #fff; border: 1px solid var(--border); border-radius: 16px; padding: 22px; }
+    .pricing-title { font-size: 14px; font-weight: 800; color: var(--dark); margin-bottom: 14px; }
+    .pricing-option { border: 2px solid var(--border); border-radius: 10px; padding: 13px 14px; margin-bottom: 9px; cursor: pointer; transition: border-color 0.2s; display: flex; align-items: center; justify-content: space-between; }
+    .pricing-option.selected { border-color: var(--orange); background: #FFF8F6; }
+    .pricing-option-label { font-size: 13px; font-weight: 700; color: var(--dark); }
+    .pricing-option-sub { font-size: 11px; color: var(--grey); margin-top: 2px; }
+    .pricing-option-price { font-size: 15px; font-weight: 900; color: var(--orange); }
+    .btn-submit-ad { width: 100%; background: var(--orange); color: #fff; border: none; border-radius: 12px; padding: 15px; font-size: 15px; font-weight: 700; cursor: pointer; margin-top: 14px; transition: background 0.2s; }
+    .btn-submit-ad:hover { background: var(--orange-hover); }
+    .recaptcha-wrap { display: flex; justify-content: center; margin: 16px 0; }
+
+    /* ── Mode indicator chip ── */
+    .mode-chip {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: #FFF8F6; border: 1.5px solid var(--orange);
+      border-radius: 20px; padding: 4px 12px 4px 8px;
+      font-size: 12px; font-weight: 700; color: var(--orange);
+      margin-bottom: 20px; cursor: pointer;
+    }
+    .mode-chip:hover { background: #FFE8E0; }
+
+    /* ── Mobile ── */
+    @media (max-width: 900px) {
+      .mode-cards { grid-template-columns: 1fr; max-width: 420px; }
+      .ad-form-layout { grid-template-columns: 1fr; gap: 16px; padding: 24px 0 60px; }
+      .form-card { padding: 18px 14px; }
+      .form-grid-2, .form-grid-3 { grid-template-columns: 1fr; }
+      .cat-grid { grid-template-columns: repeat(2,1fr); }
+      .ai-preview-grid { grid-template-columns: repeat(3,1fr); }
+      .place-ad-hero-title { font-size: 26px; }
+    }
+  </style>
+</head>
+<body>
+<div id="navbar-placeholder"></div>
+
+<!-- HERO -->
+<div class="place-ad-hero">
+  <div class="container">
+    <div class="place-ad-hero-title">Post Your <span>Ad</span> Free</div>
+    <div class="place-ad-hero-sub">Reach thousands of serious buyers across the UAE in minutes.</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     SCREEN 1: MODE SELECTION
+══════════════════════════════════════════════════════════════ -->
+<div id="mode-select-screen">
+  <div class="container">
+    <div class="mode-title">How would you like to create your listing?</div>
+    <div class="mode-sub">Choose the method that works best for you.</div>
+    <div class="mode-cards">
+
+      <!-- Option A: AI -->
+      <div class="mode-card recommended" onclick="selectMode('ai')">
+        <div class="mode-badge">Recommended</div>
+        <div class="mode-icon">🤖</div>
+        <div class="mode-card-title">Place with AI</div>
+        <div class="mode-card-desc">Upload photos of your vehicle and our AI will automatically identify it and fill in all the details for you.</div>
+        <div class="mode-card-features">
+          <div class="mode-feature">Auto-detects make, model and trim</div>
+          <div class="mode-feature">Fills specs from photos</div>
+          <div class="mode-feature">AI-suggested price range</div>
+          <div class="mode-feature">Takes under 60 seconds</div>
+        </div>
+        <button class="mode-btn">Place with AI</button>
+      </div>
+
+      <!-- Option B: VIN -->
+      <div class="mode-card" onclick="selectMode('vin')">
+        <div class="mode-icon">🔢</div>
+        <div class="mode-card-title">Place with VIN</div>
+        <div class="mode-card-desc">Enter your vehicle's VIN number and we'll automatically retrieve all the official specifications.</div>
+        <div class="mode-card-features">
+          <div class="mode-feature">Official factory specifications</div>
+          <div class="mode-feature">Instant auto-fill from VIN</div>
+          <div class="mode-feature">AI-suggested price range</div>
+          <div class="mode-feature">Accurate and verified data</div>
+        </div>
+        <button class="mode-btn outline">Place with VIN</button>
+      </div>
+
+      <!-- Option C: Manual -->
+      <div class="mode-card" onclick="selectMode('manual')">
+        <div class="mode-icon">✏️</div>
+        <div class="mode-card-title">Add Manually</div>
+        <div class="mode-card-desc">Fill in all the details yourself. Best if you already know your vehicle's exact specifications.</div>
+        <div class="mode-card-features">
+          <div class="mode-feature">Full control over every field</div>
+          <div class="mode-feature">Works for all vehicle types</div>
+          <div class="mode-feature">AI-suggested price range</div>
+          <div class="mode-feature">Classic form experience</div>
+        </div>
+        <button class="mode-btn outline">Add Manually</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     SCREEN 2: FORM (hidden until mode selected)
+══════════════════════════════════════════════════════════════ -->
+<div id="form-screen" style="display:none;">
+
+  <!-- Steps bar -->
+  <div class="steps-bar">
+    <div class="container">
+      <div class="step-item active" id="step1"><div class="step-circle">1</div><div class="step-label">Vehicle Details</div></div>
+      <div class="step-item" id="step2"><div class="step-circle">2</div><div class="step-label">Photos</div></div>
+      <div class="step-item" id="step3"><div class="step-circle">3</div><div class="step-label">Pricing</div></div>
+      <div class="step-item" id="step4"><div class="step-circle">4</div><div class="step-label">Review &amp; Publish</div></div>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="ad-form-layout">
+
+      <!-- ── MAIN FORM COLUMN ── -->
+      <div>
+
+        <!-- Mode chip -->
+        <div class="mode-chip" onclick="backToModeSelect()" id="mode-chip">← Change method</div>
+
+        <!-- ── AI MODE: Photo Upload ── -->
+        <div class="form-card" id="ai-upload-card" style="display:none;">
+          <div class="form-card-title">Upload Vehicle Photos</div>
+          <div class="form-card-sub">Upload clear photos of your vehicle. Our AI will scan them and fill in all the details automatically.</div>
+          <div class="ai-upload-zone" id="ai-drop-zone">
+            <input type="file" id="ai-file-input" accept="image/*" multiple onchange="handleAIPhotos(this.files)" />
+            <div class="ai-upload-icon">📸</div>
+            <div class="ai-upload-title">Drop photos here or click to upload</div>
+            <div class="ai-upload-sub">Upload 3 to 10 photos — front, rear, side, interior, dashboard</div>
+            <button class="ai-upload-btn" onclick="document.getElementById('ai-file-input').click();event.stopPropagation()">Choose Photos</button>
+          </div>
+          <div class="ai-preview-grid" id="ai-preview-grid"></div>
+          <div class="ai-analyzing" id="ai-analyzing">
+            <div class="ai-spinner"></div>
+            <div>
+              <div class="ai-analyzing-text" id="ai-analyzing-text">Analyzing your photos with AI...</div>
+              <div class="ai-analyzing-sub" id="ai-analyzing-sub">Identifying make, model, trim and specifications</div>
+            </div>
+          </div>
+          <div class="ai-result-banner" id="ai-result-banner">
+            <div class="ai-result-icon">✅</div>
+            <div>
+              <div class="ai-result-text" id="ai-result-text">AI analysis complete</div>
+              <div class="ai-result-sub">All fields have been filled in. Review and adjust below.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── VIN MODE: VIN Input ── -->
+        <div class="form-card" id="vin-lookup-card" style="display:none;">
+          <div class="form-card-title">Enter Your VIN Number</div>
+          <div class="form-card-sub">Your VIN is a 17-character code found on your dashboard, door jamb, or registration card.</div>
+          <div class="vin-row">
+            <input class="vin-input" id="vin-input" type="text" maxlength="17" placeholder="e.g. WBA3A5G59DNP26082" oninput="this.value=this.value.toUpperCase()" />
+            <button class="vin-btn" onclick="lookupVIN()">Look Up VIN</button>
+          </div>
+          <div class="vin-status" id="vin-status"></div>
+          <!-- Mulkiya Upload -->
+          <div style="margin-top:22px;padding-top:22px;border-top:1px solid var(--border);">
+            <div style="font-size:14px;font-weight:700;color:var(--dark);margin-bottom:6px;">Or scan your Mulkiya (Registration Card)</div>
+            <div style="font-size:13px;color:var(--grey);margin-bottom:14px;">Upload a photo of the back of your UAE registration card. Our AI will read the Chassis Number and auto-fill your VIN.</div>
+            <div id="mulkiya-drop" style="border:2px dashed var(--border);border-radius:12px;padding:24px;text-align:center;cursor:pointer;transition:border-color .2s;" onclick="document.getElementById('mulkiya-file').click()" ondragover="event.preventDefault();this.style.borderColor='var(--orange)'" ondragleave="this.style.borderColor='var(--border)'" ondrop="handleMulkiyaDrop(event)">
+              <input type="file" id="mulkiya-file" accept="image/*" style="display:none" onchange="handleMulkiyaUpload(this.files)" />
+              <div style="font-size:28px;margin-bottom:8px;">🪪</div>
+              <div style="font-size:14px;font-weight:600;color:var(--dark);margin-bottom:4px;">Upload Mulkiya back side</div>
+              <div style="font-size:12px;color:var(--grey);">JPG, PNG or HEIC — make sure the Chassis No. is clearly visible</div>
+            </div>
+            <div id="mulkiya-status" style="margin-top:12px;"></div>
+          </div>
+        </div>
+
+        <!-- Category -->
+        <div class="form-card">
+          <div class="form-card-title">What are you selling?</div>
+          <div class="form-card-sub">Select the category that best fits your listing.</div>
+          <div class="cat-grid">
+            <div class="cat-tile selected" onclick="selectCat(this,'cars')"><div class="cat-tile-icon">🚗</div><div class="cat-tile-label">Car</div></div>
+            <div class="cat-tile" onclick="selectCat(this,'boats')"><div class="cat-tile-icon">⛵</div><div class="cat-tile-label">Boat</div></div>
+            <div class="cat-tile" onclick="selectCat(this,'bikes')"><div class="cat-tile-icon">🏍️</div><div class="cat-tile-label">Motorcycle</div></div>
+            <div class="cat-tile" onclick="selectCat(this,'jetski')"><div class="cat-tile-icon">🚤</div><div class="cat-tile-label">Jet Ski</div></div>
+          </div>
+        </div>
+
+        <!-- Vehicle Details -->
+        <div class="form-card">
+          <div class="form-card-title">Vehicle Details</div>
+          <div class="form-card-sub">Provide accurate details to attract the right buyers.</div>
+          <div class="form-grid-3">
+            <div class="form-group">
+              <label class="form-label">Brand <span style="color:var(--orange)">*</span></label>
+              <select class="form-input" id="sel-brand" onchange="onBrandChange()"><option value="">Select Brand</option></select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Model <span style="color:var(--orange)">*</span></label>
+              <select class="form-input" id="sel-model" onchange="onModelChange()" disabled><option value="">Select Model</option></select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Trim</label>
+              <select class="form-input" id="sel-trim" onchange="updatePreview()" disabled><option value="">Select Trim</option></select>
+            </div>
+          </div>
+          <div class="form-grid-3">
+            <div class="form-group">
+              <label class="form-label">Year <span style="color:var(--orange)">*</span></label>
+              <select class="form-input" id="sel-year" onchange="updatePreview()">
+                <option value="">Year</option>
+                <script>for(let y=2026;y>=1940;y--) document.write(`<option>${y}</option>`);</script>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Condition <span style="color:var(--orange)">*</span></label>
+              <select class="form-input" id="sel-condition" onchange="updatePreview()">
+                <option value="">Select</option>
+                <option>Brand New</option>
+                <option>Used</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Kilometers</label>
+              <input class="form-input" id="inp-km" type="number" placeholder="e.g. 25000" oninput="updatePreview()" />
+            </div>
+          </div>
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label">Exterior Color</label>
+              <select class="form-input" id="sel-ext-color">
+                <option value="">Select Exterior Color</option>
+                <option>Black</option><option>White</option><option>Silver</option><option>Grey</option>
+                <option>Red</option><option>Blue</option><option>Green</option><option>Beige</option>
+                <option>Brown</option><option>Gold</option><option>Orange</option><option>Purple</option>
+                <option>Yellow</option><option>Maroon</option><option>Pearl White</option><option>Midnight Black</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Interior Color</label>
+              <select class="form-input" id="sel-int-color">
+                <option value="">Select Interior Color</option>
+                <option>Black</option><option>Beige</option><option>Brown</option><option>Grey</option>
+                <option>Red</option><option>Cream</option><option>White</option><option>Tan</option>
+                <option>Blue</option><option>Two-Tone</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Regional Spec</label>
+              <select class="form-input" id="sel-spec">
+                <option>GCC Specs</option>
+                <option>American Specs</option>
+                <option>European Specs</option>
+                <option>Japanese Specs</option>
+                <option>Other</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label">Transmission</label>
+              <select class="form-input" id="sel-trans">
+                <option value="">Select</option>
+                <option>Automatic</option><option>Manual</option><option>CVT</option><option>Dual-Clutch (DCT)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Body Type</label>
+              <select class="form-input" id="sel-body">
+                <option value="">Select</option>
+                <option>SUV</option><option>Sedan</option><option>Coupe</option><option>Hatchback</option>
+                <option>Convertible</option><option>Pickup</option><option>Van</option><option>Wagon</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-grid-3">
+            <div class="form-group">
+              <label class="form-label">Engine</label>
+              <input class="form-input" id="inp-engine" type="text" placeholder="e.g. 2.0L Turbo" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Horsepower</label>
+              <input class="form-input" id="inp-hp" type="number" placeholder="e.g. 250" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Cylinders</label>
+              <select class="form-input" id="sel-cyl">
+                <option value="">Select</option>
+                <option>3</option><option>4</option><option>6</option><option>8</option><option>10</option><option>12</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label">Doors</label>
+              <select class="form-input" id="sel-doors">
+                <option value="">Select</option>
+                <option>2</option><option>3</option><option>4</option><option>5</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Seats</label>
+              <select class="form-input" id="sel-seats">
+                <option value="">Select</option>
+                <option>2</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-full">
+            <div class="form-group">
+              <label class="form-label">Location <span style="color:var(--orange)">*</span></label>
+              <select class="form-input" id="sel-location" onchange="updatePreview()">
+                <option value="">Select Emirate</option>
+                <option>Dubai</option><option>Abu Dhabi</option><option>Sharjah</option>
+                <option>Ajman</option><option>Fujairah</option><option>Ras Al Khaimah</option><option>Umm Al Quwain</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-full">
+            <div class="form-group">
+              <label class="form-label">Description</label>
+              <textarea class="form-input" id="inp-desc" placeholder="Describe your vehicle — condition, features, service history, reason for selling..."></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── PHOTOS UPLOAD (Manual & VIN modes) ── -->
+        <div class="form-card" id="manual-photos-card">
+          <div class="form-card-title">Vehicle Photos <span style="font-size:12px;font-weight:500;color:var(--grey);">(Required)</span></div>
+          <div class="form-card-sub">Upload clear photos of your vehicle. Good photos attract more buyers. Minimum 3 photos, up to 20.</div>
+          <div id="manual-drop-zone" style="border:2px dashed var(--border);border-radius:14px;padding:32px 20px;text-align:center;cursor:pointer;transition:border-color .2s;background:var(--light-grey);" onclick="document.getElementById('manual-file-input').click()" ondragover="event.preventDefault();this.style.borderColor='var(--orange)'" ondragleave="this.style.borderColor='var(--border)'" ondrop="handleManualPhotoDrop(event)">
+            <input type="file" id="manual-file-input" accept="image/*" multiple style="display:none" onchange="handleManualPhotos(this.files)" />
+            <div style="font-size:36px;margin-bottom:10px;">📷</div>
+            <div style="font-size:15px;font-weight:700;color:var(--dark);margin-bottom:4px;">Drop photos here or click to upload</div>
+            <div style="font-size:13px;color:var(--grey);margin-bottom:14px;">JPG, PNG, HEIC — up to 20 photos, max 10MB each</div>
+            <button class="btn-sm-orange" onclick="event.stopPropagation();document.getElementById('manual-file-input').click()">Choose Photos</button>
+          </div>
+          <div id="manual-photo-grid" style="display:flex;flex-wrap:wrap;gap:10px;margin-top:14px;"></div>
+          <div id="manual-photo-count" style="font-size:12px;color:var(--grey);margin-top:8px;"></div>
+          <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border);"> 
+            <div style="font-size:13px;font-weight:700;color:var(--dark);margin-bottom:8px;">Photo Tips</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+              <div style="font-size:12px;color:var(--grey);">✅ Front, rear, both sides</div>
+              <div style="font-size:12px;color:var(--grey);">✅ Dashboard &amp; interior</div>
+              <div style="font-size:12px;color:var(--grey);">✅ Engine bay</div>
+              <div style="font-size:12px;color:var(--grey);">✅ Any damage or scratches</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Asking Price -->
+        <div class="form-card">
+          <div class="form-card-title">Asking Price</div>
+          <div class="form-card-sub">Set your price in AED. Use the AI estimator below to check the current market value.</div>
+          <div class="form-group" style="margin-bottom:20px;">
+            <label class="form-label">Price (AED) <span style="color:var(--orange)">*</span></label>
+            <input class="form-input" id="inp-price" type="number" placeholder="e.g. 85000" oninput="updatePreview()" style="font-size:18px;font-weight:700;" />
+          </div>
+          <!-- AI Price Estimator (inline in Asking Price card) -->
+          <div style="background:linear-gradient(135deg,#0D0D0D,#1A1A1A);border:1px solid #333;border-radius:14px;padding:20px;">
+            <div class="pe-title" style="margin-bottom:4px;">AI Price Estimator <span class="pe-badge">AI</span></div>
+            <div class="pe-sub" style="margin-bottom:14px;">Get a real-time market price range based on current UAE listings for your vehicle.</div>
+            <button class="pe-estimate-btn" id="pe-btn" onclick="runPriceEstimate()">
+              <span>✨</span> Estimate Market Price
+            </button>
+            <div class="pe-result" id="pe-result">
+              <div class="pe-range-label" style="margin-top:14px;">Estimated Market Range</div>
+              <div class="pe-range" id="pe-range">AED — to AED —</div>
+              <div class="pe-bar"><div class="pe-bar-fill" id="pe-bar-fill"></div></div>
+              <div class="pe-insight" id="pe-insight"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Contact -->
+        <div class="form-card">
+          <div class="form-card-title">Contact Information</div>
+          <div class="form-card-sub">How buyers will reach you.</div>
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label">Your Name <span style="color:var(--orange)">*</span></label>
+              <input class="form-input" type="text" placeholder="Full name" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Phone Number <span style="color:var(--orange)">*</span></label>
+              <input class="form-input" type="tel" placeholder="+971 50 000 0000" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Email</label>
+            <input class="form-input" type="email" placeholder="your@email.com" />
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ── SIDEBAR COLUMN ── -->
+      <div class="sidebar-col">
+
+        <!-- Live Preview -->
+        <div class="preview-card">
+          <div class="preview-title">Live Preview</div>
+          <div class="preview-img" id="preview-img">
+            <img id="preview-img-tag" src="" alt="" style="display:none;width:100%;height:100%;object-fit:cover;border-radius:10px;" />
+            <span id="preview-img-placeholder">🚗</span>
+          </div>
+          <div class="preview-price" id="preview-price">AED —</div>
+          <div class="preview-name" id="preview-name">Your listing title will appear here</div>
+          <div class="preview-pills">
+            <span class="preview-pill" id="prev-year">Year</span>
+            <span class="preview-pill" id="prev-km">KM</span>
+            <span class="preview-pill" id="prev-cond">Condition</span>
+          </div>
+          <div class="preview-loc" id="prev-loc">📍 Location</div>
+        </div>
+
+        <!-- Listing Package -->
+        <div class="pricing-card">
+          <div class="pricing-title">Listing Package</div>
+          <div class="pricing-option selected" onclick="selectPlan(this)">
+            <div><div class="pricing-option-label">Basic</div><div class="pricing-option-sub">30 days · Standard listing</div></div>
+            <div class="pricing-option-price">Free</div>
+          </div>
+          <div class="pricing-option" onclick="selectPlan(this)">
+            <div><div class="pricing-option-label">Featured</div><div class="pricing-option-sub">30 days · Top of search results</div></div>
+            <div class="pricing-option-price">AED 99</div>
+          </div>
+          <div class="pricing-option" onclick="selectPlan(this)">
+            <div>
+              <div class="pricing-option-label">Premium</div>
+              <div class="pricing-option-sub">60 days · Homepage + Email blast</div>
+            </div>
+            <div class="pricing-option-price" style="white-space:nowrap;">AED 249</div>
+          </div>
+          <div class="recaptcha-wrap">
+            <div class="g-recaptcha" data-sitekey="6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI"></div>
+          </div>
+          <button class="btn-submit-ad" onclick="submitAd()">Publish Listing</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="footer-placeholder"></div>
+<div id="toast" class="toast"></div>
+
+<script src="vehicles.js"></script>
+<script src="shared.js"></script>
+<script src="components.js"></script>
+<script>
+  renderNavbar('');
+  renderFooter();
+
+  let currentMode = '';
+  let currentCat = 'cars';
+  let aiUploadedFiles = [];
+
+  /* ── Mode selection ── */
+  function selectMode(mode) {
+    currentMode = mode;
+    document.getElementById('mode-select-screen').style.display = 'none';
+    document.getElementById('form-screen').style.display = 'block';
+
+    const labels = { ai: '🤖 AI Mode', vin: '🔢 VIN Mode', manual: '✏️ Manual Mode' };
+    document.getElementById('mode-chip').innerHTML = `← ${labels[mode]}`;
+
+    document.getElementById('ai-upload-card').style.display = mode === 'ai' ? 'block' : 'none';
+    document.getElementById('vin-lookup-card').style.display = mode === 'vin' ? 'block' : 'none';
+
+    populateBrands();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function backToModeSelect() {
+    document.getElementById('form-screen').style.display = 'none';
+    document.getElementById('mode-select-screen').style.display = 'block';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  /* ── Category ── */
+  function selectCat(el, cat) {
+    document.querySelectorAll('.cat-tile').forEach(t => t.classList.remove('selected'));
+    el.classList.add('selected');
+    currentCat = cat;
+    populateBrands();
+  }
+
+  /* ── Brand / Model / Trim cascade ── */
+  function populateBrands() {
+    const sel = document.getElementById('sel-brand');
+    sel.innerHTML = '<option value="">Select Brand</option>';
+    getDM_Makes(currentCat).forEach(m => {
+      const o = document.createElement('option'); o.value = m; o.textContent = m; sel.appendChild(o);
+    });
+    document.getElementById('sel-model').innerHTML = '<option value="">Select Model</option>';
+    document.getElementById('sel-model').disabled = true;
+    document.getElementById('sel-trim').innerHTML = '<option value="">Select Trim</option>';
+    document.getElementById('sel-trim').disabled = true;
+  }
+
+  function onBrandChange() {
+    const brand = document.getElementById('sel-brand').value;
+    const modelSel = document.getElementById('sel-model');
+    const trimSel = document.getElementById('sel-trim');
+    modelSel.innerHTML = '<option value="">Select Model</option>';
+    trimSel.innerHTML = '<option value="">Select Trim</option>';
+    trimSel.disabled = true;
+    if (brand) {
+      getDM_Models(currentCat, brand).forEach(m => {
+        const o = document.createElement('option'); o.value = m; o.textContent = m; modelSel.appendChild(o);
+      });
+      modelSel.disabled = false;
+    } else { modelSel.disabled = true; }
+    updatePreview();
+  }
+
+  function onModelChange() {
+    const brand = document.getElementById('sel-brand').value;
+    const model = document.getElementById('sel-model').value;
+    const trimSel = document.getElementById('sel-trim');
+    trimSel.innerHTML = '<option value="">Select Trim</option>';
+    if (brand && model) {
+      getDM_Trims(currentCat, brand, model).forEach(t => {
+        const o = document.createElement('option'); o.value = t; o.textContent = t; trimSel.appendChild(o);
+      });
+      trimSel.disabled = false;
+    } else { trimSel.disabled = true; }
+    updatePreview();
+  }
+
+  /* ── Live preview ── */
+  // Show uploaded image in live preview
+  function updatePreviewImage(src) {
+    const img = document.getElementById('preview-img-tag');
+    const ph = document.getElementById('preview-img-placeholder');
+    if (src) {
+      img.src = src;
+      img.style.display = 'block';
+      if (ph) ph.style.display = 'none';
+    } else {
+      img.style.display = 'none';
+      if (ph) ph.style.display = 'block';
+    }
+  }
+
+  function updatePreview() {
+    const brand = document.getElementById('sel-brand').value;
+    const model = document.getElementById('sel-model').value;
+    const trim  = document.getElementById('sel-trim').value;
+    const year  = document.getElementById('sel-year').value;
+    const cond  = document.getElementById('sel-condition').value;
+    const km    = document.getElementById('inp-km').value;
+    const price = document.getElementById('inp-price').value;
+    const loc   = document.getElementById('sel-location').value;
+
+    const title = [year, brand, model, trim].filter(Boolean).join(' ') || 'Your listing title will appear here';
+    document.getElementById('preview-name').textContent = title;
+    document.getElementById('preview-price').textContent = price ? 'AED ' + parseInt(price).toLocaleString() : 'AED —';
+    document.getElementById('prev-year').textContent = year || 'Year';
+    document.getElementById('prev-km').textContent = km ? parseInt(km).toLocaleString() + ' KM' : 'KM';
+    document.getElementById('prev-cond').textContent = cond || 'Condition';
+    document.getElementById('prev-loc').textContent = loc ? '📍 ' + loc : '📍 Location';
+  }
+
+  /* ── Pricing plan ── */
+  function selectPlan(el) {
+    document.querySelectorAll('.pricing-option').forEach(p => p.classList.remove('selected'));
+    el.classList.add('selected');
+  }
+
+  /* ══════════════════════════════════════════════════════════════
+     MANUAL / VIN PHOTO UPLOAD
+  ══════════════════════════════════════════════════════════════ */
+  let manualPhotos = [];
+
+  function handleManualPhotos(files) {
+    const newFiles = Array.from(files).filter(f => f.type.startsWith('image/'));
+    manualPhotos = [...manualPhotos, ...newFiles].slice(0, 20);
+    renderManualPhotoGrid();
+  }
+
+  function handleManualPhotoDrop(event) {
+    event.preventDefault();
+    document.getElementById('manual-drop-zone').style.borderColor = 'var(--border)';
+    handleManualPhotos(event.dataTransfer.files);
+  }
+
+  function renderManualPhotoGrid() {
+    const grid = document.getElementById('manual-photo-grid');
+    const count = document.getElementById('manual-photo-count');
+    grid.innerHTML = '';
+    manualPhotos.forEach((f, idx) => {
+      const wrap = document.createElement('div');
+      wrap.style.cssText = 'position:relative;width:90px;height:70px;border-radius:8px;overflow:hidden;border:2px solid var(--border);';
+      const img = document.createElement('img');
+      img.src = URL.createObjectURL(f);
+      img.style.cssText = 'width:100%;height:100%;object-fit:cover;';
+      const del = document.createElement('button');
+      del.innerHTML = '&times;';
+      del.style.cssText = 'position:absolute;top:2px;right:2px;background:rgba(0,0,0,0.7);color:#fff;border:none;border-radius:50%;width:20px;height:20px;cursor:pointer;font-size:13px;line-height:1;padding:0;';
+      del.onclick = () => { manualPhotos.splice(idx, 1); renderManualPhotoGrid(); };
+      if (idx === 0) {
+        const badge = document.createElement('div');
+        badge.textContent = 'Cover';
+        badge.style.cssText = 'position:absolute;bottom:0;left:0;right:0;background:var(--orange);color:#fff;font-size:10px;font-weight:700;text-align:center;padding:2px 0;';
+        wrap.appendChild(badge);
+        updatePreviewImage(img.src);
+      }
+      wrap.appendChild(img);
+      wrap.appendChild(del);
+      grid.appendChild(wrap);
+    });
+    // Add more button if < 20
+    if (manualPhotos.length < 20) {
+      const addBtn = document.createElement('div');
+      addBtn.style.cssText = 'width:90px;height:70px;border-radius:8px;border:2px dashed var(--border);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;background:var(--light-grey);';
+      addBtn.innerHTML = '<span style="font-size:22px;color:var(--grey);">+</span><span style="font-size:10px;color:var(--grey);">Add more</span>';
+      addBtn.onclick = () => document.getElementById('manual-file-input').click();
+      grid.appendChild(addBtn);
+    }
+    count.textContent = manualPhotos.length > 0 ? manualPhotos.length + ' photo' + (manualPhotos.length !== 1 ? 's' : '') + ' uploaded' + (manualPhotos.length < 3 ? ' (minimum 3 required)' : ' ✓') : '';
+    count.style.color = manualPhotos.length > 0 && manualPhotos.length < 3 ? '#E8450A' : 'var(--grey)';
+  }
+
+  /* ══════════════════════════════════════════════════════════════
+     AI PHOTO ANALYSIS
+  ══════════════════════════════════════════════════════════════ */
+  function handleAIPhotos(files) {
+    aiUploadedFiles = Array.from(files);
+    const grid = document.getElementById('ai-preview-grid');
+    grid.innerHTML = '';
+    aiUploadedFiles.slice(0, 8).forEach((f, idx) => {
+      const img = document.createElement('img');
+      img.className = 'ai-preview-thumb';
+      const objUrl = URL.createObjectURL(f);
+      img.src = objUrl;
+      grid.appendChild(img);
+      // Show first photo in live preview
+      if (idx === 0) updatePreviewImage(objUrl);
+    });
+    if (aiUploadedFiles.length > 0) analyzeWithAI();
+  }
+
+  async function analyzeWithAI() {
+    const analyzing = document.getElementById('ai-analyzing');
+    const resultBanner = document.getElementById('ai-result-banner');
+    analyzing.classList.add('show');
+    resultBanner.classList.remove('show');
+
+    const steps = [
+      ['Uploading photos...', 'Preparing images for analysis'],
+      ['Detecting vehicle...', 'Identifying make, model and year'],
+      ['Reading specifications...', 'Extracting engine, transmission and features'],
+      ['Checking market data...', 'Comparing with UAE listings for price estimate'],
+    ];
+
+    for (let i = 0; i < steps.length; i++) {
+      document.getElementById('ai-analyzing-text').textContent = steps[i][0];
+      document.getElementById('ai-analyzing-sub').textContent = steps[i][1];
+      await new Promise(r => setTimeout(r, 900));
+    }
+
+    try {
+      const formData = new FormData();
+      aiUploadedFiles.slice(0, 3).forEach((f, i) => formData.append('photo' + i, f));
+      const res = await fetch('/api/analyze-photos', { method: 'POST', body: formData });
+      const data = await res.json();
+      if (data.brand) fillFormFromAI(data);
+    } catch (e) {
+      // Fallback: show demo fill
+      fillFormFromAI({ brand: 'Toyota', model: 'Land Cruiser', trim: 'VXR', year: '2023', condition: 'Used', engine: '3.5L V6 Twin Turbo', transmission: 'Automatic', color: 'White', bodyType: 'SUV', hp: '409', cylinders: '6' });
+    }
+
+    analyzing.classList.remove('show');
+    document.getElementById('ai-result-text').textContent = 'AI detected: ' + (document.getElementById('sel-brand').value || 'Vehicle') + ' ' + (document.getElementById('sel-model').value || '');
+    resultBanner.classList.add('show');
+  }
+
+  function fillFormFromAI(data) {
+    if (data.brand) {
+      const brandSel = document.getElementById('sel-brand');
+      // Find matching option
+      for (let o of brandSel.options) { if (o.value.toLowerCase() === data.brand.toLowerCase()) { brandSel.value = o.value; break; } }
+      onBrandChange();
+    }
+    setTimeout(() => {
+      if (data.model) {
+        const modelSel = document.getElementById('sel-model');
+        for (let o of modelSel.options) { if (o.value.toLowerCase().includes(data.model.toLowerCase())) { modelSel.value = o.value; break; } }
+        onModelChange();
+      }
+      setTimeout(() => {
+        if (data.trim) {
+          const trimSel = document.getElementById('sel-trim');
+          let trimMatched = false;
+          for (let o of trimSel.options) {
+            if (o.value.toLowerCase().includes(data.trim.toLowerCase()) ||
+                data.trim.toLowerCase().includes(o.value.toLowerCase())) {
+              trimSel.value = o.value;
+              trimMatched = true;
+              break;
+            }
+          }
+          // If no match found, add AI-detected trim as a custom option and select it
+          if (!trimMatched && data.trim) {
+            const newOpt = document.createElement('option');
+            newOpt.value = data.trim;
+            newOpt.textContent = data.trim + ' (AI detected)';
+            trimSel.appendChild(newOpt);
+            trimSel.value = data.trim;
+            trimSel.disabled = false;
+          }
+        }
+        if (data.year) document.getElementById('sel-year').value = data.year;
+        if (data.condition) document.getElementById('sel-condition').value = data.condition;
+        if (data.engine) document.getElementById('inp-engine').value = data.engine;
+        if (data.transmission) document.getElementById('sel-trans').value = data.transmission;
+        // Split color: exterior and interior
+        if (data.exteriorColor) document.getElementById('sel-ext-color').value = data.exteriorColor;
+        if (data.interiorColor) document.getElementById('sel-int-color').value = data.interiorColor;
+        // Legacy fallback
+        if (data.color && !data.exteriorColor) document.getElementById('sel-ext-color').value = data.color;
+        if (data.bodyType) document.getElementById('sel-body').value = data.bodyType;
+        if (data.hp) document.getElementById('inp-hp').value = data.hp;
+        if (data.cylinders) document.getElementById('sel-cyl').value = data.cylinders;
+        if (data.doors) document.getElementById('sel-doors').value = data.doors;
+        if (data.seats) document.getElementById('sel-seats').value = data.seats;
+        // Do NOT auto-fill regionalSpec — cannot be determined from photos
+        updatePreview();
+        setTimeout(runPriceEstimate, 500);
+      }, 200);
+    }, 200);
+  }
+
+  /* ══════════════════════════════════════════════════════════════
+     VIN LOOKUP
+  ══════════════════════════════════════════════════════════════ */
+  async function lookupVIN() {
+    const vin = document.getElementById('vin-input').value.trim();
+    const status = document.getElementById('vin-status');
+    if (vin.length !== 17) { status.className = 'vin-status error'; status.textContent = 'Please enter a valid 17-character VIN.'; return; }
+    status.className = 'vin-status loading'; status.textContent = 'Looking up VIN...';
+    try {
+      const res = await fetch('/api/vin-lookup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ vin })
+      });
+      const data = await res.json();
+      if (data.error) { status.className = 'vin-status error'; status.textContent = data.error; return; }
+      fillFormFromAI(data);
+      status.className = 'vin-status success'; status.textContent = 'VIN decoded successfully. All fields have been filled in.';
+    } catch (e) {
+      status.className = 'vin-status error'; status.textContent = 'Could not connect to VIN lookup service. Please try again.';
+    }
+  }
+
+  /* ══════════════════════════════════════════════════════════════
+     AI PRICE ESTIMATOR
+  ══════════════════════════════════════════════════════════════ */
+  async function runPriceEstimate() {
+    const brand = document.getElementById('sel-brand').value;
+    const model = document.getElementById('sel-model').value;
+    const year  = document.getElementById('sel-year').value;
+    const km    = document.getElementById('inp-km').value;
+    const cond  = document.getElementById('sel-condition').value;
+
+    if (!brand || !model || !year) {
+      showToast('Please select Brand, Model and Year first.');
+      return;
+    }
+
+    const btn = document.getElementById('pe-btn');
+    btn.disabled = true; btn.innerHTML = '<div style="width:16px;height:16px;border:2px solid #fff3;border-top-color:#fff;border-radius:50%;animation:spin 0.8s linear infinite"></div> Estimating...';
+
+    try {
+      const res = await fetch('/api/price-estimate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ brand, model, year, km, condition: cond })
+      });
+      const data = await res.json();
+      showPriceEstimate(data);
+    } catch (e) {
+      // Fallback demo
+      const base = 80000;
+      showPriceEstimate({ low: base * 0.85, high: base * 1.15, median: base, insight: `Based on similar ${year} ${brand} ${model} listings in the UAE, the typical asking price ranges between AED ${Math.round(base*0.85).toLocaleString()} and AED ${Math.round(base*1.15).toLocaleString()}. Condition, mileage, and regional spec significantly affect the final price.`, demand: 'Medium' });
+    }
+
+    btn.disabled = false; btn.innerHTML = '<span>✨</span> Re-estimate Price';
+  }
+
+  function showPriceEstimate(data) {
+    document.getElementById('pe-range').textContent = `AED ${Math.round(data.low).toLocaleString()} – AED ${Math.round(data.high).toLocaleString()}`;
+    const pct = Math.min(90, Math.max(20, ((data.median - data.low) / (data.high - data.low)) * 100));
+    document.getElementById('pe-bar-fill').style.width = pct + '%';
+    document.getElementById('pe-insight').innerHTML = data.insight || '';
+    document.getElementById('pe-result').classList.add('show');
+    // Auto-suggest price
+    if (!document.getElementById('inp-price').value && data.median) {
+      document.getElementById('inp-price').value = Math.round(data.median);
+      updatePreview();
+    }
+  }
+
+  /* ── Submit ── */
+  function submitAd() {
+    const brand = document.getElementById('sel-brand').value;
+    const model = document.getElementById('sel-model').value;
+    const price = document.getElementById('inp-price').value;
+    if (!brand || !model || !price) { showToast('Please fill in Brand, Model and Price.'); return; }
+    showToast('Your listing has been submitted for review!');
+  }
+
+  /* ── Mulkiya Upload Handler ── */
+  async function handleMulkiyaUpload(files) {
+    if (!files || !files.length) return;
+    const status = document.getElementById('mulkiya-status');
+    status.innerHTML = '<div style="color:var(--orange);font-size:13px;font-weight:600;">Scanning Mulkiya... please wait</div>';
+    const formData = new FormData();
+    formData.append('photo', files[0]);
+    // Convert to multipart with correct field name
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      const base64 = e.target.result.split(',')[1];
+      const mimeType = files[0].type || 'image/jpeg';
+      // Build multipart manually
+      const boundary = '----DubiMultipart' + Date.now();
+      const body = [
+        `--${boundary}`,
+        `Content-Disposition: form-data; name="photo"; filename="mulkiya.jpg"`,
+        `Content-Type: ${mimeType}`,
+        '',
+        atob(base64),
+        `--${boundary}--`
+      ].join('\r\n');
+      try {
+        const res = await fetch('/api/mulkiya-scan', {
+          method: 'POST',
+          headers: { 'Content-Type': `multipart/form-data; boundary=${boundary}` },
+          body: new TextEncoder().encode(body)
+        });
+        const data = await res.json();
+        if (data.error) {
+          status.innerHTML = `<div style="color:#e53e3e;font-size:13px;">${data.error}</div>`;
+          return;
+        }
+        if (data.vin) {
+          document.getElementById('vin-input').value = data.vin;
+          status.innerHTML = `<div style="color:#00B450;font-size:13px;font-weight:600;">Chassis No. detected: ${data.vin} — Click "Look Up VIN" to decode.</div>`;
+        } else {
+          status.innerHTML = '<div style="color:#e53e3e;font-size:13px;">Could not read the Chassis No. from this image. Please ensure the number is clearly visible and try again.</div>';
+        }
+      } catch (err) {
+        status.innerHTML = '<div style="color:#e53e3e;font-size:13px;">Scan failed. Please try again.</div>';
+      }
+    };
+    reader.readAsDataURL(files[0]);
+  }
+
+  function handleMulkiyaDrop(e) {
+    e.preventDefault();
+    document.getElementById('mulkiya-drop').style.borderColor = 'var(--border)';
+    const files = e.dataTransfer.files;
+    if (files.length) handleMulkiyaUpload(files);
+  }
+
+  /* ── Step scroll tracking ── */
+  const stepSections = [
+    { id: 'step1', el: null },
+    { id: 'step2', el: null },
+    { id: 'step3', el: null },
+    { id: 'step4', el: null }
+  ];
+
+  function updateActiveStep(stepNum) {
+    for (let i = 1; i <= 4; i++) {
+      const el = document.getElementById('step' + i);
+      if (!el) continue;
+      el.classList.remove('active', 'done');
+      if (i < stepNum) el.classList.add('done');
+      else if (i === stepNum) el.classList.add('active');
+    }
+  }
+
+  // Observe form sections to update step indicator
+  function initStepObserver() {
+    const sections = [
+      document.querySelector('.form-card:nth-of-type(2)'), // Vehicle Details
+      document.getElementById('photos-card'),
+      document.getElementById('pricing-card'),
+      document.getElementById('review-card')
+    ];
+    if (!('IntersectionObserver' in window)) return;
+    const obs = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const idx = sections.indexOf(entry.target);
+          if (idx >= 0) updateActiveStep(idx + 1);
+        }
+      });
+    }, { threshold: 0.3 });
+    sections.forEach(s => { if (s) obs.observe(s); });
+  }
+
+  /* ── Init ── */
+  populateBrands();
+  // Step observer runs after form screen is shown
+  const origSelectMode = selectMode;
+  selectMode = function(mode) {
+    origSelectMode(mode);
+    setTimeout(initStepObserver, 300);
+  };
+</script>
+</body>
+</html>
