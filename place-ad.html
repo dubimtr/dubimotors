@@ -581,7 +581,7 @@
           <!-- AI Price Estimator (inline in Asking Price card) -->
           <div style="background:linear-gradient(135deg,#0D0D0D,#1A1A1A);border:1px solid #333;border-radius:14px;padding:20px;">
             <div class="pe-title" style="margin-bottom:4px;">AI Price Estimator <span class="pe-badge">AI</span></div>
-            <div class="pe-sub" style="margin-bottom:14px;">Get a real-time market price range based on current UAE listings for your vehicle.</div>
+            <div class="pe-sub" style="margin-bottom:14px;">Live prices sourced from Dubizzle, Dubicars &amp; YallaMotor.</div>
             <button class="pe-estimate-btn" id="pe-btn" onclick="runPriceEstimate()">
               <span>✨</span> Estimate Market Price
             </button>
@@ -590,6 +590,7 @@
               <div class="pe-range" id="pe-range">AED – to AED –</div>
               <div class="pe-bar"><div class="pe-bar-fill" id="pe-bar-fill"></div></div>
               <div class="pe-insight" id="pe-insight"></div>
+              <div id="pe-source" style="font-size:10px;color:#555;margin-top:6px;"></div>
             </div>
           </div>
         </div>
@@ -1022,6 +1023,9 @@
     const pct = Math.min(90, Math.max(20, ((data.median - data.low) / (data.high - data.low)) * 100));
     document.getElementById('pe-bar-fill').style.width = pct + '%';
     document.getElementById('pe-insight').innerHTML = data.insight || '';
+    if (data.source) {
+      document.getElementById('pe-source').textContent = '📊 Source: ' + data.source;
+    }
     document.getElementById('pe-result').classList.add('show');
     // Auto-suggest price
     if (!document.getElementById('inp-price').value && data.median) {

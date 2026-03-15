@@ -312,42 +312,147 @@ IMPORTANT: Never return an error just because the image is partial. Always attem
 }
 
 /* ── /api/price-estimate — AI market price estimation ── */
+// ── Scrape live prices from Dubicars ──
+async function scrapeDubicarsPrice(brand, model, year) {
+  const https = require('https');
+  const brandSlug = brand.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-');
+  const modelSlug = model.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-');
+  const url = `https://www.dubicars.com/uae/used/${brandSlug}/${modelSlug}`;
+
+  return new Promise((resolve) => {
+    const options = {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml',
+        'Accept-Language': 'en-US,en;q=0.9',
+      }
+    };
+    https.get(url, options, (res2) => {
+      let data = '';
+      res2.on('data', c => data += c);
+      res2.on('end', () => {
+        try {
+          const USD_TO_AED = 3.6725;
+          const brandCap = brand.charAt(0).toUpperCase() + brand.slice(1);
+          const modelCap = model.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+
+          // Extract listings with year and USD price
+          const pattern = new RegExp(
+            `(?:Used|New) ${brandCap} ${modelCap} (\\d{4})[^$]*?\\$([\\d,]+)`,
+            'gs'
+          );
+          const matches = [...data.matchAll(pattern)];
+
+          // Also try AED prices
+          const patternAed = new RegExp(
+            `(?:Used|New) ${brandCap} ${modelCap} (\\d{4})[^A]*?AED\\s*([\\d,]+)`,
+            'gs'
+          );
+          const matchesAed = [...data.matchAll(patternAed)];
+
+          const prices = [];
+          const targetYear = parseInt(year);
+
+          for (const m of matches) {
+            const listYear = parseInt(m[1]);
+            const usd = parseInt(m[2].replace(/,/g, ''));
+            if (usd > 5000 && usd < 10000000) {
+              const aed = Math.round(usd * USD_TO_AED);
+              prices.push({ year: listYear, aed, source: 'dubicars' });
+            }
+          }
+          for (const m of matchesAed) {
+            const listYear = parseInt(m[1]);
+            const aed = parseInt(m[2].replace(/,/g, ''));
+            if (aed > 5000 && aed < 50000000) {
+              prices.push({ year: listYear, aed, source: 'dubicars' });
+            }
+          }
+
+          // Prefer exact year, fall back to ±2 years
+          let filtered = prices.filter(p => p.year === targetYear);
+          if (filtered.length < 2) {
+            filtered = prices.filter(p => Math.abs(p.year - targetYear) <= 2);
+          }
+          if (filtered.length === 0) filtered = prices;
+
+          const aedPrices = [...new Set(filtered.map(p => p.aed))].sort((a, b) => a - b);
+          resolve({ prices: aedPrices, url, count: aedPrices.length });
+        } catch (e) {
+          resolve({ prices: [], url, count: 0 });
+        }
+      });
+    }).on('error', () => resolve({ prices: [], url, count: 0 }));
+  });
+}
+
 async function handlePriceEstimate(req, res) {
   const { brand, model, trim, year, km, condition } = await parseBody(req);
   if (!brand || !model || !year) return jsonRes(res, { error: 'Brand, model and year are required.' }, 400);
 
   const vehicleDesc = [year, brand, model, trim].filter(Boolean).join(' ');
-  const prompt = `You are a UAE automotive market pricing expert with real-time knowledge of Dubizzle, CarSwitch, and AutoTrader UAE listings. Estimate the current market price range for this SPECIFIC vehicle:
+  const kmNum = km ? parseInt(km) : null;
 
-Vehicle: ${vehicleDesc}
-Condition: ${condition || 'Used'}
-Mileage: ${km ? km + ' km' : 'unknown'}
+  // Step 1: Scrape real live prices from Dubicars
+  const scraped = await scrapeDubicarsPrice(brand, model, year);
+  const liveData = scraped.prices;
 
-IMPORTANT: Price for the EXACT model and trim specified. For example:
-- BMW 3 Series 320i ≠ BMW M3 (M3 is 3-5x more expensive)
-- Mercedes C-Class C200 ≠ Mercedes AMG C63 (C63 is 2-3x more expensive)
-- Always use the trim level to determine the correct price tier.
+  // Step 2: Build AI prompt with real data if available
+  let priceContext = '';
+  if (liveData.length > 0) {
+    const sorted = [...liveData].sort((a, b) => a - b);
+    const low = sorted[0];
+    const high = sorted[sorted.length - 1];
+    const median = sorted[Math.floor(sorted.length / 2)];
+    priceContext = `REAL CURRENT UAE LISTINGS FOUND ON DUBICARS:\n- ${liveData.length} listings found\n- Prices range: AED ${low.toLocaleString()} to AED ${high.toLocaleString()}\n- Typical price: AED ${median.toLocaleString()}\n- All prices: ${sorted.map(p => 'AED ' + p.toLocaleString()).join(', ')}\n\nUse these REAL prices as your base.`;
+  } else {
+    priceContext = `No live listings found on Dubicars for this exact model. Use your knowledge of UAE market prices for ${vehicleDesc}.`;
+  }
 
-Based on current UAE market (2025-2026), return:
+  const mileageNote = kmNum
+    ? (kmNum > 100000 ? 'High mileage (over 100k km): reduce price by 15-25%'
+      : kmNum > 50000 ? 'Moderate mileage (50k-100k km): reduce price by 5-10%'
+      : kmNum > 20000 ? 'Normal mileage: minimal impact'
+      : 'Very low mileage: slight premium possible')
+    : 'Mileage unknown';
+
+  const prompt = `You are a UAE car market expert. Provide an accurate price estimate for:
+- Vehicle: ${vehicleDesc}
+- Condition: ${condition || 'Used'}
+- Mileage: ${kmNum ? kmNum.toLocaleString() + ' km' : 'unknown'}
+
+${priceContext}
+
+Adjust for:
+1. ${mileageNote}
+2. Trim "${trim || 'standard'}" vs base model pricing
+3. Current UAE market demand for this specific vehicle
+
+Return ONLY this JSON (no markdown):
 {
-  "low": lowest reasonable asking price in AED as number,
-  "high": highest reasonable asking price in AED as number,
-  "median": typical asking price in AED as number,
-  "insight": "2-3 sentences about this specific model's market in UAE. Mention trim-specific factors, demand, and mileage impact.",
-  "demand": "High/Medium/Low"
-}
-Return ONLY the raw JSON object with realistic AED prices for this exact trim.`;
+  "low": <lowest realistic AED price as integer>,
+  "high": <highest realistic AED price as integer>,
+  "median": <most likely AED price as integer>,
+  "insight": "<2-3 sentences about current UAE market for this specific vehicle, mentioning real price range>",
+  "demand": "<High/Medium/Low>",
+  "source": "${liveData.length > 0 ? 'Live data from Dubicars.com (' + liveData.length + ' listings)' : 'AI market knowledge'}"
+}`;
 
   try {
     const completion = await openai.chat.completions.create({
       model: 'gpt-4.1-mini',
       messages: [{ role: 'user', content: prompt }],
-      max_tokens: 300,
+      max_tokens: 400,
     });
     const text = completion.choices[0].message.content.trim();
     const jsonMatch = text.match(/\{[\s\S]*\}/);
     if (jsonMatch) {
-      jsonRes(res, JSON.parse(jsonMatch[0]));
+      const data = JSON.parse(jsonMatch[0]);
+      if (data.low > 5000 && data.high < 50000000) {
+        jsonRes(res, data);
+      } else {
+        jsonRes(res, { error: 'Price estimate out of range.' }, 422);
+      }
     } else {
       jsonRes(res, { error: 'Could not estimate price.' }, 422);
     }
