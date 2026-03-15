@@ -510,6 +510,30 @@
               </select>
             </div>
           </div>
+          <!-- Vehicle Condition Checkboxes -->
+          <div class="form-full">
+            <div class="form-group">
+              <label class="form-label">Vehicle Extras</label>
+              <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:4px;">
+                <label style="display:flex;align-items:center;gap:10px;background:var(--light-grey);border:1px solid var(--border);border-radius:10px;padding:12px 14px;cursor:pointer;font-size:14px;font-weight:600;color:var(--dark);transition:border-color .2s;" onmouseover="this.style.borderColor='var(--orange)'" onmouseout="this.style.borderColor='var(--border)'">
+                  <input type="checkbox" id="chk-warranty" style="width:18px;height:18px;accent-color:var(--orange);cursor:pointer;" />
+                  <span>🛡️ Warranty</span>
+                </label>
+                <label style="display:flex;align-items:center;gap:10px;background:var(--light-grey);border:1px solid var(--border);border-radius:10px;padding:12px 14px;cursor:pointer;font-size:14px;font-weight:600;color:var(--dark);transition:border-color .2s;" onmouseover="this.style.borderColor='var(--orange)'" onmouseout="this.style.borderColor='var(--border)'">
+                  <input type="checkbox" id="chk-service" style="width:18px;height:18px;accent-color:var(--orange);cursor:pointer;" />
+                  <span>🔧 Service Contract</span>
+                </label>
+                <label style="display:flex;align-items:center;gap:10px;background:var(--light-grey);border:1px solid var(--border);border-radius:10px;padding:12px 14px;cursor:pointer;font-size:14px;font-weight:600;color:var(--dark);transition:border-color .2s;" onmouseover="this.style.borderColor='var(--orange)'" onmouseout="this.style.borderColor='var(--border)'">
+                  <input type="checkbox" id="chk-no-accidents" style="width:18px;height:18px;accent-color:var(--orange);cursor:pointer;" />
+                  <span>✅ No Accidents</span>
+                </label>
+                <label style="display:flex;align-items:center;gap:10px;background:var(--light-grey);border:1px solid var(--border);border-radius:10px;padding:12px 14px;cursor:pointer;font-size:14px;font-weight:600;color:var(--dark);transition:border-color .2s;" onmouseover="this.style.borderColor='var(--orange)'" onmouseout="this.style.borderColor='var(--border)'">
+                  <input type="checkbox" id="chk-first-owner" style="width:18px;height:18px;accent-color:var(--orange);cursor:pointer;" />
+                  <span>🥇 First Owner</span>
+                </label>
+              </div>
+            </div>
+          </div>
           <div class="form-full">
             <div class="form-group">
               <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;">
@@ -1030,6 +1054,11 @@
     btn.innerHTML = '<div style="width:12px;height:12px;border:2px solid #fff3;border-top-color:#fff;border-radius:50%;animation:spin 0.8s linear infinite"></div> Generating...';
     statusEl.textContent = 'AI is writing your description...';
 
+    const hasWarranty = document.getElementById('chk-warranty')?.checked;
+    const hasService = document.getElementById('chk-service')?.checked;
+    const noAccidents = document.getElementById('chk-no-accidents')?.checked;
+    const firstOwner = document.getElementById('chk-first-owner')?.checked;
+
     const vehicleInfo = [year, brand, model, trim].filter(Boolean).join(' ');
     const details = [
       cond && `Condition: ${cond}`,
@@ -1041,6 +1070,10 @@
       body && `Body: ${body}`,
       engine && `Engine: ${engine}`,
       hp && `Horsepower: ${hp} HP`,
+      hasWarranty && 'Under Warranty',
+      hasService && 'Service Contract included',
+      noAccidents && 'No accidents',
+      firstOwner && 'First owner',
     ].filter(Boolean).join(', ');
 
     try {
@@ -1083,58 +1116,47 @@
     if (!files || !files.length) return;
     const status = document.getElementById('mulkiya-status');
     status.innerHTML = '<div style="color:var(--orange);font-size:13px;font-weight:600;">Scanning Mulkiya... please wait</div>';
-    const formData = new FormData();
-    formData.append('photo', files[0]);
-    // Convert to multipart with correct field name
-    const reader = new FileReader();
-    reader.onload = async (e) => {
-      const base64 = e.target.result.split(',')[1];
-      const mimeType = files[0].type || 'image/jpeg';
-      // Build multipart manually
-      const boundary = '----DubiMultipart' + Date.now();
-      const body = [
-        `--${boundary}`,
-        `Content-Disposition: form-data; name="photo"; filename="mulkiya.jpg"`,
-        `Content-Type: ${mimeType}`,
-        '',
-        atob(base64),
-        `--${boundary}--`
-      ].join('\r\n');
-      try {
-        const res = await fetch('/api/mulkiya-scan', {
-          method: 'POST',
-          headers: { 'Content-Type': `multipart/form-data; boundary=${boundary}` },
-          body: new TextEncoder().encode(body)
-        });
-        const data = await res.json();
-        if (data.error) {
-          status.innerHTML = `<div style="color:#e53e3e;font-size:13px;">${data.error}</div>`;
-          return;
-        }
-        if (data.vin) {
-          document.getElementById('vin-input').value = data.vin;
-          let extraInfo = '';
-          // Pre-fill any extra fields from mulkiya
-          if (data.make || data.model || data.year || data.color) {
-            const preData = {
-              brand: data.make,
-              model: data.model,
-              year: data.year,
-              color: data.color
-            };
-            fillFormFromAI(preData);
-            const parts = [data.make, data.model, data.year].filter(Boolean);
-            if (parts.length) extraInfo = ` (${parts.join(' ')} detected)`;
-          }
-          status.innerHTML = `<div style="color:#00B450;font-size:13px;font-weight:600;">Chassis No. detected: ${data.vin}${extraInfo}. Click "Look Up VIN" to decode.</div>`;
-        } else {
-          status.innerHTML = '<div style="color:#e53e3e;font-size:13px;">Could not read the Chassis No. from this image. Please ensure the number is clearly visible and try again.</div>';
-        }
-      } catch (err) {
-        status.innerHTML = '<div style="color:#e53e3e;font-size:13px;">Scan failed. Please try again.</div>';
+    try {
+      // Use native FormData — browser handles binary correctly, no corruption
+      const formData = new FormData();
+      const file = files[0];
+      // Ensure correct MIME type for jfif/jpg files
+      const mimeType = file.type && file.type.startsWith('image/') ? file.type : 'image/jpeg';
+      const renamedFile = new File([file], 'mulkiya.jpg', { type: mimeType });
+      formData.append('mulkiya', renamedFile);
+      const res = await fetch('/api/mulkiya-scan', {
+        method: 'POST',
+        body: formData
+        // Do NOT set Content-Type header — browser sets it with correct boundary automatically
+      });
+      const data = await res.json();
+      if (data.error) {
+        status.innerHTML = `<div style="color:#e53e3e;font-size:13px;">${data.error}</div>`;
+        return;
       }
-    };
-    reader.readAsDataURL(files[0]);
+      if (data.vin) {
+        document.getElementById('vin-input').value = data.vin;
+        let extraInfo = '';
+        // Pre-fill any extra fields from mulkiya
+        if (data.make || data.model || data.year || data.color) {
+          const preData = {
+            brand: data.make,
+            model: data.model,
+            year: data.year,
+            color: data.color
+          };
+          fillFormFromAI(preData);
+          const parts = [data.make, data.model, data.year].filter(Boolean);
+          if (parts.length) extraInfo = ` (${parts.join(' ')} detected)`;
+        }
+        status.innerHTML = `<div style="color:#00B450;font-size:13px;font-weight:600;">Chassis No. detected: ${data.vin}${extraInfo}. Click "Look Up VIN" to decode.</div>`;
+      } else {
+        status.innerHTML = '<div style="color:#e53e3e;font-size:13px;">Could not read the Chassis No. from this image. Please ensure the number is clearly visible and try again.</div>';
+      }
+    } catch (err) {
+      console.error('Mulkiya scan error:', err);
+      status.innerHTML = '<div style="color:#e53e3e;font-size:13px;">Scan failed. Please try again.</div>';
+    }
   }
 
   function handleMulkiyaDrop(e) {
