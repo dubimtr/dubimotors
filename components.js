@@ -13,7 +13,7 @@ function renderNavbar(activePage = '') {
     <nav class="navbar">
       <div class="container">
         <a href="index.html" class="nav-logo">
-          <div class="nav-logo-box">🏘️</div>
+          <div class="nav-logo-box"><img src="dm-icon.png" alt="DM" style="width:32px;height:32px;object-fit:contain;border-radius:4px;"></div>
           <div class="nav-logo-text">DUBI<span>MOTORS</span></div>
         </a>
         <div class="nav-links">

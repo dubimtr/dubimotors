@@ -68,13 +68,14 @@ input, textarea, select { font-family: 'Inter', sans-serif; }
 .nav-logo-box {
   width: 36px;
   height: 36px;
-  background: var(--orange);
+  background: transparent;
   border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 18px;
   flex-shrink: 0;
+  overflow: hidden;
 }
 .nav-logo-text {
   font-size: 20px;

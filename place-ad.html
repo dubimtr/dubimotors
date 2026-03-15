@@ -312,7 +312,7 @@
             <input type="file" id="ai-file-input" accept="image/*" multiple onchange="handleAIPhotos(this.files)" />
             <div class="ai-upload-icon">📸</div>
             <div class="ai-upload-title">Drop photos here or click to upload</div>
-            <div class="ai-upload-sub">Upload 3 to 10 photos — front, rear, side, interior, dashboard</div>
+            <div class="ai-upload-sub">Upload 3 to 10 photos: front, rear, side, interior, dashboard</div>
             <button class="ai-upload-btn" onclick="document.getElementById('ai-file-input').click();event.stopPropagation()">Choose Photos</button>
           </div>
           <div class="ai-preview-grid" id="ai-preview-grid"></div>
@@ -328,6 +328,18 @@
             <div>
               <div class="ai-result-text" id="ai-result-text">AI analysis complete</div>
               <div class="ai-result-sub">All fields have been filled in. Review and adjust below.</div>
+            </div>
+          </div>
+          <!-- Photo Tips -->
+          <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border);">
+            <div style="font-size:13px;font-weight:700;color:var(--dark);margin-bottom:8px;">Photo Tips for Best AI Results</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+              <div style="font-size:12px;color:var(--grey);">&#x2705; Front view showing the grille and badge</div>
+              <div style="font-size:12px;color:var(--grey);">&#x2705; Rear view showing model badge</div>
+              <div style="font-size:12px;color:var(--grey);">&#x2705; Side profile showing full body</div>
+              <div style="font-size:12px;color:var(--grey);">&#x2705; Interior dashboard and seats</div>
+              <div style="font-size:12px;color:var(--grey);">&#x2705; Trim badge or sticker if visible</div>
+              <div style="font-size:12px;color:var(--grey);">&#x2705; Good lighting, no blurry shots</div>
             </div>
           </div>
         </div>
@@ -349,7 +361,7 @@
               <input type="file" id="mulkiya-file" accept="image/*" style="display:none" onchange="handleMulkiyaUpload(this.files)" />
               <div style="font-size:28px;margin-bottom:8px;">🪪</div>
               <div style="font-size:14px;font-weight:600;color:var(--dark);margin-bottom:4px;">Upload Mulkiya back side</div>
-              <div style="font-size:12px;color:var(--grey);">JPG, PNG or HEIC — make sure the Chassis No. is clearly visible</div>
+              <div style="font-size:12px;color:var(--grey);">JPG, PNG or HEIC. Make sure the Chassis No. is clearly visible.</div>
             </div>
             <div id="mulkiya-status" style="margin-top:12px;"></div>
           </div>
@@ -381,7 +393,7 @@
               <select class="form-input" id="sel-model" onchange="onModelChange()" disabled><option value="">Select Model</option></select>
             </div>
             <div class="form-group">
-              <label class="form-label">Trim</label>
+              <label class="form-label">Trim <span style="color:var(--orange)">*</span></label>
               <select class="form-input" id="sel-trim" onchange="updatePreview()" disabled><option value="">Select Trim</option></select>
             </div>
           </div>
@@ -427,8 +439,9 @@
               </select>
             </div>
             <div class="form-group">
-              <label class="form-label">Regional Spec</label>
+              <label class="form-label">Regional Spec <span style="color:var(--orange)">*</span></label>
               <select class="form-input" id="sel-spec">
+                <option value="">Select Regional Spec</option>
                 <option>GCC Specs</option>
                 <option>American Specs</option>
                 <option>European Specs</option>
@@ -499,21 +512,25 @@
           </div>
           <div class="form-full">
             <div class="form-group">
-              <label class="form-label">Description</label>
-              <textarea class="form-input" id="inp-desc" placeholder="Describe your vehicle — condition, features, service history, reason for selling..."></textarea>
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;">
+                <label class="form-label" style="margin-bottom:0;">Description</label>
+                <button type="button" onclick="generateAIDescription()" style="background:linear-gradient(135deg,#E8450A,#ff6b35);color:#fff;border:none;border-radius:8px;padding:6px 14px;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;" id="ai-desc-btn"><span>✨</span> Generate with AI</button>
+              </div>
+              <textarea class="form-input" id="inp-desc" placeholder="Describe your vehicle, condition, features, service history, reason for selling..."></textarea>
+              <div id="ai-desc-status" style="font-size:12px;color:var(--grey);margin-top:4px;"></div>
             </div>
           </div>
         </div>
 
-        <!-- ── PHOTOS UPLOAD (Manual & VIN modes) ── -->
-        <div class="form-card" id="manual-photos-card">
+        <!-- ── PHOTOS UPLOAD (Manual & VIN modes only) ── -->
+        <div class="form-card" id="manual-photos-card" style="display:none;">
           <div class="form-card-title">Vehicle Photos <span style="font-size:12px;font-weight:500;color:var(--grey);">(Required)</span></div>
           <div class="form-card-sub">Upload clear photos of your vehicle. Good photos attract more buyers. Minimum 3 photos, up to 20.</div>
           <div id="manual-drop-zone" style="border:2px dashed var(--border);border-radius:14px;padding:32px 20px;text-align:center;cursor:pointer;transition:border-color .2s;background:var(--light-grey);" onclick="document.getElementById('manual-file-input').click()" ondragover="event.preventDefault();this.style.borderColor='var(--orange)'" ondragleave="this.style.borderColor='var(--border)'" ondrop="handleManualPhotoDrop(event)">
             <input type="file" id="manual-file-input" accept="image/*" multiple style="display:none" onchange="handleManualPhotos(this.files)" />
             <div style="font-size:36px;margin-bottom:10px;">📷</div>
             <div style="font-size:15px;font-weight:700;color:var(--dark);margin-bottom:4px;">Drop photos here or click to upload</div>
-            <div style="font-size:13px;color:var(--grey);margin-bottom:14px;">JPG, PNG, HEIC — up to 20 photos, max 10MB each</div>
+            <div style="font-size:13px;color:var(--grey);margin-bottom:14px;">JPG, PNG, HEIC. Up to 20 photos, max 10MB each.</div>
             <button class="btn-sm-orange" onclick="event.stopPropagation();document.getElementById('manual-file-input').click()">Choose Photos</button>
           </div>
           <div id="manual-photo-grid" style="display:flex;flex-wrap:wrap;gap:10px;margin-top:14px;"></div>
@@ -546,7 +563,7 @@
             </button>
             <div class="pe-result" id="pe-result">
               <div class="pe-range-label" style="margin-top:14px;">Estimated Market Range</div>
-              <div class="pe-range" id="pe-range">AED — to AED —</div>
+              <div class="pe-range" id="pe-range">AED – to AED –</div>
               <div class="pe-bar"><div class="pe-bar-fill" id="pe-bar-fill"></div></div>
               <div class="pe-insight" id="pe-insight"></div>
             </div>
@@ -649,6 +666,8 @@
 
     document.getElementById('ai-upload-card').style.display = mode === 'ai' ? 'block' : 'none';
     document.getElementById('vin-lookup-card').style.display = mode === 'vin' ? 'block' : 'none';
+    // Show manual photo upload only for VIN and Manual modes (not AI mode)
+    document.getElementById('manual-photos-card').style.display = mode === 'ai' ? 'none' : 'block';
 
     populateBrands();
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -941,13 +960,13 @@
   /* ══════════════════════════════════════════════════════════════
      AI PRICE ESTIMATOR
   ══════════════════════════════════════════════════════════════ */
-  async function runPriceEstimate() {
+   async function runPriceEstimate() {
     const brand = document.getElementById('sel-brand').value;
     const model = document.getElementById('sel-model').value;
+    const trim  = document.getElementById('sel-trim').value;
     const year  = document.getElementById('sel-year').value;
     const km    = document.getElementById('inp-km').value;
     const cond  = document.getElementById('sel-condition').value;
-
     if (!brand || !model || !year) {
       showToast('Please select Brand, Model and Year first.');
       return;
@@ -960,14 +979,15 @@
       const res = await fetch('/api/price-estimate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ brand, model, year, km, condition: cond })
+        body: JSON.stringify({ brand, model, trim, year, km, condition: cond })
       });
       const data = await res.json();
       showPriceEstimate(data);
     } catch (e) {
       // Fallback demo
       const base = 80000;
-      showPriceEstimate({ low: base * 0.85, high: base * 1.15, median: base, insight: `Based on similar ${year} ${brand} ${model} listings in the UAE, the typical asking price ranges between AED ${Math.round(base*0.85).toLocaleString()} and AED ${Math.round(base*1.15).toLocaleString()}. Condition, mileage, and regional spec significantly affect the final price.`, demand: 'Medium' });
+      const vehicleName = [year, brand, model, trim].filter(Boolean).join(' ');
+      showPriceEstimate({ low: base * 0.85, high: base * 1.15, median: base, insight: `Based on similar ${vehicleName} listings in the UAE, the typical asking price ranges between AED ${Math.round(base*0.85).toLocaleString()} and AED ${Math.round(base*1.15).toLocaleString()}. Condition, mileage, and regional spec significantly affect the final price.`, demand: 'Medium' });
     }
 
     btn.disabled = false; btn.innerHTML = '<span>✨</span> Re-estimate Price';
@@ -984,6 +1004,69 @@
       document.getElementById('inp-price').value = Math.round(data.median);
       updatePreview();
     }
+  }
+
+  /* ── AI Description Generator ── */
+  async function generateAIDescription() {
+    const brand = document.getElementById('sel-brand').value;
+    const model = document.getElementById('sel-model').value;
+    const trim  = document.getElementById('sel-trim').value;
+    const year  = document.getElementById('sel-year').value;
+    const cond  = document.getElementById('sel-condition').value;
+    const km    = document.getElementById('inp-km').value;
+    const extColor = document.getElementById('sel-ext-color').value;
+    const intColor = document.getElementById('sel-int-color').value;
+    const spec  = document.getElementById('sel-spec').value;
+    const trans = document.getElementById('sel-trans').value;
+    const body  = document.getElementById('sel-body').value;
+    const engine = document.getElementById('inp-engine').value;
+    const hp    = document.getElementById('inp-hp').value;
+
+    if (!brand || !model) { showToast('Please select Brand and Model first.'); return; }
+
+    const btn = document.getElementById('ai-desc-btn');
+    const statusEl = document.getElementById('ai-desc-status');
+    btn.disabled = true;
+    btn.innerHTML = '<div style="width:12px;height:12px;border:2px solid #fff3;border-top-color:#fff;border-radius:50%;animation:spin 0.8s linear infinite"></div> Generating...';
+    statusEl.textContent = 'AI is writing your description...';
+
+    const vehicleInfo = [year, brand, model, trim].filter(Boolean).join(' ');
+    const details = [
+      cond && `Condition: ${cond}`,
+      km && `Mileage: ${parseInt(km).toLocaleString()} KM`,
+      extColor && `Exterior: ${extColor}`,
+      intColor && `Interior: ${intColor}`,
+      spec && `Spec: ${spec}`,
+      trans && `Transmission: ${trans}`,
+      body && `Body: ${body}`,
+      engine && `Engine: ${engine}`,
+      hp && `Horsepower: ${hp} HP`,
+    ].filter(Boolean).join(', ');
+
+    try {
+      const res = await fetch('/api/agent', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: `Write a professional, compelling vehicle listing description for a ${vehicleInfo} being sold in the UAE. ${details ? 'Details: ' + details + '.' : ''} The description should be 3-4 sentences, highlight key selling points, mention the UAE market context, and end with a call to action. Do not use dashes or em-dashes. Write in a confident, professional tone.`
+        })
+      });
+      const data = await res.json();
+      if (data.reply) {
+        // Strip HTML tags from reply
+        const tmp = document.createElement('div');
+        tmp.innerHTML = data.reply;
+        document.getElementById('inp-desc').value = tmp.textContent || tmp.innerText || '';
+        statusEl.style.color = '#00B450';
+        statusEl.textContent = 'Description generated. Feel free to edit it.';
+      }
+    } catch (e) {
+      statusEl.style.color = '#e53e3e';
+      statusEl.textContent = 'Could not generate description. Please try again.';
+    }
+
+    btn.disabled = false;
+    btn.innerHTML = '<span>&#x2728;</span> Regenerate';
   }
 
   /* ── Submit ── */
@@ -1030,7 +1113,20 @@
         }
         if (data.vin) {
           document.getElementById('vin-input').value = data.vin;
-          status.innerHTML = `<div style="color:#00B450;font-size:13px;font-weight:600;">Chassis No. detected: ${data.vin} — Click "Look Up VIN" to decode.</div>`;
+          let extraInfo = '';
+          // Pre-fill any extra fields from mulkiya
+          if (data.make || data.model || data.year || data.color) {
+            const preData = {
+              brand: data.make,
+              model: data.model,
+              year: data.year,
+              color: data.color
+            };
+            fillFormFromAI(preData);
+            const parts = [data.make, data.model, data.year].filter(Boolean);
+            if (parts.length) extraInfo = ` (${parts.join(' ')} detected)`;
+          }
+          status.innerHTML = `<div style="color:#00B450;font-size:13px;font-weight:600;">Chassis No. detected: ${data.vin}${extraInfo}. Click "Look Up VIN" to decode.</div>`;
         } else {
           status.innerHTML = '<div style="color:#e53e3e;font-size:13px;">Could not read the Chassis No. from this image. Please ensure the number is clearly visible and try again.</div>';
         }

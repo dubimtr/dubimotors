@@ -260,33 +260,50 @@ async function handleMulkiyaScan(req, res) {
     image_url: { url: `data:${files[0].type};base64,${files[0].data}`, detail: 'high' }
   }];
 
-  const prompt = `This is a photo of a UAE vehicle registration card (Mulkiya). Extract the following fields from the card and return ONLY a JSON object:
+  const prompt = `You are scanning a UAE vehicle registration card (Mulkiya / \u0645\u0644\u0643\u064a\u0629). The image may be partial, cropped, blurry, or only show part of the card.
+
+YOUR PRIMARY GOAL: Find the Chassis Number at ALL costs. It may be labeled:
+- "Chassis No."
+- "\u0631\u0642\u0645 \u0627\u0644\u0642\u0627\u0639\u062f\u0629" (Arabic)
+- "VIN"
+- As a barcode or QR code area
+- A 17-character alphanumeric string (e.g. SBM14ACB4RW007241)
+
+Even if the image is half-cut, upside down, or partially visible, scan every character visible and attempt to extract the Chassis Number. A partial chassis number is better than nothing.
+
+Also extract any other visible fields:
 {
-  "vin": "The Chassis Number / VIN (usually labeled as 'Chassis No.' or 'رقم الهيكل') — this is a 17-character alphanumeric code",
-  "plateNumber": "Vehicle plate number if visible",
-  "make": "Vehicle make/brand",
-  "model": "Vehicle model",
-  "year": "Model year as 4-digit string",
-  "color": "Vehicle color",
+  "vin": "Chassis Number (17 chars if complete, or partial if only part is visible)",
+  "make": "Vehicle brand/make (e.g. MCLAREN, TOYOTA, BMW)",
+  "model": "Vehicle model (e.g. 750S, Land Cruiser)",
+  "year": "Model year as 4-digit string (from \u0633\u0646\u0629 \u0627\u0644\u0635\u0646\u0639 field)",
+  "color": "Vehicle color (from \u0644\u0648\u0646 \u0627\u0644\u0645\u0631\u0643\u0628\u0629 field)",
+  "plateNumber": "Plate number if visible",
   "owner": "Owner name if visible"
 }
 
-The Chassis Number is the most important field — it is typically a 17-character code like WBS8M9109J5K19627 and is labeled 'Chassis No.' or found in a barcode area.
-If you cannot read a field clearly, omit it.
-Return ONLY the raw JSON object.`;
+IMPORTANT: Never return an error just because the image is partial. Always attempt to extract the Chassis Number. Return ONLY the raw JSON object.`;
 
   try {
     const completion = await openai.chat.completions.create({
-      model: 'gpt-4.1-mini',
+      model: 'gemini-2.5-flash',
       messages: [{ role: 'user', content: [{ type: 'text', text: prompt }, ...imageContent] }],
-      max_tokens: 200,
+      max_tokens: 400,
     });
     const text = completion.choices[0].message.content.trim();
     const jsonMatch = text.match(/\{[\s\S]*\}/);
     if (jsonMatch) {
-      jsonRes(res, JSON.parse(jsonMatch[0]));
+      const parsed = JSON.parse(jsonMatch[0]);
+      // Always return whatever we found, even if vin is partial
+      jsonRes(res, parsed);
     } else {
-      jsonRes(res, { error: 'Could not read the Mulkiya. Please ensure the image is clear and well-lit.' }, 422);
+      // Try to extract chassis number directly from raw text
+      const chassisMatch = text.match(/[A-HJ-NPR-Z0-9]{5,17}/);
+      if (chassisMatch) {
+        jsonRes(res, { vin: chassisMatch[0] });
+      } else {
+        jsonRes(res, { error: 'Could not find the Chassis Number in this image. Please upload a clearer photo showing the Chassis No. field.' }, 422);
+      }
     }
   } catch (e) {
     console.error('Mulkiya scan error:', e.message);
