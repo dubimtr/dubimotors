@@ -1204,6 +1204,92 @@ const DM_VEHICLES = {
     "Other": {
       "Other": ["Other"]
     }
+  },
+
+  heavy: {
+    "Mercedes-Benz": {
+      "Actros": ["1840","1845","2040","2045","2545","2645","3345","4145","Other"],
+      "Arocs": ["1830","1835","2040","2045","2645","3240","Other"],
+      "Atego": ["816","818","1218","1222","1524","1624","Other"],
+      "Axor": ["1840","1845","2040","2045","Other"]
+    },
+    "Volvo": {
+      "FH": ["FH16","FH13","FH 500","FH 540","FH 600","Other"],
+      "FM": ["FM 330","FM 370","FM 410","FM 460","Other"],
+      "FMX": ["FMX 370","FMX 410","FMX 460","Other"],
+      "FL": ["FL 210","FL 240","FL 280","Other"],
+      "FE": ["FE 280","FE 320","Other"]
+    },
+    "MAN": {
+      "TGX": ["18.440","18.480","18.500","26.440","26.480","33.440","Other"],
+      "TGS": ["18.360","18.400","26.360","26.400","33.360","Other"],
+      "TGM": ["12.180","12.220","15.180","15.220","Other"],
+      "TGL": ["7.150","7.180","8.150","8.180","Other"]
+    },
+    "Scania": {
+      "R Series": ["R 410","R 450","R 500","R 540","R 580","Other"],
+      "S Series": ["S 410","S 450","S 500","S 540","S 580","Other"],
+      "G Series": ["G 360","G 410","G 450","Other"],
+      "P Series": ["P 230","P 280","P 320","P 360","Other"]
+    },
+    "DAF": {
+      "XF": ["XF 440","XF 480","XF 530","Other"],
+      "CF": ["CF 330","CF 370","CF 410","Other"],
+      "LF": ["LF 150","LF 180","LF 210","Other"]
+    },
+    "Iveco": {
+      "Stralis": ["AS 440","AS 480","AS 500","Other"],
+      "Trakker": ["AT 330","AT 360","AT 410","Other"],
+      "Daily": ["35S","50C","65C","70C","Other"]
+    },
+    "Renault": {
+      "T Series": ["T 440","T 480","T 520","Other"],
+      "C Series": ["C 380","C 430","C 480","Other"],
+      "K Series": ["K 380","K 430","K 480","Other"]
+    },
+    "Hino": {
+      "700 Series": ["SS","SH","FY","Other"],
+      "500 Series": ["FC","FD","GD","GH","GT","Other"],
+      "300 Series": ["WU","XZU","Other"]
+    },
+    "Mitsubishi Fuso": {
+      "Super Great": ["V","FV","FP","FS","FU","Other"],
+      "Fighter": ["FK","FM","Other"],
+      "Canter": ["FE","FG","Other"]
+    },
+    "Isuzu": {
+      "Giga": ["CXZ","EXZ","FVZ","GVZ","Other"],
+      "Forward": ["FRR","FSR","FTR","FVR","Other"],
+      "Elf": ["NKR","NMR","NPR","NQR","NRR","Other"]
+    },
+    "Toyota": {
+      "Dyna": ["150","200","Other"],
+      "Coaster": ["Standard","Other"],
+      "Land Cruiser 70": ["Single Cab","Double Cab","Other"]
+    },
+    "Ford": {
+      "F-Series": ["F-650","F-750","Other"],
+      "Transit": ["350","350 HD","Other"]
+    },
+    "Caterpillar": {
+      "Excavator": ["320","323","330","336","340","Other"],
+      "Bulldozer": ["D6","D7","D8","D9","Other"],
+      "Wheel Loader": ["930","938","950","962","966","972","Other"],
+      "Motor Grader": ["120","140","160","Other"]
+    },
+    "Komatsu": {
+      "Excavator": ["PC200","PC210","PC300","PC360","PC400","Other"],
+      "Bulldozer": ["D51","D61","D65","D85","Other"],
+      "Wheel Loader": ["WA250","WA320","WA380","WA430","Other"]
+    },
+    "JCB": {
+      "Backhoe Loader": ["3CX","4CX","Other"],
+      "Excavator": ["JS130","JS200","JS260","JS330","Other"],
+      "Telehandler": ["525","530","535","540","Other"]
+    },
+    "Other": {
+      "Other": ["Other"]
+    }
   }
 };
 

@@ -94,6 +94,9 @@
 
     /* ── Category tiles ── */
     .cat-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; }
+    .cat-grid-7 { display: grid; grid-template-columns: repeat(7,1fr); gap: 8px; }
+    @media (max-width: 900px) { .cat-grid-7 { grid-template-columns: repeat(4,1fr); } }
+    @media (max-width: 500px) { .cat-grid-7 { grid-template-columns: repeat(3,1fr); } }
     .cat-tile { border: 2px solid var(--border); border-radius: 12px; padding: 16px 8px; text-align: center; cursor: pointer; transition: all 0.2s; }
     .cat-tile:hover, .cat-tile.selected { border-color: var(--orange); background: #FFF8F6; }
     .cat-tile-icon { font-size: 26px; margin-bottom: 5px; }
@@ -225,58 +228,110 @@
 </div>
 
 <!-- ══════════════════════════════════════════════════════════════
-     SCREEN 1: MODE SELECTION
+     SCREEN 1: CATEGORY + MODE SELECTION
 ══════════════════════════════════════════════════════════════ -->
 <div id="mode-select-screen">
   <div class="container">
-    <div class="mode-title">How would you like to create your listing?</div>
-    <div class="mode-sub">Choose the method that works best for you.</div>
-    <div class="mode-cards">
 
-      <!-- Option A: AI -->
-      <div class="mode-card recommended" onclick="selectMode('ai')">
-        <div class="mode-badge">Recommended</div>
-        <div class="mode-icon">🤖</div>
-        <div class="mode-card-title">Place with AI</div>
-        <div class="mode-card-desc">Upload photos of your vehicle and our AI will automatically identify it and fill in all the details for you.</div>
-        <div class="mode-card-features">
-          <div class="mode-feature">Auto-detects make, model and trim</div>
-          <div class="mode-feature">Fills specs from photos</div>
-          <div class="mode-feature">AI-suggested price range</div>
-          <div class="mode-feature">Takes under 60 seconds</div>
+    <!-- Step 1: Category -->
+    <div id="cat-select-step">
+      <div class="mode-title">What are you listing?</div>
+      <div class="mode-sub">Choose the category that best fits your item.</div>
+      <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:12px;max-width:900px;margin:0 auto 40px;">
+        <div class="mode-card" style="padding:24px 10px;" onclick="pickCategory('cars')">
+          <div class="mode-icon">🚗</div>
+          <div class="mode-card-title" style="font-size:14px;">Car</div>
         </div>
-        <button class="mode-btn">Place with AI</button>
-      </div>
-
-      <!-- Option B: VIN -->
-      <div class="mode-card" onclick="selectMode('vin')">
-        <div class="mode-icon">🔢</div>
-        <div class="mode-card-title">Place with VIN</div>
-        <div class="mode-card-desc">Enter your vehicle's VIN number and we'll automatically retrieve all the official specifications.</div>
-        <div class="mode-card-features">
-          <div class="mode-feature">Official factory specifications</div>
-          <div class="mode-feature">Instant auto-fill from VIN</div>
-          <div class="mode-feature">AI-suggested price range</div>
-          <div class="mode-feature">Accurate and verified data</div>
+        <div class="mode-card" style="padding:24px 10px;" onclick="pickCategory('boats')">
+          <div class="mode-icon">⛵</div>
+          <div class="mode-card-title" style="font-size:14px;">Boat</div>
         </div>
-        <button class="mode-btn outline">Place with VIN</button>
-      </div>
-
-      <!-- Option C: Manual -->
-      <div class="mode-card" onclick="selectMode('manual')">
-        <div class="mode-icon">✏️</div>
-        <div class="mode-card-title">Add Manually</div>
-        <div class="mode-card-desc">Fill in all the details yourself. Best if you already know your vehicle's exact specifications.</div>
-        <div class="mode-card-features">
-          <div class="mode-feature">Full control over every field</div>
-          <div class="mode-feature">Works for all vehicle types</div>
-          <div class="mode-feature">AI-suggested price range</div>
-          <div class="mode-feature">Classic form experience</div>
+        <div class="mode-card" style="padding:24px 10px;" onclick="pickCategory('bikes')">
+          <div class="mode-icon">🏍️</div>
+          <div class="mode-card-title" style="font-size:14px;">Motorcycle</div>
         </div>
-        <button class="mode-btn outline">Add Manually</button>
+        <div class="mode-card" style="padding:24px 10px;" onclick="pickCategory('jetski')">
+          <div class="mode-icon">🚤</div>
+          <div class="mode-card-title" style="font-size:14px;">Jet Ski</div>
+        </div>
+        <div class="mode-card" style="padding:24px 10px;" onclick="pickCategory('heavy')">
+          <div class="mode-icon">🚛</div>
+          <div class="mode-card-title" style="font-size:14px;">Heavy Vehicle</div>
+        </div>
+        <div class="mode-card" style="padding:24px 10px;" onclick="pickCategory('plates')">
+          <div class="mode-icon">🔢</div>
+          <div class="mode-card-title" style="font-size:14px;">Number Plate</div>
+        </div>
+        <div class="mode-card" style="padding:24px 10px;" onclick="pickCategory('accessories')">
+          <div class="mode-icon">🔧</div>
+          <div class="mode-card-title" style="font-size:14px;">Accessory</div>
+        </div>
       </div>
-
+      <style>
+        @media (max-width: 900px) {
+          #cat-select-step > div:first-of-type { grid-template-columns: repeat(4,1fr) !important; }
+        }
+        @media (max-width: 500px) {
+          #cat-select-step > div:first-of-type { grid-template-columns: repeat(3,1fr) !important; }
+        }
+      </style>
     </div>
+
+    <!-- Step 2: Method (only shown for vehicle categories) -->
+    <div id="method-select-step" style="display:none;">
+      <div style="text-align:center;margin-bottom:12px;">
+        <button onclick="backToCatSelect()" style="background:none;border:none;color:var(--orange);font-size:13px;font-weight:700;cursor:pointer;">← Change Category</button>
+      </div>
+      <div class="mode-title" id="method-title">How would you like to create your listing?</div>
+      <div class="mode-sub">Choose the method that works best for you.</div>
+      <div class="mode-cards">
+
+        <!-- Option A: AI -->
+        <div class="mode-card recommended" onclick="selectMode('ai')">
+          <div class="mode-badge">Recommended</div>
+          <div class="mode-icon">🤖</div>
+          <div class="mode-card-title">Place with AI</div>
+          <div class="mode-card-desc">Upload photos of your vehicle and our AI will automatically identify it and fill in all the details for you.</div>
+          <div class="mode-card-features">
+            <div class="mode-feature">Auto-detects make, model and trim</div>
+            <div class="mode-feature">Fills specs from photos</div>
+            <div class="mode-feature">AI-suggested price range</div>
+            <div class="mode-feature">Takes under 60 seconds</div>
+          </div>
+          <button class="mode-btn">Place with AI</button>
+        </div>
+
+        <!-- Option B: VIN -->
+        <div class="mode-card" onclick="selectMode('vin')">
+          <div class="mode-icon">🔢</div>
+          <div class="mode-card-title">Place with VIN</div>
+          <div class="mode-card-desc">Enter your vehicle's VIN number and we'll automatically retrieve all the official specifications.</div>
+          <div class="mode-card-features">
+            <div class="mode-feature">Official factory specifications</div>
+            <div class="mode-feature">Instant auto-fill from VIN</div>
+            <div class="mode-feature">AI-suggested price range</div>
+            <div class="mode-feature">Accurate and verified data</div>
+          </div>
+          <button class="mode-btn outline">Place with VIN</button>
+        </div>
+
+        <!-- Option C: Manual -->
+        <div class="mode-card" onclick="selectMode('manual')">
+          <div class="mode-icon">✏️</div>
+          <div class="mode-card-title">Add Manually</div>
+          <div class="mode-card-desc">Fill in all the details yourself. Best if you already know your vehicle's exact specifications.</div>
+          <div class="mode-card-features">
+            <div class="mode-feature">Full control over every field</div>
+            <div class="mode-feature">Works for all vehicle types</div>
+            <div class="mode-feature">AI-suggested price range</div>
+            <div class="mode-feature">Classic form experience</div>
+          </div>
+          <button class="mode-btn outline">Add Manually</button>
+        </div>
+
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -371,18 +426,191 @@
         <div class="form-card">
           <div class="form-card-title">What are you selling?</div>
           <div class="form-card-sub">Select the category that best fits your listing.</div>
-          <div class="cat-grid">
+          <div class="cat-grid-7">
             <div class="cat-tile selected" onclick="selectCat(this,'cars')"><div class="cat-tile-icon">🚗</div><div class="cat-tile-label">Car</div></div>
             <div class="cat-tile" onclick="selectCat(this,'boats')"><div class="cat-tile-icon">⛵</div><div class="cat-tile-label">Boat</div></div>
             <div class="cat-tile" onclick="selectCat(this,'bikes')"><div class="cat-tile-icon">🏍️</div><div class="cat-tile-label">Motorcycle</div></div>
             <div class="cat-tile" onclick="selectCat(this,'jetski')"><div class="cat-tile-icon">🚤</div><div class="cat-tile-label">Jet Ski</div></div>
+            <div class="cat-tile" onclick="selectCat(this,'heavy')"><div class="cat-tile-icon">🚛</div><div class="cat-tile-label">Heavy Vehicle</div></div>
+            <div class="cat-tile" onclick="selectCat(this,'plates')"><div class="cat-tile-icon">🔢</div><div class="cat-tile-label">Number Plate</div></div>
+            <div class="cat-tile" onclick="selectCat(this,'accessories')"><div class="cat-tile-icon">🔧</div><div class="cat-tile-label">Accessory</div></div>
           </div>
         </div>
 
-        <!-- Vehicle Details -->
-        <div class="form-card">
-          <div class="form-card-title">Vehicle Details</div>
-          <div class="form-card-sub">Provide accurate details to attract the right buyers.</div>
+        <!-- ── NUMBER PLATE DETAILS (shown only for plates category) ── -->
+        <div class="form-card" id="plate-details-card" style="display:none;">
+          <div class="form-card-title">Number Plate Details</div>
+          <div class="form-card-sub">Provide accurate details about the plate you are selling.</div>
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label">Emirate <span style="color:var(--orange)">*</span></label>
+              <select class="form-input" id="sel-plate-emirate" onchange="updatePreview()">
+                <option value="">Select Emirate</option>
+                <option>Dubai</option><option>Abu Dhabi</option><option>Sharjah</option>
+                <option>Ajman</option><option>Fujairah</option><option>Ras Al Khaimah</option><option>Umm Al Quwain</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Plate Code / Letter</label>
+              <input class="form-input" id="inp-plate-code" type="text" placeholder="e.g. A, B, P, or none" oninput="updatePreview()" />
+            </div>
+          </div>
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label">Plate Number <span style="color:var(--orange)">*</span></label>
+              <input class="form-input" id="inp-plate-number" type="text" placeholder="e.g. 7, 99, 1234" oninput="updatePreview()" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Plate Type</label>
+              <select class="form-input" id="sel-plate-type">
+                <option value="">Select Type</option>
+                <option>Standard White</option>
+                <option>VIP / Fancy</option>
+                <option>Single Digit</option>
+                <option>Double Digit</option>
+                <option>Triple Digit</option>
+                <option>Custom Code</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-full">
+            <div class="form-group">
+              <label class="form-label">Transfer Included</label>
+              <select class="form-input" id="sel-plate-transfer">
+                <option value="">Select</option>
+                <option>Yes — transfer included in price</option>
+                <option>No — buyer arranges transfer</option>
+                <option>Negotiable</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-full">
+            <div class="form-group">
+              <label class="form-label">Additional Notes</label>
+              <textarea class="form-input" id="inp-plate-desc" placeholder="Any additional details about the plate, ownership history, reason for selling..."></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── AUTO ACCESSORIES DETAILS (shown only for accessories category) ── -->
+        <div class="form-card" id="accessory-details-card" style="display:none;">
+          <div class="form-card-title">Accessory / Part Details</div>
+          <div class="form-card-sub">Describe the item you are selling clearly to attract the right buyers.</div>
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label">Item Name <span style="color:var(--orange)">*</span></label>
+              <input class="form-input" id="inp-acc-name" type="text" placeholder="e.g. 22&quot; Vossen Wheels Set" oninput="updatePreview()" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Category</label>
+              <select class="form-input" id="sel-acc-category">
+                <option value="">Select Category</option>
+                <option>Wheels &amp; Tyres</option>
+                <option>Spare Parts</option>
+                <option>Performance Parts</option>
+                <option>Audio &amp; Electronics</option>
+                <option>Interior Accessories</option>
+                <option>Exterior Accessories</option>
+                <option>Lighting</option>
+                <option>Engine Parts</option>
+                <option>Suspension &amp; Brakes</option>
+                <option>Other</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label">Compatible With</label>
+              <input class="form-input" id="inp-acc-compat" type="text" placeholder="e.g. BMW 5 Series 2018-2024, Universal" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Condition <span style="color:var(--orange)">*</span></label>
+              <select class="form-input" id="sel-acc-condition" onchange="updatePreview()">
+                <option value="">Select</option>
+                <option>Brand New</option>
+                <option>Like New</option>
+                <option>Good Used</option>
+                <option>Used</option>
+                <option>For Parts</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label">Brand / Manufacturer</label>
+              <input class="form-input" id="inp-acc-brand" type="text" placeholder="e.g. Vossen, Brembo, Pioneer" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Location <span style="color:var(--orange)">*</span></label>
+              <select class="form-input" id="sel-acc-location" onchange="updatePreview()">
+                <option value="">Select Emirate</option>
+                <option>Dubai</option><option>Abu Dhabi</option><option>Sharjah</option>
+                <option>Ajman</option><option>Fujairah</option><option>Ras Al Khaimah</option><option>Umm Al Quwain</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-full">
+            <div class="form-group">
+              <label class="form-label">Description <span style="color:var(--orange)">*</span></label>
+              <textarea class="form-input" id="inp-acc-desc" placeholder="Describe the item: size, specs, why you're selling, any defects, installation notes..."></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Vehicle Details (hidden for plates and accessories) -->
+        <div class="form-card" id="vehicle-details-card">
+          <div class="form-card-title" id="vehicle-details-title">Vehicle Details</div>
+          <div class="form-card-sub" id="vehicle-details-sub">Provide accurate details to attract the right buyers.</div>
+
+          <!-- Heavy Vehicle Extra Fields (shown only for heavy category) -->
+          <div id="heavy-extra-fields" style="display:none;">
+            <div class="form-grid-2" style="margin-bottom:14px;">
+              <div class="form-group">
+                <label class="form-label">Vehicle Type <span style="color:var(--orange)">*</span></label>
+                <select class="form-input" id="sel-heavy-type">
+                  <option value="">Select Type</option>
+                  <option>Truck / Lorry</option>
+                  <option>Semi-Trailer / Tractor Head</option>
+                  <option>Tipper / Dump Truck</option>
+                  <option>Tanker</option>
+                  <option>Refrigerated Truck</option>
+                  <option>Flatbed Truck</option>
+                  <option>Crane Truck</option>
+                  <option>Concrete Mixer</option>
+                  <option>Bus / Coach</option>
+                  <option>Mini Bus</option>
+                  <option>Van / Panel Van</option>
+                  <option>Excavator</option>
+                  <option>Bulldozer</option>
+                  <option>Wheel Loader</option>
+                  <option>Forklift</option>
+                  <option>Other</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Payload / GVW</label>
+                <input class="form-input" id="inp-heavy-payload" type="text" placeholder="e.g. 30 Tons, 50,000 KG" />
+              </div>
+            </div>
+            <div class="form-grid-2" style="margin-bottom:14px;">
+              <div class="form-group">
+                <label class="form-label">Axles</label>
+                <select class="form-input" id="sel-heavy-axles">
+                  <option value="">Select</option>
+                  <option>2 Axles</option><option>3 Axles</option><option>4 Axles</option>
+                  <option>5 Axles</option><option>6 Axles</option><option>Other</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Drive Configuration</label>
+                <select class="form-input" id="sel-heavy-drive">
+                  <option value="">Select</option>
+                  <option>4x2</option><option>4x4</option><option>6x2</option>
+                  <option>6x4</option><option>6x6</option><option>8x4</option><option>Other</option>
+                </select>
+              </div>
+            </div>
+          </div>
           <div class="form-grid-3">
             <div class="form-group">
               <label class="form-label">Brand <span style="color:var(--orange)">*</span></label>
@@ -510,8 +738,8 @@
               </select>
             </div>
           </div>
-          <!-- Vehicle Condition Checkboxes -->
-          <div class="form-full">
+          <!-- Vehicle Condition Checkboxes (hidden for heavy vehicles too) -->
+          <div class="form-full" id="vehicle-extras-section">
             <div class="form-group">
               <label class="form-label">Vehicle Extras</label>
               <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:4px;">
@@ -544,7 +772,7 @@
               <div id="ai-desc-status" style="font-size:12px;color:var(--grey);margin-top:4px;"></div>
             </div>
           </div>
-        </div>
+        </div> <!-- end vehicle-details-card -->
 
         <!-- ── PHOTOS UPLOAD (Manual & VIN modes only) ── -->
         <div class="form-card" id="manual-photos-card" style="display:none;">
@@ -680,6 +908,37 @@
   let currentCat = 'cars';
   let aiUploadedFiles = [];
 
+  /* ── Category-first flow ── */
+
+  // VEHICLE categories that support AI/VIN modes
+  const VEHICLE_CATS = ['cars', 'boats', 'bikes', 'jetski', 'heavy'];
+  // Categories that skip mode selection and go straight to manual form
+  const SIMPLE_CATS = ['plates', 'accessories'];
+
+  function pickCategory(cat) {
+    currentCat = cat;
+    // Pre-select the matching cat-tile in the form
+    document.querySelectorAll('.cat-tile').forEach(t => t.classList.remove('selected'));
+    const tile = document.querySelector(`.cat-tile[onclick*="'${cat}'"`);
+    if (tile) tile.classList.add('selected');
+
+    if (SIMPLE_CATS.includes(cat)) {
+      // Skip mode selection — go straight to manual form
+      selectMode('manual');
+    } else {
+      // Show method selection step
+      document.getElementById('cat-select-step').style.display = 'none';
+      document.getElementById('method-select-step').style.display = 'block';
+      const catLabels = { cars: 'Car', boats: 'Boat / Yacht', bikes: 'Motorcycle', jetski: 'Jet Ski', heavy: 'Heavy Vehicle' };
+      document.getElementById('method-title').textContent = `How would you like to list your ${catLabels[cat] || 'vehicle'}?`;
+    }
+  }
+
+  function backToCatSelect() {
+    document.getElementById('method-select-step').style.display = 'none';
+    document.getElementById('cat-select-step').style.display = 'block';
+  }
+
   /* ── Mode selection ── */
   function selectMode(mode) {
     currentMode = mode;
@@ -687,12 +946,59 @@
     document.getElementById('form-screen').style.display = 'block';
 
     const labels = { ai: '🤖 AI Mode', vin: '🔢 VIN Mode', manual: '✏️ Manual Mode' };
-    document.getElementById('mode-chip').innerHTML = `← ${labels[mode]}`;
+    const catLabels = { cars: 'Car', boats: 'Boat', bikes: 'Motorcycle', jetski: 'Jet Ski', heavy: 'Heavy Vehicle', plates: 'Number Plate', accessories: 'Accessory' };
+    const isSimple = SIMPLE_CATS.includes(currentCat);
+    document.getElementById('mode-chip').innerHTML = `← ${isSimple ? catLabels[currentCat] : labels[mode]}`;
 
-    document.getElementById('ai-upload-card').style.display = mode === 'ai' ? 'block' : 'none';
-    document.getElementById('vin-lookup-card').style.display = mode === 'vin' ? 'block' : 'none';
-    // Show manual photo upload only for VIN and Manual modes (not AI mode)
+    // Show/hide AI and VIN cards only for vehicle categories
+    const showAI = mode === 'ai' && !isSimple;
+    const showVIN = mode === 'vin' && !isSimple;
+    document.getElementById('ai-upload-card').style.display = showAI ? 'block' : 'none';
+    document.getElementById('vin-lookup-card').style.display = showVIN ? 'block' : 'none';
+    // Show manual photo upload for VIN and Manual modes (not AI mode)
     document.getElementById('manual-photos-card').style.display = mode === 'ai' ? 'none' : 'block';
+
+    // Show/hide category-specific form sections
+    const isPlates = currentCat === 'plates';
+    const isAccessories = currentCat === 'accessories';
+    const isHeavy = currentCat === 'heavy';
+    const isVehicle = !isPlates && !isAccessories;
+
+    document.getElementById('plate-details-card').style.display = isPlates ? 'block' : 'none';
+    document.getElementById('accessory-details-card').style.display = isAccessories ? 'block' : 'none';
+    document.getElementById('vehicle-details-card').style.display = isVehicle ? 'block' : 'none';
+    document.getElementById('heavy-extra-fields').style.display = isHeavy ? 'block' : 'none';
+
+    // Update vehicle details card title for heavy vehicles
+    const vTitle = document.getElementById('vehicle-details-title');
+    const vSub = document.getElementById('vehicle-details-sub');
+    if (vTitle) {
+      if (isHeavy) { vTitle.textContent = 'Heavy Vehicle Details'; vSub.textContent = 'Provide accurate details about your truck, bus, or machinery.'; }
+      else { vTitle.textContent = 'Vehicle Details'; vSub.textContent = 'Provide accurate details to attract the right buyers.'; }
+    }
+
+    // Hide AI price estimator and AI description for plates/accessories
+    const priceCard = document.querySelector('.form-card:has(#inp-price)');
+    if (priceCard) {
+      const estimator = priceCard.querySelector('[style*="linear-gradient"]');
+      if (estimator) estimator.style.display = isSimple ? 'none' : '';
+    }
+
+    // Update price card subtitle
+    const priceSub = document.querySelector('#inp-price')?.closest('.form-card')?.querySelector('.form-card-sub');
+    if (priceSub) {
+      if (isPlates) priceSub.textContent = 'Set your asking price for the number plate in AED.';
+      else if (isAccessories) priceSub.textContent = 'Set your asking price for the item in AED.';
+      else priceSub.textContent = 'Set your price in AED. Use the AI estimator below to check the current market value.';
+    }
+
+    // Update photos card title
+    const photosTitle = document.querySelector('#manual-photos-card .form-card-title');
+    if (photosTitle) {
+      if (isPlates) photosTitle.innerHTML = 'Plate Photos <span style="font-size:12px;font-weight:500;color:var(--grey);">(Recommended)</span>';
+      else if (isAccessories) photosTitle.innerHTML = 'Item Photos <span style="font-size:12px;font-weight:500;color:var(--grey);">(Recommended)</span>';
+      else photosTitle.innerHTML = 'Vehicle Photos <span style="font-size:12px;font-weight:500;color:var(--grey);">(Required)</span>';
+    }
 
     populateBrands();
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -701,15 +1007,45 @@
   function backToModeSelect() {
     document.getElementById('form-screen').style.display = 'none';
     document.getElementById('mode-select-screen').style.display = 'block';
+    // Reset to cat select step
+    document.getElementById('cat-select-step').style.display = 'block';
+    document.getElementById('method-select-step').style.display = 'none';
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  /* ── Category ── */
+  /* ── Category (in-form tile selection) ── */
   function selectCat(el, cat) {
     document.querySelectorAll('.cat-tile').forEach(t => t.classList.remove('selected'));
     el.classList.add('selected');
     currentCat = cat;
+
+    const isPlates = cat === 'plates';
+    const isAccessories = cat === 'accessories';
+    const isHeavy = cat === 'heavy';
+    const isVehicle = !isPlates && !isAccessories;
+
+    document.getElementById('plate-details-card').style.display = isPlates ? 'block' : 'none';
+    document.getElementById('accessory-details-card').style.display = isAccessories ? 'block' : 'none';
+    document.getElementById('vehicle-details-card').style.display = isVehicle ? 'block' : 'none';
+    document.getElementById('heavy-extra-fields').style.display = isHeavy ? 'block' : 'none';
+
+    // Update vehicle details title
+    const vTitle = document.getElementById('vehicle-details-title');
+    const vSub = document.getElementById('vehicle-details-sub');
+    if (vTitle) {
+      if (isHeavy) { vTitle.textContent = 'Heavy Vehicle Details'; vSub.textContent = 'Provide accurate details about your truck, bus, or machinery.'; }
+      else { vTitle.textContent = 'Vehicle Details'; vSub.textContent = 'Provide accurate details to attract the right buyers.'; }
+    }
+
+    // Hide AI/VIN cards for non-vehicle categories
+    if (!isVehicle) {
+      document.getElementById('ai-upload-card').style.display = 'none';
+      document.getElementById('vin-lookup-card').style.display = 'none';
+      document.getElementById('mode-chip').innerHTML = `← ${isPlates ? 'Number Plate' : 'Accessory'}`;
+    }
+
     populateBrands();
+    updatePreview();
   }
 
   /* ── Brand / Model / Trim cascade ── */
@@ -771,20 +1107,36 @@
   }
 
   function updatePreview() {
-    const brand = document.getElementById('sel-brand').value;
-    const model = document.getElementById('sel-model').value;
-    const trim  = document.getElementById('sel-trim').value;
-    const year  = document.getElementById('sel-year').value;
-    const cond  = document.getElementById('sel-condition').value;
-    const km    = document.getElementById('inp-km').value;
-    const price = document.getElementById('inp-price').value;
-    const loc   = document.getElementById('sel-location').value;
+    const price = document.getElementById('inp-price')?.value || '';
+    let title = 'Your listing title will appear here';
+    let year = '', km = '', cond = '', loc = '';
 
-    const title = [year, brand, model, trim].filter(Boolean).join(' ') || 'Your listing title will appear here';
+    if (currentCat === 'plates') {
+      const emirate = document.getElementById('sel-plate-emirate')?.value || '';
+      const code = document.getElementById('inp-plate-code')?.value || '';
+      const num = document.getElementById('inp-plate-number')?.value || '';
+      title = [emirate, code, num].filter(Boolean).join(' ') || 'Number Plate';
+      loc = emirate;
+      cond = 'Number Plate';
+    } else if (currentCat === 'accessories') {
+      title = document.getElementById('inp-acc-name')?.value || 'Auto Accessory';
+      cond = document.getElementById('sel-acc-condition')?.value || 'Condition';
+      loc = document.getElementById('sel-acc-location')?.value || '';
+    } else {
+      const brand = document.getElementById('sel-brand')?.value || '';
+      const model = document.getElementById('sel-model')?.value || '';
+      const trim  = document.getElementById('sel-trim')?.value || '';
+      year  = document.getElementById('sel-year')?.value || '';
+      cond  = document.getElementById('sel-condition')?.value || '';
+      km    = document.getElementById('inp-km')?.value || '';
+      loc   = document.getElementById('sel-location')?.value || '';
+      title = [year, brand, model, trim].filter(Boolean).join(' ') || 'Your listing title will appear here';
+    }
+
     document.getElementById('preview-name').textContent = title;
     document.getElementById('preview-price').textContent = price ? 'AED ' + parseInt(price).toLocaleString() : 'AED —';
-    document.getElementById('prev-year').textContent = year || 'Year';
-    document.getElementById('prev-km').textContent = km ? parseInt(km).toLocaleString() + ' KM' : 'KM';
+    document.getElementById('prev-year').textContent = year || (currentCat === 'plates' ? 'Plate' : currentCat === 'accessories' ? 'Item' : 'Year');
+    document.getElementById('prev-km').textContent = km ? parseInt(km).toLocaleString() + ' KM' : (currentCat === 'plates' ? 'UAE Plate' : currentCat === 'accessories' ? 'Accessory' : 'KM');
     document.getElementById('prev-cond').textContent = cond || 'Condition';
     document.getElementById('prev-loc').textContent = loc ? '📍 ' + loc : '📍 Location';
   }
@@ -1108,21 +1460,44 @@
 
   /* ── Submit ── */
   async function submitAd() {
-    const brand = document.getElementById('sel-brand').value;
-    const model = document.getElementById('sel-model').value;
     const price = document.getElementById('inp-price').value;
     const name = document.getElementById('inp-name').value;
     const phone = document.getElementById('inp-phone').value;
     const email = document.getElementById('inp-email').value;
-    const year = document.getElementById('sel-year').value;
-    const km = document.getElementById('inp-km').value;
-    const condition = document.getElementById('sel-condition').value;
-    const desc = document.getElementById('inp-desc') ? document.getElementById('inp-desc').value : '';
-    const location = document.getElementById('sel-location').value;
-    const trim = document.getElementById('sel-trim').value;
 
-    if (!brand || !model || !price) { showToast('Please fill in Brand, Model and Price.'); return; }
+    if (!price) { showToast('Please enter a price.'); return; }
     if (!name || !phone) { showToast('Please fill in your Name and Phone Number.'); return; }
+
+    // Build category-specific data
+    let brand = '', model = '', trim = '', year = '', km = '', condition = '', desc = '', location = '';
+
+    if (currentCat === 'plates') {
+      const emirate = document.getElementById('sel-plate-emirate').value;
+      const plateNum = document.getElementById('inp-plate-number').value;
+      if (!emirate || !plateNum) { showToast('Please fill in the Emirate and Plate Number.'); return; }
+      brand = 'Number Plate';
+      model = `${emirate} ${document.getElementById('inp-plate-code').value || ''} ${plateNum}`.trim();
+      desc = document.getElementById('inp-plate-desc').value;
+      location = emirate;
+    } else if (currentCat === 'accessories') {
+      const accName = document.getElementById('inp-acc-name').value;
+      if (!accName) { showToast('Please enter the item name.'); return; }
+      brand = document.getElementById('inp-acc-brand').value || 'Accessory';
+      model = accName;
+      condition = document.getElementById('sel-acc-condition').value;
+      desc = document.getElementById('inp-acc-desc').value;
+      location = document.getElementById('sel-acc-location').value;
+    } else {
+      brand = document.getElementById('sel-brand').value;
+      model = document.getElementById('sel-model').value;
+      trim = document.getElementById('sel-trim').value;
+      year = document.getElementById('sel-year').value;
+      km = document.getElementById('inp-km').value;
+      condition = document.getElementById('sel-condition').value;
+      desc = document.getElementById('inp-desc') ? document.getElementById('inp-desc').value : '';
+      location = document.getElementById('sel-location').value;
+      if (!brand || !model) { showToast('Please fill in Brand and Model.'); return; }
+    }
 
     const submitBtn = document.querySelector('.btn-submit-ad');
     submitBtn.disabled = true;
