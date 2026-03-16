@@ -248,6 +248,23 @@ input, textarea, select { font-family: 'Inter', sans-serif; }
   background: var(--light-grey);
 }
 .nav-dropdown-footer:hover { text-decoration: underline; }
+/* ─── NAV DROPDOWN EXTRAS ─── */
+.nav-dd-icon {
+  width: 32px; height: 32px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.nav-dd-avatar {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: var(--orange); color: var(--white);
+  font-size: 12px; font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.nav-dd-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--orange); flex-shrink: 0;
+}
 
 /* ─── SECTION ─── */
 .section { padding: 72px 0; }

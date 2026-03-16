@@ -1,17 +1,6 @@
 // ─── SHARED COMPONENTS ────────────────────────────────────────────────────────
 
 function renderNavbar(activePage = '') {
-  const pages = [
-    { href: 'cars.html', label: 'Cars', key: 'cars' },
-    { href: 'boats.html', label: 'Boats', key: 'boats' },
-    { href: 'bikes.html', label: 'Motorcycles', key: 'bikes' },
-    { href: 'jetski.html', label: 'Jet Skis', key: 'jetski' },
-    { href: 'heavy.html', label: 'Heavy Vehicles', key: 'heavy' },
-    { href: 'plates.html', label: 'Number Plates', key: 'plates' },
-    { href: 'accessories.html', label: 'Accessories', key: 'accessories' },
-    { href: '#', label: 'Finance', key: 'finance' },
-    { href: '#', label: 'Dealers', key: 'dealers' },
-  ];
   document.getElementById('navbar-placeholder').innerHTML = `
     <nav class="navbar">
       <div class="container">
@@ -19,38 +8,85 @@ function renderNavbar(activePage = '') {
           <div class="nav-logo-box"><img src="dm-icon.png" alt="DM" style="width:32px;height:32px;object-fit:contain;border-radius:4px;"></div>
           <div class="nav-logo-text">DUBI<span>MOTORS</span></div>
         </a>
-        <div class="nav-links">
-          ${pages.map(p => `<a href="${p.href}" class="${activePage === p.key ? 'active' : ''}">${p.label}</a>`).join('')}
-        </div>
         <div class="nav-right">
           <!-- Notification Bell -->
-          <div class="nav-icon-btn" id="nav-notif-btn" onclick="toggleNavDropdown('notif-dropdown')" title="Notifications" style="position:relative;">
+          <div class="nav-icon-btn" id="nav-notif-btn" onclick="toggleNavDropdown('notif-dropdown')" title="Notifications">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
             <span class="nav-badge" id="nav-notif-count">5</span>
-            <div class="nav-dropdown" id="notif-dropdown">
+            <div class="nav-dropdown" id="notif-dropdown" style="right:-40px;width:320px;">
               <div class="nav-dropdown-header">Notifications <a href="notifications.html" style="font-size:12px;color:var(--orange);font-weight:700;margin-left:auto;">See all</a></div>
-              <a class="nav-dropdown-item unread" href="notifications.html"><span style="font-size:18px;">💬</span><div><div class="nav-dropdown-item-title">New inquiry on your listing</div><div class="nav-dropdown-item-sub">Khalid Motors LLC · 10 min ago</div></div></a>
-              <a class="nav-dropdown-item unread" href="notifications.html"><span style="font-size:18px;">🔔</span><div><div class="nav-dropdown-item-title">7 new results for Toyota Land Cruiser</div><div class="nav-dropdown-item-sub">Saved search · 5 hours ago</div></div></a>
-              <a class="nav-dropdown-item unread" href="notifications.html"><span style="font-size:18px;">✅</span><div><div class="nav-dropdown-item-title">Your listing has been verified</div><div class="nav-dropdown-item-sub">Mercedes C-Class · Yesterday</div></div></a>
-              <a class="nav-dropdown-footer" href="notifications.html">View all notifications</a>
+              <a class="nav-dropdown-item unread" href="notifications.html">
+                <div class="nav-dd-icon" style="background:#FFF0EB;"><svg viewBox="0 0 24 24" fill="none" stroke="var(--orange)" stroke-width="2" width="16" height="16"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+                <div><div class="nav-dropdown-item-title">New inquiry on your listing</div><div class="nav-dropdown-item-sub">Khalid Motors LLC · 10 min ago</div></div>
+                <div class="nav-dd-dot"></div>
+              </a>
+              <a class="nav-dropdown-item unread" href="notifications.html">
+                <div class="nav-dd-icon" style="background:#EBF5FF;"><svg viewBox="0 0 24 24" fill="none" stroke="#2196F3" stroke-width="2" width="16" height="16"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div>
+                <div><div class="nav-dropdown-item-title">7 new results for Toyota Land Cruiser</div><div class="nav-dropdown-item-sub">Saved search · 5 hours ago</div></div>
+                <div class="nav-dd-dot"></div>
+              </a>
+              <a class="nav-dropdown-item" href="notifications.html">
+                <div class="nav-dd-icon" style="background:#EBFFF3;"><svg viewBox="0 0 24 24" fill="none" stroke="#00B450" stroke-width="2" width="16" height="16"><polyline points="20 6 9 17 4 12"/></svg></div>
+                <div><div class="nav-dropdown-item-title">Your listing has been verified</div><div class="nav-dropdown-item-sub">Mercedes C-Class · Yesterday</div></div>
+              </a>
+              <a class="nav-dropdown-footer" href="notifications.html">View all notifications →</a>
             </div>
           </div>
-          <!-- Chat Icon -->
-          <div class="nav-icon-btn" onclick="window.location.href='chats.html'" title="Messages" style="position:relative;">
+          <!-- Messages -->
+          <div class="nav-icon-btn" id="nav-chat-btn" onclick="toggleNavDropdown('chat-dropdown')" title="Messages">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
             <span class="nav-badge" id="nav-chat-count">2</span>
+            <div class="nav-dropdown" id="chat-dropdown" style="right:-10px;width:300px;">
+              <div class="nav-dropdown-header">Messages <a href="chats.html" style="font-size:12px;color:var(--orange);font-weight:700;margin-left:auto;">See all</a></div>
+              <a class="nav-dropdown-item unread" href="chats.html">
+                <div class="nav-dd-avatar">KM</div>
+                <div style="flex:1;min-width:0;">
+                  <div class="nav-dropdown-item-title">Khalid Motors LLC</div>
+                  <div class="nav-dropdown-item-sub" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Is the 2022 Camry still available?</div>
+                </div>
+                <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0;">
+                  <span style="font-size:10px;color:var(--grey);">10m</span>
+                  <div class="nav-dd-dot"></div>
+                </div>
+              </a>
+              <a class="nav-dropdown-item unread" href="chats.html">
+                <div class="nav-dd-avatar" style="background:#2196F3;">SA</div>
+                <div style="flex:1;min-width:0;">
+                  <div class="nav-dropdown-item-title">Sara Al Mansoori</div>
+                  <div class="nav-dropdown-item-sub" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Can we arrange a test drive tomorrow?</div>
+                </div>
+                <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0;">
+                  <span style="font-size:10px;color:var(--grey);">2h</span>
+                  <div class="nav-dd-dot"></div>
+                </div>
+              </a>
+              <a class="nav-dropdown-item" href="chats.html">
+                <div class="nav-dd-avatar" style="background:#9C27B0;">FM</div>
+                <div style="flex:1;min-width:0;">
+                  <div class="nav-dropdown-item-title">Faisal Al Mutairi</div>
+                  <div class="nav-dropdown-item-sub" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Thanks for the quick response!</div>
+                </div>
+                <span style="font-size:10px;color:var(--grey);flex-shrink:0;">1d</span>
+              </a>
+              <a class="nav-dropdown-footer" href="chats.html">Open all messages →</a>
+            </div>
           </div>
           <!-- User Avatar -->
           <div class="nav-user-btn" id="nav-user-btn" onclick="toggleNavDropdown('user-dropdown')">
             <div class="nav-user-avatar">AR</div>
-            <div class="nav-dropdown" id="user-dropdown" style="right:0;width:220px;">
-              <div class="nav-dropdown-header" style="flex-direction:column;align-items:flex-start;gap:2px;"><span style="font-weight:800;">Ahmed Al Rashidi</span><span style="font-size:12px;color:var(--grey);">ahmed@example.com</span></div>
+            <div class="nav-dropdown" id="user-dropdown" style="right:0;width:230px;">
+              <div class="nav-dropdown-header" style="flex-direction:column;align-items:flex-start;gap:2px;padding-bottom:14px;border-bottom:1px solid var(--border);margin-bottom:4px;">
+                <div style="display:flex;align-items:center;gap:10px;">
+                  <div style="width:36px;height:36px;border-radius:50%;background:var(--orange);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;flex-shrink:0;">AR</div>
+                  <div><div style="font-weight:800;font-size:14px;">Ahmed Al Rashidi</div><div style="font-size:11px;color:var(--grey);">ahmed@example.com</div></div>
+                </div>
+              </div>
               <a class="nav-dropdown-item" href="profile.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>My Profile</a>
-              <a class="nav-dropdown-item" href="my-ads.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M3 9h18M9 21V9"/></svg>My Ads <span style="margin-left:auto;background:var(--orange);color:#fff;font-size:10px;padding:1px 6px;border-radius:10px;">3</span></a>
+              <a class="nav-dropdown-item" href="my-ads.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M3 9h18M9 21V9"/></svg>My Ads <span style="margin-left:auto;background:var(--orange);color:#fff;font-size:10px;padding:1px 7px;border-radius:10px;">3</span></a>
               <a class="nav-dropdown-item" href="saved-searches.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>Saved Searches</a>
-              <a class="nav-dropdown-item" href="chats.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Chats <span style="margin-left:auto;background:var(--orange);color:#fff;font-size:10px;padding:1px 6px;border-radius:10px;">2</span></a>
-              <a class="nav-dropdown-item" href="place-ad.html" style="color:var(--orange);"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Place an Ad</a>
-              <a class="nav-dropdown-item" href="login.html" style="color:#E53935;border-top:1px solid var(--border);margin-top:4px;padding-top:12px;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>Log Out</a>
+              <a class="nav-dropdown-item" href="notifications.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>Notifications <span style="margin-left:auto;background:var(--orange);color:#fff;font-size:10px;padding:1px 7px;border-radius:10px;">5</span></a>
+              <a class="nav-dropdown-item" href="place-ad.html" style="color:var(--orange);font-weight:700;"><svg viewBox="0 0 24 24" fill="none" stroke="var(--orange)" stroke-width="2" width="16" height="16"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Place an Ad</a>
+              <a class="nav-dropdown-item" href="login.html" style="color:#E53935;border-top:1px solid var(--border);margin-top:4px;padding-top:12px;"><svg viewBox="0 0 24 24" fill="none" stroke="#E53935" stroke-width="2" width="16" height="16"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>Log Out</a>
             </div>
           </div>
           <button class="btn-place-ad" onclick="window.location.href='place-ad.html'">+ Place Your Ad</button>
@@ -61,7 +97,14 @@ function renderNavbar(activePage = '') {
       </div>
     </nav>
     <div class="mobile-nav-menu" id="mobile-nav-menu">
-      ${pages.map(p => `<a href="${p.href}" class="${activePage === p.key ? 'active' : ''}">${p.label}</a>`).join('')}
+      <a href="index.html">🏠 Home</a>
+      <a href="cars.html">🚗 Cars</a>
+      <a href="boats.html">⛵ Boats &amp; Yachts</a>
+      <a href="bikes.html">🏍 Motorcycles</a>
+      <a href="jetski.html">🛥 Jet Skis</a>
+      <a href="heavy.html">🚛 Heavy Vehicles</a>
+      <a href="plates.html">🔢 Number Plates</a>
+      <a href="accessories.html">🔧 Auto Accessories</a>
       <div style="border-top:1px solid #333;margin-top:8px;padding-top:12px;display:flex;flex-direction:column;gap:4px;">
         <a href="profile.html" style="padding:10px 0;color:#aaa;font-size:14px;font-weight:600;">👤 My Profile</a>
         <a href="my-ads.html" style="padding:10px 0;color:#aaa;font-size:14px;font-weight:600;">📋 My Ads</a>
