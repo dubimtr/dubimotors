@@ -177,6 +177,20 @@ function _toggleNavDD(id) {
   if (el) el.classList.toggle('open');
 }
 
+function renderDubiAgent() {
+  const s = document.createElement('script');
+  s.src = 'dubi-agent.js';
+  document.body.appendChild(s);
+}
+
+function showToast(msg, duration = 3000) {
+  let t = document.getElementById('toast');
+  if (!t) { t = document.createElement('div'); t.id = 'toast'; t.className = 'toast'; document.body.appendChild(t); }
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), duration);
+}
+
 function renderFooter() {
   renderDubiAgent();
   document.getElementById('footer-placeholder').innerHTML = `
