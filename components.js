@@ -10,7 +10,7 @@ function renderNavbar(activePage = '') {
         </a>
         <div class="nav-right">
           <!-- Notification Bell -->
-          <div class="nav-icon-btn" id="nav-notif-btn" onclick="toggleNavDropdown('notif-dropdown')" title="Notifications">
+          <div class="nav-icon-btn" id="nav-notif-btn" title="Notifications">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
             <span class="nav-badge" id="nav-notif-count">5</span>
             <div class="nav-dropdown" id="notif-dropdown" style="right:-40px;width:320px;">
@@ -33,7 +33,7 @@ function renderNavbar(activePage = '') {
             </div>
           </div>
           <!-- Messages -->
-          <div class="nav-icon-btn" id="nav-chat-btn" onclick="toggleNavDropdown('chat-dropdown')" title="Messages">
+          <div class="nav-icon-btn" id="nav-chat-btn" title="Messages">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
             <span class="nav-badge" id="nav-chat-count">2</span>
             <div class="nav-dropdown" id="chat-dropdown" style="right:-10px;width:300px;">
@@ -72,7 +72,7 @@ function renderNavbar(activePage = '') {
             </div>
           </div>
           <!-- User Avatar -->
-          <div class="nav-user-btn" id="nav-user-btn" onclick="toggleNavDropdown('user-dropdown')">
+          <div class="nav-user-btn" id="nav-user-btn">
             <div class="nav-user-avatar">AR</div>
             <div class="nav-dropdown" id="user-dropdown" style="right:0;width:230px;">
               <div class="nav-dropdown-header" style="flex-direction:column;align-items:flex-start;gap:2px;padding-bottom:14px;border-bottom:1px solid var(--border);margin-bottom:4px;">
@@ -81,16 +81,16 @@ function renderNavbar(activePage = '') {
                   <div><div style="font-weight:800;font-size:14px;">Ahmed Al Rashidi</div><div style="font-size:11px;color:var(--grey);">ahmed@example.com</div></div>
                 </div>
               </div>
-              <a class="nav-dropdown-item" href="profile.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>My Profile</a>
-              <a class="nav-dropdown-item" href="my-ads.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M3 9h18M9 21V9"/></svg>My Ads <span style="margin-left:auto;background:var(--orange);color:#fff;font-size:10px;padding:1px 7px;border-radius:10px;">3</span></a>
-              <a class="nav-dropdown-item" href="saved-searches.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>Saved Searches</a>
-              <a class="nav-dropdown-item" href="notifications.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>Notifications <span style="margin-left:auto;background:var(--orange);color:#fff;font-size:10px;padding:1px 7px;border-radius:10px;">5</span></a>
-              <a class="nav-dropdown-item" href="place-ad.html" style="color:var(--orange);font-weight:700;"><svg viewBox="0 0 24 24" fill="none" stroke="var(--orange)" stroke-width="2" width="16" height="16"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Place an Ad</a>
-              <a class="nav-dropdown-item" href="login.html" style="color:#E53935;border-top:1px solid var(--border);margin-top:4px;padding-top:12px;"><svg viewBox="0 0 24 24" fill="none" stroke="#E53935" stroke-width="2" width="16" height="16"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>Log Out</a>
+              <a class="nav-dropdown-item" href="profile.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>&nbsp;My Profile</a>
+              <a class="nav-dropdown-item" href="my-ads.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M3 9h18M9 21V9"/></svg>&nbsp;My Ads <span style="margin-left:auto;background:var(--orange);color:#fff;font-size:10px;padding:1px 7px;border-radius:10px;">3</span></a>
+              <a class="nav-dropdown-item" href="saved-searches.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>&nbsp;Saved Searches</a>
+              <a class="nav-dropdown-item" href="notifications.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>&nbsp;Notifications <span style="margin-left:auto;background:var(--orange);color:#fff;font-size:10px;padding:1px 7px;border-radius:10px;">5</span></a>
+              <a class="nav-dropdown-item" href="place-ad.html" style="color:var(--orange);font-weight:700;"><svg viewBox="0 0 24 24" fill="none" stroke="var(--orange)" stroke-width="2" width="16" height="16"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>&nbsp;Place an Ad</a>
+              <a class="nav-dropdown-item" href="login.html" style="color:#E53935;border-top:1px solid var(--border);margin-top:4px;padding-top:12px;"><svg viewBox="0 0 24 24" fill="none" stroke="#E53935" stroke-width="2" width="16" height="16"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>&nbsp;Log Out</a>
             </div>
           </div>
           <button class="btn-place-ad" onclick="window.location.href='place-ad.html'">+ Place Your Ad</button>
-          <button class="nav-hamburger" onclick="toggleMobileNav()" id="nav-hamburger-btn" aria-label="Menu">
+          <button class="nav-hamburger" id="nav-hamburger-btn" aria-label="Menu">
             <span></span><span></span><span></span>
           </button>
         </div>
@@ -113,31 +113,68 @@ function renderNavbar(activePage = '') {
         <a href="place-ad.html" style="padding:10px 0;color:var(--orange);font-size:14px;font-weight:700;">+ Place Your Ad</a>
         <a href="login.html" style="padding:10px 0;color:#E53935;font-size:14px;font-weight:600;">Log Out</a>
       </div>
-    </div>
-    <script>
-      function toggleMobileNav() {
-        const menu = document.getElementById('mobile-nav-menu');
-        menu.classList.toggle('open');
-      }
-      function toggleNavDropdown(id) {
-        const all = document.querySelectorAll('.nav-dropdown');
-        all.forEach(d => { if (d.id !== id) d.classList.remove('open'); });
-        const el = document.getElementById(id);
-        if (el) el.classList.toggle('open');
-      }
-      // Close dropdowns when clicking outside
-      document.addEventListener('click', function(e) {
-        const menu = document.getElementById('mobile-nav-menu');
-        const btn = document.getElementById('nav-hamburger-btn');
-        if (menu && btn && !menu.contains(e.target) && !btn.contains(e.target)) {
-          menu.classList.remove('open');
-        }
-        // Close nav dropdowns
-        if (!e.target.closest('.nav-icon-btn') && !e.target.closest('.nav-user-btn')) {
-          document.querySelectorAll('.nav-dropdown').forEach(d => d.classList.remove('open'));
-        }
-      });
-    <\/script>`;
+    </div>`;
+
+  // ── Attach event listeners AFTER innerHTML is set ──
+  // Hamburger
+  const hamburger = document.getElementById('nav-hamburger-btn');
+  if (hamburger) {
+    hamburger.addEventListener('click', function(e) {
+      e.stopPropagation();
+      const menu = document.getElementById('mobile-nav-menu');
+      if (menu) menu.classList.toggle('open');
+    });
+  }
+
+  // Notification bell toggle
+  const notifBtn = document.getElementById('nav-notif-btn');
+  if (notifBtn) {
+    notifBtn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      _toggleNavDD('notif-dropdown');
+    });
+  }
+
+  // Chat button toggle
+  const chatBtn = document.getElementById('nav-chat-btn');
+  if (chatBtn) {
+    chatBtn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      _toggleNavDD('chat-dropdown');
+    });
+  }
+
+  // User avatar toggle
+  const userBtn = document.getElementById('nav-user-btn');
+  if (userBtn) {
+    userBtn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      _toggleNavDD('user-dropdown');
+    });
+  }
+
+  // Close all dropdowns when clicking outside
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('#nav-notif-btn') &&
+        !e.target.closest('#nav-chat-btn') &&
+        !e.target.closest('#nav-user-btn')) {
+      document.querySelectorAll('.nav-dropdown').forEach(d => d.classList.remove('open'));
+    }
+    // Close mobile nav
+    const menu = document.getElementById('mobile-nav-menu');
+    const btn = document.getElementById('nav-hamburger-btn');
+    if (menu && btn && !menu.contains(e.target) && !btn.contains(e.target)) {
+      menu.classList.remove('open');
+    }
+  });
+}
+
+function _toggleNavDD(id) {
+  document.querySelectorAll('.nav-dropdown').forEach(d => {
+    if (d.id !== id) d.classList.remove('open');
+  });
+  const el = document.getElementById(id);
+  if (el) el.classList.toggle('open');
 }
 
 function renderFooter() {
@@ -154,19 +191,19 @@ function renderFooter() {
                 <svg viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
               </a>
               <a class="social-btn" href="https://instagram.com" target="_blank" title="Instagram">
-                <svg viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" fill="none" stroke="currentColor" stroke-width="2"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5" stroke="currentColor" stroke-width="2"/></svg>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
               </a>
               <a class="social-btn" href="https://twitter.com" target="_blank" title="X (Twitter)">
                 <svg viewBox="0 0 24 24"><path d="M4 4l16 16M20 4L4 20" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round"/></svg>
               </a>
               <a class="social-btn" href="https://youtube.com" target="_blank" title="YouTube">
-                <svg viewBox="0 0 24 24"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.95-1.96C18.88 4 12 4 12 4s-6.88 0-8.59.46a2.78 2.78 0 0 0-1.95 1.96A29 29 0 0 0 1 12a29 29 0 0 0 .46 5.58A2.78 2.78 0 0 0 3.41 19.6C5.12 20 12 20 12 20s6.88 0 8.59-.46a2.78 2.78 0 0 0 1.95-1.95A29 29 0 0 0 23 12a29 29 0 0 0-.46-5.58z"/><polygon points="9.75 15.02 15.5 12 9.75 8.98 9.75 15.02" fill="var(--dark)"/></svg>
+                <svg viewBox="0 0 24 24"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.95-1.96C18.88 4 12 4 12 4s-6.88 0-8.59.46A2.78 2.78 0 0 0 1.46 6.42 29 29 0 0 0 1 12a29 29 0 0 0 .46 5.58 2.78 2.78 0 0 0 1.95 1.96C5.12 20 12 20 12 20s6.88 0 8.59-.46a2.78 2.78 0 0 0 1.95-1.96A29 29 0 0 0 23 12a29 29 0 0 0-.46-5.58z" fill="currentColor"/><polygon points="9.75 15.02 15.5 12 9.75 8.98 9.75 15.02" fill="#080808"/></svg>
               </a>
               <a class="social-btn" href="https://wa.me/971500000000" target="_blank" title="WhatsApp">
-                <svg viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+                <svg viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" fill="currentColor"/></svg>
               </a>
               <a class="social-btn" href="https://tiktok.com" target="_blank" title="TikTok">
-                <svg viewBox="0 0 24 24"><path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5"/></svg>
+                <svg viewBox="0 0 24 24"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.18 8.18 0 0 0 4.78 1.52V6.76a4.85 4.85 0 0 1-1.01-.07z" fill="currentColor"/></svg>
               </a>
             </div>
           </div>
@@ -190,36 +227,24 @@ function renderFooter() {
           </div>
           <div>
             <div class="footer-col-title">Company</div>
-            <a class="footer-link" href="about.html">About DubiMotors</a>
-            <a class="footer-link" href="index.html#contact">Contact Us</a>
-            <a class="footer-link" href="careers.html">Careers</a>
-            <a class="footer-link" href="blog.html">Blog</a>
-            <a class="footer-link" href="help.html">Help Centre</a>
+            <a class="footer-link" href="#">About DubiMotors</a>
+            <a class="footer-link" href="#">Contact Us</a>
+            <a class="footer-link" href="#">Careers</a>
+            <a class="footer-link" href="#">Blog</a>
+            <a class="footer-link" href="#">Help Centre</a>
+            <a class="footer-link" href="#">Privacy Policy</a>
+            <a class="footer-link" href="#">Terms of Use</a>
+            <a class="footer-link" href="#">Cookie Policy</a>
           </div>
         </div>
         <div class="footer-bottom">
-          <div class="footer-copy">© 2025 DubiMotors. All rights reserved. UAE Licensed Automotive Marketplace. جميع الحقوق محفوظة</div>
+          <div class="footer-copy">© 2025 DubiMotors. All rights reserved. UAE's First AI-Powered Vehicle Marketplace.</div>
           <div class="footer-legal">
-            <a href="privacy.html">Privacy Policy</a>
-            <a href="terms.html">Terms of Use</a>
-            <a href="privacy.html#cookies">Cookie Policy</a>
+            <a href="#">Privacy</a>
+            <a href="#">Terms</a>
+            <a href="#">Cookies</a>
           </div>
         </div>
       </div>
     </footer>`;
-}
-
-/* ── Inject Dubi Agent on every page ── */
-function renderDubiAgent() {
-  const s = document.createElement('script');
-  s.src = 'dubi-agent.js';
-  document.body.appendChild(s);
-}
-
-function showToast(msg, duration = 3000) {
-  let t = document.getElementById('toast');
-  if (!t) { t = document.createElement('div'); t.id = 'toast'; t.className = 'toast'; document.body.appendChild(t); }
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), duration);
 }
