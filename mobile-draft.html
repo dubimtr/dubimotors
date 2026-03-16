@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mobile Draft Preview — DUBIMOTORS</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="icons.js"></script>
+  <style>
+    /* ─── DRAFT BANNER ─── */
+    .draft-banner {
+      background: #1a1a2e;
+      color: #fff;
+      text-align: center;
+      padding: 10px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      position: sticky;
+      top: 0;
+      z-index: 9999;
+      border-bottom: 2px solid var(--orange);
+    }
+    .draft-banner span { color: var(--orange); }
+
+    /* ─── HERO (mobile-first) ─── */
+    .hero {
+      position: relative;
+      min-height: 480px;
+      display: flex;
+      align-items: center;
+      overflow: hidden;
+      background: var(--dark);
+    }
+    .hero-bg {
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(to bottom, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.25) 50%, rgba(0,0,0,0.85) 100%),
+        url('hero-porsche.jpg') center/cover no-repeat;
+    }
+    .hero-content {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      padding: 48px 0 32px;
+    }
+    .hero-content .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+    .hero-eyebrow {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--orange);
+      background: rgba(232,69,10,0.15);
+      border: 1px solid rgba(232,69,10,0.3);
+      padding: 5px 14px;
+      border-radius: 20px;
+      margin-bottom: 16px;
+    }
+    .hero-title {
+      font-size: 34px;
+      font-weight: 900;
+      color: var(--white);
+      line-height: 1.15;
+      margin-bottom: 12px;
+      letter-spacing: -1px;
+    }
+    .hero-title span { color: var(--orange); }
+    .hero-subtitle {
+      font-size: 14px;
+      color: rgba(255,255,255,0.7);
+      line-height: 1.6;
+      margin-bottom: 24px;
+      max-width: 320px;
+    }
+
+    /* ─── SEARCH BOX ─── */
+    .search-box {
+      background: var(--white);
+      border-radius: 16px;
+      padding: 16px;
+      width: 100%;
+      max-width: 420px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    }
+    .s-tabs {
+      display: flex;
+      gap: 0;
+      margin-bottom: 12px;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      border-bottom: 1.5px solid var(--border);
+    }
+    .s-tabs::-webkit-scrollbar { display: none; }
+    .s-tab {
+      flex-shrink: 0;
+      padding: 8px 14px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--grey);
+      border: none;
+      background: none;
+      cursor: pointer;
+      border-bottom: 2.5px solid transparent;
+      margin-bottom: -1.5px;
+      transition: all 0.2s;
+    }
+    .s-tab.active { color: var(--orange); border-bottom-color: var(--orange); font-weight: 700; }
+    .search-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .search-input-wrap {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 12px;
+    }
+    .search-input-wrap input {
+      border: none;
+      outline: none;
+      font-size: 14px;
+      color: var(--dark);
+      flex: 1;
+      background: none;
+    }
+    .search-emirate {
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 10px;
+      font-size: 13px;
+      color: var(--dark);
+      background: var(--white);
+      outline: none;
+      flex-shrink: 0;
+    }
+    .btn-search {
+      background: var(--orange);
+      color: var(--white);
+      border: none;
+      border-radius: 10px;
+      padding: 13px;
+      font-size: 15px;
+      font-weight: 800;
+      width: 100%;
+      margin-top: 10px;
+      cursor: pointer;
+    }
+
+    /* ─── STATS BAR ─── */
+    .stats-bar {
+      background: var(--dark2);
+      border-top: 1px solid #222;
+    }
+    .stats-bar .container {
+      display: flex;
+      align-items: stretch;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    .stats-bar .container::-webkit-scrollbar { display: none; }
+    .stat-item {
+      flex: 1 0 auto;
+      padding: 14px 12px;
+      text-align: center;
+      border-right: 1px solid #2a2a2a;
+      min-width: 70px;
+    }
+    .stat-item:last-child { border-right: none; }
+    .stat-value { font-size: 22px; font-weight: 900; color: var(--white); }
+    .stat-value.orange { color: var(--orange); }
+    .stat-label { font-size: 9px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: #666; margin-top: 2px; }
+
+    /* ─── MOBILE CATEGORY GRID (2-col) ─── */
+    .mobile-cat-section {
+      padding: 24px 0 8px;
+      background: var(--white);
+    }
+    .mobile-cat-header {
+      padding: 0 16px 16px;
+    }
+    .mobile-cat-title {
+      font-size: 20px;
+      font-weight: 900;
+      color: var(--dark);
+    }
+    .mobile-cat-sub {
+      font-size: 13px;
+      color: var(--grey);
+      margin-top: 3px;
+    }
+    .mobile-cat-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      padding: 0 16px 16px;
+    }
+    .mobile-cat-card {
+      background: var(--light-grey);
+      border-radius: 16px;
+      padding: 20px 16px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      text-decoration: none;
+      color: var(--dark);
+      border: 1.5px solid transparent;
+      transition: all 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+    .mobile-cat-card:hover, .mobile-cat-card:active {
+      border-color: var(--orange);
+      background: #FFF0EB;
+    }
+    .mobile-cat-card.full-width {
+      grid-column: 1 / -1;
+    }
+    .mobile-cat-icon {
+      width: 52px;
+      height: 52px;
+      border-radius: 14px;
+      background: var(--white);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    .mobile-cat-icon svg {
+      width: 30px;
+      height: 30px;
+    }
+    .mobile-cat-info { flex: 1; min-width: 0; }
+    .mobile-cat-name {
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--dark);
+      line-height: 1.2;
+    }
+    .mobile-cat-count {
+      font-size: 12px;
+      color: var(--grey);
+      margin-top: 3px;
+      font-weight: 500;
+    }
+    .mobile-cat-arrow {
+      color: var(--grey);
+      flex-shrink: 0;
+      font-size: 18px;
+    }
+    .mobile-cat-card.coming-soon {
+      opacity: 0.7;
+    }
+    .coming-soon-badge {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: var(--orange);
+      color: var(--white);
+      font-size: 9px;
+      font-weight: 800;
+      padding: 2px 7px;
+      border-radius: 10px;
+      letter-spacing: 0.5px;
+    }
+
+    /* ─── BOTTOM NAV ─── */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: var(--white);
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: stretch;
+      z-index: 1000;
+      padding-bottom: env(safe-area-inset-bottom);
+      box-shadow: 0 -4px 20px rgba(0,0,0,0.08);
+    }
+    .bn-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 4px 8px;
+      gap: 4px;
+      cursor: pointer;
+      text-decoration: none;
+      color: var(--grey);
+      font-size: 10px;
+      font-weight: 600;
+      transition: color 0.2s;
+      position: relative;
+    }
+    .bn-item.active { color: var(--orange); }
+    .bn-item svg { width: 22px; height: 22px; }
+    .bn-item-label { font-size: 10px; font-weight: 600; }
+    /* Center Place Ad button */
+    .bn-item.place-ad {
+      position: relative;
+      top: -14px;
+    }
+    .bn-place-ad-circle {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      background: var(--orange);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 16px rgba(232,69,10,0.4);
+      border: 3px solid var(--white);
+    }
+    .bn-place-ad-circle svg { width: 26px; height: 26px; color: var(--white); stroke: var(--white); }
+    .bn-badge {
+      position: absolute;
+      top: 6px;
+      right: calc(50% - 18px);
+      background: var(--orange);
+      color: var(--white);
+      font-size: 9px;
+      font-weight: 800;
+      min-width: 16px;
+      height: 16px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 3px;
+    }
+    /* Spacer so content isn't hidden behind bottom nav */
+    .bottom-nav-spacer { height: 72px; }
+
+    /* ─── HOT DEALS PREVIEW ─── */
+    .section-preview {
+      padding: 24px 16px;
+      background: var(--light-grey);
+    }
+    .section-preview-title {
+      font-size: 20px;
+      font-weight: 900;
+      color: var(--dark);
+      margin-bottom: 4px;
+    }
+    .section-preview-sub {
+      font-size: 13px;
+      color: var(--grey);
+      margin-bottom: 16px;
+    }
+    .listing-card-mobile {
+      background: var(--white);
+      border-radius: 14px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      margin-bottom: 12px;
+      display: flex;
+      gap: 0;
+    }
+    .listing-card-mobile img {
+      width: 110px;
+      height: 90px;
+      object-fit: cover;
+      flex-shrink: 0;
+    }
+    .listing-card-mobile-body {
+      padding: 10px 12px;
+      flex: 1;
+      min-width: 0;
+    }
+    .lcm-title { font-size: 13px; font-weight: 800; color: var(--dark); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .lcm-price { font-size: 15px; font-weight: 900; color: var(--orange); margin: 3px 0; }
+    .lcm-meta { font-size: 11px; color: var(--grey); }
+    .lcm-verified { display: inline-flex; align-items: center; gap: 3px; background: linear-gradient(135deg,#667eea,#764ba2); color: #fff; font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 10px; margin-top: 4px; }
+
+    /* Container override for mobile draft */
+    .container { padding: 0 16px; }
+
+    /* Hide desktop-only elements */
+    @media (min-width: 600px) {
+      .draft-note { display: block; }
+    }
+  </style>
+</head>
+<body style="padding-bottom:0;background:#f5f5f5;">
+
+  <!-- Draft Banner -->
+  <div class="draft-banner">
+    📱 <span>DRAFT PREVIEW</span> — Mobile redesign concept · Not live yet
+  </div>
+
+  <!-- ── HERO ── -->
+  <section class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-content">
+      <div class="container">
+        <div class="hero-eyebrow">✦ UAE's First AI-Powered Vehicle Marketplace</div>
+        <h1 class="hero-title">Buy &amp; Sell Vehicles with <span>Confidence</span> in the UAE</h1>
+        <p class="hero-subtitle">Thousands of verified listings across cars, boats, motorcycles and more.</p>
+
+        <!-- Search Box -->
+        <div class="search-box">
+          <div class="s-tabs">
+            <button class="s-tab active">Cars</button>
+            <button class="s-tab">Boats</button>
+            <button class="s-tab">Motorcycles</button>
+            <button class="s-tab">Jet Skis</button>
+            <button class="s-tab">Heavy</button>
+          </div>
+          <div class="search-row">
+            <div class="search-input-wrap">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#aaa" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>
+              <input type="text" placeholder="Search make, model, year..." />
+            </div>
+            <select class="search-emirate">
+              <option>All Emirates</option>
+              <option>Dubai</option>
+              <option>Abu Dhabi</option>
+              <option>Sharjah</option>
+            </select>
+          </div>
+          <button class="btn-search">Search</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── STATS BAR ── -->
+  <div class="stats-bar">
+    <div class="container">
+      <div class="stat-item">
+        <div class="stat-value orange">10</div>
+        <div class="stat-label">Active Listings</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value">4</div>
+        <div class="stat-label">Cars</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value">3</div>
+        <div class="stat-label">Boats &amp; Yachts</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value">2</div>
+        <div class="stat-label">Motorcycles</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value orange">Free</div>
+        <div class="stat-label">To List</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── CATEGORY GRID (NEW 2-col layout) ── -->
+  <div class="mobile-cat-section">
+    <div class="mobile-cat-header">
+      <div class="mobile-cat-title">Browse by Category</div>
+      <div class="mobile-cat-sub">What are you looking for?</div>
+    </div>
+    <div class="mobile-cat-grid">
+
+      <!-- Cars -->
+      <a class="mobile-cat-card" href="cars.html">
+        <div class="mobile-cat-icon" id="mci-cars"></div>
+        <div class="mobile-cat-info">
+          <div class="mobile-cat-name">Cars</div>
+          <div class="mobile-cat-count">4 listings</div>
+        </div>
+        <div class="mobile-cat-arrow">›</div>
+      </a>
+
+      <!-- Boats -->
+      <a class="mobile-cat-card" href="boats.html">
+        <div class="mobile-cat-icon" id="mci-boats"></div>
+        <div class="mobile-cat-info">
+          <div class="mobile-cat-name">Boats &amp; Yachts</div>
+          <div class="mobile-cat-count">3 listings</div>
+        </div>
+        <div class="mobile-cat-arrow">›</div>
+      </a>
+
+      <!-- Motorcycles -->
+      <a class="mobile-cat-card" href="bikes.html">
+        <div class="mobile-cat-icon" id="mci-bikes"></div>
+        <div class="mobile-cat-info">
+          <div class="mobile-cat-name">Motorcycles</div>
+          <div class="mobile-cat-count">2 listings</div>
+        </div>
+        <div class="mobile-cat-arrow">›</div>
+      </a>
+
+      <!-- Jet Skis -->
+      <a class="mobile-cat-card" href="jetski.html">
+        <div class="mobile-cat-icon" id="mci-jetski"></div>
+        <div class="mobile-cat-info">
+          <div class="mobile-cat-name">Jet Skis</div>
+          <div class="mobile-cat-count">1 listing</div>
+        </div>
+        <div class="mobile-cat-arrow">›</div>
+      </a>
+
+      <!-- Heavy Vehicles -->
+      <a class="mobile-cat-card coming-soon" href="heavy.html">
+        <span class="coming-soon-badge">SOON</span>
+        <div class="mobile-cat-icon" id="mci-heavy"></div>
+        <div class="mobile-cat-info">
+          <div class="mobile-cat-name">Heavy Vehicles</div>
+          <div class="mobile-cat-count">Coming soon</div>
+        </div>
+        <div class="mobile-cat-arrow">›</div>
+      </a>
+
+      <!-- Number Plates -->
+      <a class="mobile-cat-card coming-soon" href="plates.html">
+        <span class="coming-soon-badge">SOON</span>
+        <div class="mobile-cat-icon" id="mci-plates"></div>
+        <div class="mobile-cat-info">
+          <div class="mobile-cat-name">Number Plates</div>
+          <div class="mobile-cat-count">Coming soon</div>
+        </div>
+        <div class="mobile-cat-arrow">›</div>
+      </a>
+
+      <!-- Auto Accessories (full width) -->
+      <a class="mobile-cat-card coming-soon full-width" href="accessories.html">
+        <span class="coming-soon-badge">SOON</span>
+        <div class="mobile-cat-icon" id="mci-accessories"></div>
+        <div class="mobile-cat-info">
+          <div class="mobile-cat-name">Auto Accessories</div>
+          <div class="mobile-cat-count">Coming soon</div>
+        </div>
+        <div class="mobile-cat-arrow">›</div>
+      </a>
+
+    </div>
+  </div>
+
+  <!-- ── HOT DEALS PREVIEW ── -->
+  <div class="section-preview">
+    <div class="section-preview-title">🔥 Hot Deals</div>
+    <div class="section-preview-sub">Hand-picked vehicles at exceptional prices</div>
+
+    <div class="listing-card-mobile">
+      <img src="https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?w=220&q=80" alt="Mercedes" />
+      <div class="listing-card-mobile-body">
+        <div class="lcm-title">2022 Mercedes-Benz C200</div>
+        <div class="lcm-price">AED 185,000</div>
+        <div class="lcm-meta">Dubai · 28,000 km · 2022</div>
+        <div class="lcm-verified">🤖 Verified by AI</div>
+      </div>
+    </div>
+
+    <div class="listing-card-mobile">
+      <img src="https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?w=220&q=80" alt="Land Cruiser" />
+      <div class="listing-card-mobile-body">
+        <div class="lcm-title">2021 Toyota Land Cruiser GXR</div>
+        <div class="lcm-price">AED 320,000</div>
+        <div class="lcm-meta">Abu Dhabi · 45,000 km · 2021</div>
+        <div class="lcm-verified">🤖 Verified by AI</div>
+      </div>
+    </div>
+
+    <div class="listing-card-mobile">
+      <img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=220&q=80" alt="Kawasaki" />
+      <div class="listing-card-mobile-body">
+        <div class="lcm-title">2023 Kawasaki Ninja ZX-10R</div>
+        <div class="lcm-price">AED 58,000</div>
+        <div class="lcm-meta">Dubai · 5,200 km · 2023</div>
+        <div class="lcm-verified">🤖 Verified by AI</div>
+      </div>
+    </div>
+
+    <div style="text-align:center;margin-top:8px;">
+      <a href="cars.html" style="color:var(--orange);font-size:14px;font-weight:700;">View All Listings →</a>
+    </div>
+  </div>
+
+  <div class="bottom-nav-spacer"></div>
+
+  <!-- ── BOTTOM NAVIGATION BAR ── -->
+  <nav class="bottom-nav">
+    <a class="bn-item active" href="index.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <span class="bn-item-label">Home</span>
+    </a>
+    <a class="bn-item" href="cars.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>
+      <span class="bn-item-label">Search</span>
+    </a>
+    <a class="bn-item place-ad" href="place-ad.html">
+      <div class="bn-place-ad-circle">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      </div>
+      <span class="bn-item-label" style="margin-top:2px;">Place Ad</span>
+    </a>
+    <a class="bn-item" href="chats.html" style="position:relative;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      <span class="bn-badge">2</span>
+      <span class="bn-item-label">Chats</span>
+    </a>
+    <a class="bn-item" href="profile.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+      <span class="bn-item-label">Account</span>
+    </a>
+  </nav>
+
+  <script>
+    // Inject SVG icons into category cards
+    const iconMap = {
+      'mci-cars': DM_ICONS.cars,
+      'mci-boats': DM_ICONS.boats,
+      'mci-bikes': DM_ICONS.bikes,
+      'mci-jetski': DM_ICONS.jetski,
+      'mci-heavy': DM_ICONS.heavy,
+      'mci-plates': DM_ICONS.plates,
+      'mci-accessories': DM_ICONS.accessories,
+    };
+    Object.entries(iconMap).forEach(([id, svg]) => {
+      const el = document.getElementById(id);
+      if (el) el.innerHTML = svg;
+    });
+
+    // Tab switching
+    document.querySelectorAll('.s-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.s-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+      });
+    });
+  </script>
+</body>
+</html>

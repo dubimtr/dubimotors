@@ -524,6 +524,103 @@
       .hero-stat { min-width: 70px; padding: 12px 10px; }
       .hero-stat-value { font-size: 18px; }
     }
+
+    /* ─── MOBILE CATEGORY GRID ─── */
+    .mobile-cat-section { display: none; padding: 24px 0 8px; background: var(--white); }
+    .mobile-cat-header { padding: 0 16px 14px; }
+    .mobile-cat-title { font-size: 20px; font-weight: 900; color: var(--dark); }
+    .mobile-cat-sub { font-size: 13px; color: var(--grey); margin-top: 3px; }
+    .mobile-cat-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      padding: 0 16px 16px;
+    }
+    .mobile-cat-card {
+      background: var(--light-grey);
+      border-radius: 16px;
+      padding: 16px 14px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: var(--dark);
+      border: 1.5px solid transparent;
+      transition: all 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+    .mobile-cat-card:active { border-color: var(--orange); background: #FFF0EB; }
+    .mobile-cat-card.full-width { grid-column: 1 / -1; }
+    .mobile-cat-icon {
+      width: 48px; height: 48px; border-radius: 12px;
+      background: var(--white);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    .mobile-cat-icon svg { width: 28px; height: 28px; }
+    .mobile-cat-info { flex: 1; min-width: 0; }
+    .mobile-cat-name { font-size: 14px; font-weight: 800; color: var(--dark); line-height: 1.2; }
+    .mobile-cat-count { font-size: 11px; color: var(--grey); margin-top: 2px; }
+    .mobile-cat-arrow { color: #bbb; flex-shrink: 0; font-size: 20px; font-weight: 300; line-height: 1; }
+    .mobile-cat-card.coming-soon { opacity: 0.75; }
+    .coming-soon-badge {
+      position: absolute; top: 8px; right: 8px;
+      background: var(--orange); color: var(--white);
+      font-size: 8px; font-weight: 800;
+      padding: 2px 6px; border-radius: 8px; letter-spacing: 0.5px;
+    }
+
+    /* ─── BOTTOM NAV ─── */
+    .bottom-nav {
+      display: none;
+      position: fixed; bottom: 0; left: 0; right: 0;
+      background: var(--white);
+      border-top: 1px solid var(--border);
+      align-items: stretch;
+      z-index: 1000;
+      padding-bottom: env(safe-area-inset-bottom);
+      box-shadow: 0 -4px 20px rgba(0,0,0,0.08);
+    }
+    .bn-item {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 10px 4px 8px; gap: 3px;
+      cursor: pointer; text-decoration: none;
+      color: var(--grey); font-size: 10px; font-weight: 600;
+      transition: color 0.2s; position: relative;
+    }
+    .bn-item.active { color: var(--orange); }
+    .bn-item svg { width: 22px; height: 22px; }
+    .bn-item-label { font-size: 10px; font-weight: 600; }
+    .bn-item.place-ad { position: relative; top: -12px; }
+    .bn-place-ad-circle {
+      width: 50px; height: 50px; border-radius: 50%;
+      background: var(--orange);
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 16px rgba(232,69,10,0.4);
+      border: 3px solid var(--white);
+    }
+    .bn-place-ad-circle svg { width: 24px; height: 24px; stroke: var(--white); }
+    .bn-badge {
+      position: absolute; top: 6px; right: calc(50% - 18px);
+      background: var(--orange); color: var(--white);
+      font-size: 9px; font-weight: 800;
+      min-width: 15px; height: 15px; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center; padding: 0 3px;
+    }
+
+    @media (max-width: 768px) {
+      /* Show mobile cat grid, hide desktop strip */
+      .cat-strip { display: none; }
+      .mobile-cat-section { display: block; }
+      /* Show bottom nav */
+      .bottom-nav { display: flex; }
+      body { padding-bottom: 68px; }
+      /* Hide floating AI agent on mobile — it’s in the bottom nav */
+      #dubi-agent-btn { display: none !important; }
+    }
   </style>
 </head>
 <body>
@@ -571,6 +668,10 @@
       <!-- STATS -->
       <div class="hero-stats" id="hero-stats">
         <div class="hero-stat">
+          <div class="hero-stat-value" style="color:var(--orange)">Free</div>
+          <div class="hero-stat-label">To List</div>
+        </div>
+        <div class="hero-stat">
           <div class="hero-stat-value" id="stat-total">—</div>
           <div class="hero-stat-label">Active Listings</div>
         </div>
@@ -586,16 +687,81 @@
           <div class="hero-stat-value" id="stat-bikes">—</div>
           <div class="hero-stat-label">Motorcycles</div>
         </div>
-        <div class="hero-stat">
-          <div class="hero-stat-value">Free</div>
-          <div class="hero-stat-label">To List</div>
-        </div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ── CATEGORY STRIP ── -->
+<!-- ── MOBILE CATEGORY GRID (shown only on mobile, replaces cat-strip) ── -->
+<div class="mobile-cat-section" id="mobile-cat-section">
+  <div class="mobile-cat-header">
+    <div class="mobile-cat-title">Browse by Category</div>
+    <div class="mobile-cat-sub">What are you looking for?</div>
+  </div>
+  <div class="mobile-cat-grid">
+    <a class="mobile-cat-card" href="cars.html">
+      <div class="mobile-cat-icon" id="mci-cars"></div>
+      <div class="mobile-cat-info">
+        <div class="mobile-cat-name">Cars</div>
+        <div class="mobile-cat-count" id="mcount-cars">Loading...</div>
+      </div>
+      <div class="mobile-cat-arrow">›</div>
+    </a>
+    <a class="mobile-cat-card" href="boats.html">
+      <div class="mobile-cat-icon" id="mci-boats"></div>
+      <div class="mobile-cat-info">
+        <div class="mobile-cat-name">Boats &amp; Yachts</div>
+        <div class="mobile-cat-count" id="mcount-boats">Loading...</div>
+      </div>
+      <div class="mobile-cat-arrow">›</div>
+    </a>
+    <a class="mobile-cat-card" href="bikes.html">
+      <div class="mobile-cat-icon" id="mci-bikes"></div>
+      <div class="mobile-cat-info">
+        <div class="mobile-cat-name">Motorcycles</div>
+        <div class="mobile-cat-count" id="mcount-bikes">Loading...</div>
+      </div>
+      <div class="mobile-cat-arrow">›</div>
+    </a>
+    <a class="mobile-cat-card" href="jetski.html">
+      <div class="mobile-cat-icon" id="mci-jetski"></div>
+      <div class="mobile-cat-info">
+        <div class="mobile-cat-name">Jet Skis</div>
+        <div class="mobile-cat-count" id="mcount-jetski">Loading...</div>
+      </div>
+      <div class="mobile-cat-arrow">›</div>
+    </a>
+    <a class="mobile-cat-card coming-soon" href="heavy.html">
+      <span class="coming-soon-badge">SOON</span>
+      <div class="mobile-cat-icon" id="mci-heavy"></div>
+      <div class="mobile-cat-info">
+        <div class="mobile-cat-name">Heavy Vehicles</div>
+        <div class="mobile-cat-count">Coming soon</div>
+      </div>
+      <div class="mobile-cat-arrow">›</div>
+    </a>
+    <a class="mobile-cat-card coming-soon" href="plates.html">
+      <span class="coming-soon-badge">SOON</span>
+      <div class="mobile-cat-icon" id="mci-plates"></div>
+      <div class="mobile-cat-info">
+        <div class="mobile-cat-name">Number Plates</div>
+        <div class="mobile-cat-count">Coming soon</div>
+      </div>
+      <div class="mobile-cat-arrow">›</div>
+    </a>
+    <a class="mobile-cat-card coming-soon full-width" href="accessories.html">
+      <span class="coming-soon-badge">SOON</span>
+      <div class="mobile-cat-icon" id="mci-accessories"></div>
+      <div class="mobile-cat-info">
+        <div class="mobile-cat-name">Auto Accessories</div>
+        <div class="mobile-cat-count">Coming soon</div>
+      </div>
+      <div class="mobile-cat-arrow">›</div>
+    </a>
+  </div>
+</div>
+
+<!-- ── CATEGORY STRIP (desktop only) ── -->
 <div class="cat-strip">
   <div class="container">
     <a class="cat-item active" href="cars.html">
@@ -880,11 +1046,38 @@
   </div>
 </div>
 
+<!-- ── BOTTOM NAVIGATION BAR (mobile only) ── -->
+<nav class="bottom-nav" id="bottom-nav">
+  <a class="bn-item active" href="index.html">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    <span class="bn-item-label">Home</span>
+  </a>
+  <a class="bn-item" href="cars.html">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>
+    <span class="bn-item-label">Search</span>
+  </a>
+  <a class="bn-item place-ad" href="place-ad.html">
+    <div class="bn-place-ad-circle">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    </div>
+    <span class="bn-item-label" style="margin-top:2px;">Place Ad</span>
+  </a>
+  <a class="bn-item" href="#" onclick="dubiAgentToggle();return false;">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="3" fill="currentColor" stroke="none"/></svg>
+    <span class="bn-item-label">AI Agent</span>
+  </a>
+  <a class="bn-item" href="profile.html">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+    <span class="bn-item-label">Account</span>
+  </a>
+</nav>
+
 <div id="footer-placeholder"></div>
 <div id="toast" class="toast"></div>
 
 <script src="shared.js"></script>
 <script src="components.js"></script>
+<script src="icons.js"></script>
 <script>
   renderNavbar('home');
   renderFooter();
@@ -930,6 +1123,36 @@
 
   document.getElementById('searchInput').addEventListener('keydown', e => {
     if (e.key === 'Enter') doSearch();
+  });
+
+  // Inject SVG icons into mobile category grid
+  if (typeof DM_ICONS !== 'undefined') {
+    const iconMap = {
+      'mci-cars': DM_ICONS.cars,
+      'mci-boats': DM_ICONS.boats,
+      'mci-bikes': DM_ICONS.bikes,
+      'mci-jetski': DM_ICONS.jetski,
+      'mci-heavy': DM_ICONS.heavy,
+      'mci-plates': DM_ICONS.plates,
+      'mci-accessories': DM_ICONS.accessories,
+    };
+    Object.entries(iconMap).forEach(([id, svg]) => {
+      const el = document.getElementById(id);
+      if (el) el.innerHTML = svg;
+    });
+  }
+
+  // Populate mobile category counts
+  const mc = DM.getCounts();
+  const mCounts = {
+    'mcount-cars': mc.cars + ' listings',
+    'mcount-boats': mc.boats + ' listings',
+    'mcount-bikes': mc.bikes + ' listings',
+    'mcount-jetski': mc.jetski + ' listings',
+  };
+  Object.entries(mCounts).forEach(([id, val]) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = val;
   });
 </script>
 </body>
