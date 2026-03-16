@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Place Your Ad — DUBIMOTORS</title>
   <link rel="stylesheet" href="style.css" />
+  <script src="icons.js"></script>
   <script src="https://www.google.com/recaptcha/api.js" async defer></script>
   <style>
     /* ── Hero ── */
@@ -99,8 +100,12 @@
     @media (max-width: 500px) { .cat-grid-7 { grid-template-columns: repeat(3,1fr); } }
     .cat-tile { border: 2px solid var(--border); border-radius: 12px; padding: 16px 8px; text-align: center; cursor: pointer; transition: all 0.2s; }
     .cat-tile:hover, .cat-tile.selected { border-color: var(--orange); background: #FFF8F6; }
-    .cat-tile-icon { font-size: 26px; margin-bottom: 5px; }
+    .cat-tile-icon { width: 44px; height: 44px; margin: 0 auto 6px; display: flex; align-items: center; justify-content: center; }
+    .cat-tile-icon svg { width: 100%; height: 100%; }
     .cat-tile-label { font-size: 12px; font-weight: 700; color: var(--dark); }
+    /* Mode card SVG icons */
+    .mode-icon svg { width: 52px; height: 52px; }
+    .mode-icon { display: flex; align-items: center; justify-content: center; margin-bottom: 16px; }
 
     /* ── AI Photo upload zone ── */
     .ai-upload-zone {
@@ -239,31 +244,31 @@
       <div class="mode-sub">Choose the category that best fits your item.</div>
       <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:12px;max-width:900px;margin:0 auto 40px;">
         <div class="mode-card" style="padding:24px 10px;" onclick="pickCategory('cars')">
-          <div class="mode-icon">🚗</div>
+          <div class="mode-icon" id="land-icon-cars"></div>
           <div class="mode-card-title" style="font-size:14px;">Car</div>
         </div>
         <div class="mode-card" style="padding:24px 10px;" onclick="pickCategory('boats')">
-          <div class="mode-icon">⛵</div>
+          <div class="mode-icon" id="land-icon-boats"></div>
           <div class="mode-card-title" style="font-size:14px;">Boat</div>
         </div>
         <div class="mode-card" style="padding:24px 10px;" onclick="pickCategory('bikes')">
-          <div class="mode-icon">🏍️</div>
+          <div class="mode-icon" id="land-icon-bikes"></div>
           <div class="mode-card-title" style="font-size:14px;">Motorcycle</div>
         </div>
         <div class="mode-card" style="padding:24px 10px;" onclick="pickCategory('jetski')">
-          <div class="mode-icon">🚤</div>
+          <div class="mode-icon" id="land-icon-jetski"></div>
           <div class="mode-card-title" style="font-size:14px;">Jet Ski</div>
         </div>
         <div class="mode-card" style="padding:24px 10px;" onclick="pickCategory('heavy')">
-          <div class="mode-icon">🚛</div>
+          <div class="mode-icon" id="land-icon-heavy"></div>
           <div class="mode-card-title" style="font-size:14px;">Heavy Vehicle</div>
         </div>
         <div class="mode-card" style="padding:24px 10px;" onclick="pickCategory('plates')">
-          <div class="mode-icon">🔢</div>
+          <div class="mode-icon" id="land-icon-plates"></div>
           <div class="mode-card-title" style="font-size:14px;">Number Plate</div>
         </div>
         <div class="mode-card" style="padding:24px 10px;" onclick="pickCategory('accessories')">
-          <div class="mode-icon">🔧</div>
+          <div class="mode-icon" id="land-icon-accessories"></div>
           <div class="mode-card-title" style="font-size:14px;">Accessory</div>
         </div>
       </div>
@@ -427,13 +432,13 @@
           <div class="form-card-title">What are you selling?</div>
           <div class="form-card-sub">Select the category that best fits your listing.</div>
           <div class="cat-grid-7">
-            <div class="cat-tile selected" onclick="selectCat(this,'cars')"><div class="cat-tile-icon">🚗</div><div class="cat-tile-label">Car</div></div>
-            <div class="cat-tile" onclick="selectCat(this,'boats')"><div class="cat-tile-icon">⛵</div><div class="cat-tile-label">Boat</div></div>
-            <div class="cat-tile" onclick="selectCat(this,'bikes')"><div class="cat-tile-icon">🏍️</div><div class="cat-tile-label">Motorcycle</div></div>
-            <div class="cat-tile" onclick="selectCat(this,'jetski')"><div class="cat-tile-icon">🚤</div><div class="cat-tile-label">Jet Ski</div></div>
-            <div class="cat-tile" onclick="selectCat(this,'heavy')"><div class="cat-tile-icon">🚛</div><div class="cat-tile-label">Heavy Vehicle</div></div>
-            <div class="cat-tile" onclick="selectCat(this,'plates')"><div class="cat-tile-icon">🔢</div><div class="cat-tile-label">Number Plate</div></div>
-            <div class="cat-tile" onclick="selectCat(this,'accessories')"><div class="cat-tile-icon">🔧</div><div class="cat-tile-label">Accessory</div></div>
+            <div class="cat-tile selected" onclick="selectCat(this,'cars')"><div class="cat-tile-icon" id="tile-icon-cars"></div><div class="cat-tile-label">Car</div></div>
+            <div class="cat-tile" onclick="selectCat(this,'boats')"><div class="cat-tile-icon" id="tile-icon-boats"></div><div class="cat-tile-label">Boat</div></div>
+            <div class="cat-tile" onclick="selectCat(this,'bikes')"><div class="cat-tile-icon" id="tile-icon-bikes"></div><div class="cat-tile-label">Motorcycle</div></div>
+            <div class="cat-tile" onclick="selectCat(this,'jetski')"><div class="cat-tile-icon" id="tile-icon-jetski"></div><div class="cat-tile-label">Jet Ski</div></div>
+            <div class="cat-tile" onclick="selectCat(this,'heavy')"><div class="cat-tile-icon" id="tile-icon-heavy"></div><div class="cat-tile-label">Heavy Vehicle</div></div>
+            <div class="cat-tile" onclick="selectCat(this,'plates')"><div class="cat-tile-icon" id="tile-icon-plates"></div><div class="cat-tile-label">Number Plate</div></div>
+            <div class="cat-tile" onclick="selectCat(this,'accessories')"><div class="cat-tile-icon" id="tile-icon-accessories"></div><div class="cat-tile-label">Accessory</div></div>
           </div>
         </div>
 
@@ -787,13 +792,28 @@
           </div>
           <div id="manual-photo-grid" style="display:flex;flex-wrap:wrap;gap:10px;margin-top:14px;"></div>
           <div id="manual-photo-count" style="font-size:12px;color:var(--grey);margin-top:8px;"></div>
-          <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border);"> 
+          <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border);" id="photo-tips-section">
             <div style="font-size:13px;font-weight:700;color:var(--dark);margin-bottom:8px;">Photo Tips</div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
-              <div style="font-size:12px;color:var(--grey);">✅ Front, rear, both sides</div>
-              <div style="font-size:12px;color:var(--grey);">✅ Dashboard &amp; interior</div>
-              <div style="font-size:12px;color:var(--grey);">✅ Engine bay</div>
-              <div style="font-size:12px;color:var(--grey);">✅ Any damage or scratches</div>
+            <!-- Vehicle tips (default) -->
+            <div id="photo-tips-vehicle" style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+              <div style="font-size:12px;color:var(--grey);">&#x2705; Front, rear, both sides</div>
+              <div style="font-size:12px;color:var(--grey);">&#x2705; Dashboard &amp; interior</div>
+              <div style="font-size:12px;color:var(--grey);">&#x2705; Engine bay</div>
+              <div style="font-size:12px;color:var(--grey);">&#x2705; Any damage or scratches</div>
+            </div>
+            <!-- Plate tips -->
+            <div id="photo-tips-plates" style="display:none;grid-template-columns:1fr 1fr;gap:6px;">
+              <div style="font-size:12px;color:var(--grey);">&#x2705; Clear front-facing shot of the plate</div>
+              <div style="font-size:12px;color:var(--grey);">&#x2705; Good lighting, no glare or shadows</div>
+              <div style="font-size:12px;color:var(--grey);">&#x2705; All digits and letters clearly visible</div>
+              <div style="font-size:12px;color:var(--grey);">&#x2705; Include emirate logo if visible</div>
+            </div>
+            <!-- Accessory tips -->
+            <div id="photo-tips-accessories" style="display:none;grid-template-columns:1fr 1fr;gap:6px;">
+              <div style="font-size:12px;color:var(--grey);">&#x2705; Multiple angles of the item</div>
+              <div style="font-size:12px;color:var(--grey);">&#x2705; Close-up of brand label or markings</div>
+              <div style="font-size:12px;color:var(--grey);">&#x2705; Show any wear, scratches or defects</div>
+              <div style="font-size:12px;color:var(--grey);">&#x2705; Include packaging or box if available</div>
             </div>
           </div>
         </div>
@@ -1000,6 +1020,14 @@
       else photosTitle.innerHTML = 'Vehicle Photos <span style="font-size:12px;font-weight:500;color:var(--grey);">(Required)</span>';
     }
 
+    // Switch photo tips
+    const tipVehicle = document.getElementById('photo-tips-vehicle');
+    const tipPlates = document.getElementById('photo-tips-plates');
+    const tipAccessories = document.getElementById('photo-tips-accessories');
+    if (tipVehicle) tipVehicle.style.display = (!isPlates && !isAccessories) ? 'grid' : 'none';
+    if (tipPlates) tipPlates.style.display = isPlates ? 'grid' : 'none';
+    if (tipAccessories) tipAccessories.style.display = isAccessories ? 'grid' : 'none';
+
     populateBrands();
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
@@ -1042,6 +1070,22 @@
       document.getElementById('ai-upload-card').style.display = 'none';
       document.getElementById('vin-lookup-card').style.display = 'none';
       document.getElementById('mode-chip').innerHTML = `← ${isPlates ? 'Number Plate' : 'Accessory'}`;
+    }
+
+    // Switch photo tips
+    const tipV = document.getElementById('photo-tips-vehicle');
+    const tipP = document.getElementById('photo-tips-plates');
+    const tipA = document.getElementById('photo-tips-accessories');
+    if (tipV) tipV.style.display = isVehicle ? 'grid' : 'none';
+    if (tipP) tipP.style.display = isPlates ? 'grid' : 'none';
+    if (tipA) tipA.style.display = isAccessories ? 'grid' : 'none';
+
+    // Update photos card title
+    const photosTitle2 = document.querySelector('#manual-photos-card .form-card-title');
+    if (photosTitle2) {
+      if (isPlates) photosTitle2.innerHTML = 'Plate Photos <span style="font-size:12px;font-weight:500;color:var(--grey);">(Recommended)</span>';
+      else if (isAccessories) photosTitle2.innerHTML = 'Item Photos <span style="font-size:12px;font-weight:500;color:var(--grey);">(Recommended)</span>';
+      else photosTitle2.innerHTML = 'Vehicle Photos <span style="font-size:12px;font-weight:500;color:var(--grey);">(Required)</span>';
     }
 
     populateBrands();
@@ -1637,6 +1681,22 @@
     }, { threshold: 0.3 });
     sections.forEach(s => { if (s) obs.observe(s); });
   }
+
+  /* ── Inject SVG Icons ── */
+  function injectIcons() {
+    if (typeof DM_ICONS === 'undefined') return;
+    const cats = ['cars','boats','bikes','jetski','heavy','plates','accessories'];
+    cats.forEach(cat => {
+      const svg = DM_ICONS[cat] || '';
+      // Landing screen icons
+      const landEl = document.getElementById('land-icon-' + cat);
+      if (landEl) landEl.innerHTML = svg;
+      // In-form tile icons
+      const tileEl = document.getElementById('tile-icon-' + cat);
+      if (tileEl) tileEl.innerHTML = svg;
+    });
+  }
+  injectIcons();
 
   /* ── Init ── */
   populateBrands();
