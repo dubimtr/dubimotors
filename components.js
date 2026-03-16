@@ -6,6 +6,9 @@ function renderNavbar(activePage = '') {
     { href: 'boats.html', label: 'Boats', key: 'boats' },
     { href: 'bikes.html', label: 'Motorcycles', key: 'bikes' },
     { href: 'jetski.html', label: 'Jet Skis', key: 'jetski' },
+    { href: 'heavy.html', label: 'Heavy Vehicles', key: 'heavy' },
+    { href: 'plates.html', label: 'Number Plates', key: 'plates' },
+    { href: 'accessories.html', label: 'Accessories', key: 'accessories' },
     { href: '#', label: 'Finance', key: 'finance' },
     { href: '#', label: 'Dealers', key: 'dealers' },
   ];
@@ -84,6 +87,9 @@ function renderFooter() {
             <a class="footer-link" href="boats.html">Boats &amp; Yachts</a>
             <a class="footer-link" href="bikes.html">Motorcycles</a>
             <a class="footer-link" href="jetski.html">Jet Skis</a>
+            <a class="footer-link" href="heavy.html">Heavy Vehicles</a>
+            <a class="footer-link" href="plates.html">Number Plates</a>
+            <a class="footer-link" href="accessories.html">Auto Accessories</a>
           </div>
           <div>
             <div class="footer-col-title">Services</div>

@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Auto Accessories for Sale in UAE — DUBIMOTORS</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .page-hero { background: var(--dark); padding: 40px 0 32px; }
+    .page-hero .container { display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+    .page-hero-title { font-size: 32px; font-weight: 900; color: var(--white); margin-bottom: 6px; }
+    .page-hero-sub { font-size: 15px; color: #666; }
+    .breadcrumb { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #555; margin-bottom: 14px; }
+    .breadcrumb a { color: #555; } .breadcrumb a:hover { color: var(--orange); }
+    .breadcrumb span { color: #999; }
+    .coming-soon-section {
+      min-height: 60vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--light);
+    }
+    .coming-soon-card {
+      text-align: center;
+      padding: 64px 48px;
+      background: var(--white);
+      border-radius: 24px;
+      border: 1px solid var(--border);
+      max-width: 560px;
+      width: 100%;
+    }
+    .coming-soon-icon { font-size: 72px; margin-bottom: 24px; }
+    .coming-soon-title { font-size: 32px; font-weight: 900; color: var(--dark); margin-bottom: 12px; }
+    .coming-soon-text { font-size: 16px; color: var(--grey); line-height: 1.7; margin-bottom: 32px; }
+    .coming-soon-badge {
+      display: inline-block;
+      background: rgba(232,69,10,0.1);
+      color: var(--orange);
+      border: 1px solid rgba(232,69,10,0.3);
+      border-radius: 20px;
+      padding: 6px 18px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      margin-bottom: 24px;
+    }
+    .subcats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 24px;
+    }
+    .subcat-pill {
+      background: var(--light);
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 8px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--dark);
+      text-align: center;
+    }
+    @media (max-width: 600px) {
+      .coming-soon-card { padding: 40px 24px; }
+      .subcats { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+<div id="navbar-placeholder"></div>
+
+<!-- PAGE HERO -->
+<div class="page-hero">
+  <div class="container">
+    <div class="page-hero-left">
+      <div class="breadcrumb">
+        <a href="index.html">Home</a>
+        <span>/</span>
+        <span>Auto Accessories</span>
+      </div>
+      <div class="page-hero-title">🔧 Auto Accessories</div>
+      <div class="page-hero-sub">Spare parts, modifications, wheels, audio &amp; more across the UAE</div>
+    </div>
+    <button class="btn-primary" onclick="window.location.href='place-ad.html'">+ Sell Your Item</button>
+  </div>
+</div>
+
+<!-- COMING SOON -->
+<section class="coming-soon-section">
+  <div class="coming-soon-card">
+    <div class="coming-soon-icon">🔧</div>
+    <div class="coming-soon-badge">Coming Soon</div>
+    <div class="coming-soon-title">Auto Accessories Marketplace</div>
+    <div class="coming-soon-text">Buy and sell genuine spare parts, performance upgrades, wheels, tyres, audio systems, and all kinds of automotive accessories across the UAE.</div>
+    <button class="btn-primary" onclick="window.location.href='place-ad.html'" style="margin-bottom:16px;">List Your Item</button>
+    <div style="font-size:13px;color:var(--grey);">Or <a href="index.html" style="color:var(--orange);">browse other categories</a></div>
+    <div class="subcats">
+      <div class="subcat-pill">🔩 Spare Parts</div>
+      <div class="subcat-pill">🏎️ Performance</div>
+      <div class="subcat-pill">🎵 Audio</div>
+      <div class="subcat-pill">🛞 Wheels &amp; Tyres</div>
+      <div class="subcat-pill">💡 Lighting</div>
+      <div class="subcat-pill">🪑 Interior</div>
+    </div>
+  </div>
+</section>
+
+<div id="footer-placeholder"></div>
+<div id="toast" class="toast"></div>
+<script src="shared.js"></script>
+<script src="components.js"></script>
+<script>
+  renderNavbar('accessories');
+  renderFooter();
+</script>
+</body>
+</html>

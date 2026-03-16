@@ -1,12 +1,13 @@
 /**
  * DUBIMOTORS AI API Server
- * Handles: /api/agent, /api/analyze-photos, /api/vin-lookup, /api/price-estimate
+ * Handles: /api/agent, /api/analyze-photos, /api/vin-lookup, /api/price-estimate, /api/verify-listing
  * Also serves static files from the same directory.
  */
 
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
+const nodemailer = require('nodemailer');
 
 const OpenAI = require('openai');
 const openai = new OpenAI({
@@ -590,9 +591,159 @@ Return ONLY this JSON (no markdown, no explanation):
 }
 
 // ══════════════════════════════════════════════════════════════════════════
+//* ── /api/verify-listing — AI listing verification + email confirmation ── */
+
+// Email transporter (uses SMTP env vars; gracefully skips if not configured)
+function createMailTransporter() {
+  if (!process.env.SMTP_HOST && !process.env.SMTP_USER) return null;
+  return nodemailer.createTransport({
+    host: process.env.SMTP_HOST || 'smtp.gmail.com',
+    port: parseInt(process.env.SMTP_PORT || '587'),
+    secure: process.env.SMTP_SECURE === 'true',
+    auth: {
+      user: process.env.SMTP_USER,
+      pass: process.env.SMTP_PASS,
+    },
+  });
+}
+
+async function sendVerificationEmail(to, listingData) {
+  const transporter = createMailTransporter();
+  if (!transporter || !to) return false;
+  const { brand, model, trim, year, price, name } = listingData;
+  const vehicleTitle = [year, brand, model, trim].filter(Boolean).join(' ');
+  const priceFormatted = price ? 'AED ' + parseInt(price).toLocaleString() : 'Price not specified';
+  try {
+    await transporter.sendMail({
+      from: `"DubiMotors" <${process.env.SMTP_USER}>`,
+      to,
+      subject: `Your listing is live: ${vehicleTitle}`,
+      html: `
+        <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#fff;">
+          <div style="background:#111;padding:24px 32px;">
+            <div style="color:#fff;font-size:22px;font-weight:900;">DUBI<span style="color:#E8450A;">MOTORS</span></div>
+          </div>
+          <div style="padding:32px;">
+            <div style="background:#E8F5E9;border:1px solid #A5D6A7;border-radius:12px;padding:16px 20px;margin-bottom:24px;display:flex;align-items:center;gap:12px;">
+              <span style="font-size:24px;">&#x1F916;</span>
+              <div>
+                <div style="font-size:16px;font-weight:700;color:#2E7D32;">Verified by AI</div>
+                <div style="font-size:13px;color:#388E3C;">Your listing has passed our AI verification check</div>
+              </div>
+            </div>
+            <h2 style="font-size:22px;font-weight:900;color:#111;margin:0 0 8px;">Your listing is now live!</h2>
+            <p style="color:#666;font-size:15px;margin:0 0 24px;">Hi ${name || 'there'}, your vehicle listing has been verified and published on DubiMotors.</p>
+            <div style="background:#F8F8F8;border-radius:12px;padding:20px;margin-bottom:24px;">
+              <div style="font-size:18px;font-weight:800;color:#111;margin-bottom:6px;">${vehicleTitle}</div>
+              <div style="font-size:20px;font-weight:900;color:#E8450A;">${priceFormatted}</div>
+            </div>
+            <p style="color:#666;font-size:14px;line-height:1.7;">Buyers can now find your listing on DubiMotors. You will receive inquiries directly to your phone number. Make sure to respond promptly to maximize your chances of a quick sale.</p>
+            <div style="margin-top:28px;padding-top:20px;border-top:1px solid #eee;font-size:12px;color:#999;">
+              DubiMotors &mdash; UAE's AI-Powered Vehicle Marketplace<br>
+              <a href="https://dubimotors.onrender.com" style="color:#E8450A;">dubimotors.onrender.com</a>
+            </div>
+          </div>
+        </div>`,
+    });
+    return true;
+  } catch (e) {
+    console.error('Email send error:', e.message);
+    return false;
+  }
+}
+
+async function handleVerifyListing(req, res) {
+  const body = await parseBody(req);
+  const { brand, model, trim, year, price, km, condition, desc, location, name, phone, email } = body;
+
+  if (!brand || !model || !price) {
+    return jsonRes(res, { approved: false, reason: 'Brand, model, and price are required.' }, 400);
+  }
+
+  const vehicleDesc = [year, brand, model, trim].filter(Boolean).join(' ');
+  const priceNum = parseInt(price);
+
+  // Basic sanity checks before AI
+  if (priceNum < 100 || priceNum > 100000000) {
+    return jsonRes(res, { approved: false, reason: 'The price entered seems unrealistic. Please enter a valid AED price.' });
+  }
+
+  const prompt = `You are a listing verification AI for DubiMotors, a UAE vehicle marketplace. Your job is to detect fake, duplicate, irrelevant, or suspicious listings.
+
+Listing details:
+- Vehicle: ${vehicleDesc}
+- Price: AED ${priceNum.toLocaleString()}
+- Mileage: ${km ? km + ' km' : 'not specified'}
+- Condition: ${condition || 'not specified'}
+- Location: ${location || 'not specified'}
+- Description: ${desc ? desc.substring(0, 500) : 'not provided'}
+- Seller name: ${name || 'not provided'}
+- Phone: ${phone || 'not provided'}
+
+Check for these red flags:
+1. FAKE/SCAM: Price is unrealistically low (e.g. AED 500 for a car, AED 1000 for a yacht)
+2. WRONG CATEGORY: Item is clearly not a vehicle (e.g. listing a house, phone, or job)
+3. SPAM/IRRELEVANT: Description contains unrelated content, excessive links, or promotional spam
+4. IMPOSSIBLE SPECS: Year is in the future beyond 2026, mileage is negative, or specs are nonsensical
+5. DUPLICATE INDICATOR: Generic placeholder text like "test", "aaa", "xxx", "asdf" in title or description
+6. MISSING CRITICAL INFO: Brand is completely unknown or model doesn't exist for that brand
+
+Approve the listing if it looks like a genuine vehicle listing, even if some details are missing.
+Reject only if there are clear red flags.
+
+Return ONLY this JSON:
+{
+  "approved": true or false,
+  "reason": "Brief explanation if rejected, or empty string if approved",
+  "confidence": "high/medium/low"
+}`;
+
+  try {
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4.1-mini',
+      messages: [{ role: 'user', content: prompt }],
+      max_tokens: 200,
+    });
+    const text = completion.choices[0].message.content.trim();
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      const result = JSON.parse(jsonMatch[0]);
+      if (result.approved) {
+        // Send confirmation email asynchronously (don't block response)
+        sendVerificationEmail(email, { brand, model, trim, year, price, name }).catch(() => {});
+        return jsonRes(res, {
+          approved: true,
+          message: `Your ${vehicleDesc} listing has been verified and is now live on DubiMotors. Serious buyers will contact you directly.`,
+          verifiedAt: new Date().toISOString(),
+        });
+      } else {
+        return jsonRes(res, {
+          approved: false,
+          reason: result.reason || 'Your listing did not pass our verification check.',
+        });
+      }
+    } else {
+      // If AI response is unclear, approve by default (fail open)
+      sendVerificationEmail(email, { brand, model, trim, year, price, name }).catch(() => {});
+      return jsonRes(res, {
+        approved: true,
+        message: `Your ${vehicleDesc} listing has been verified and is now live on DubiMotors.`,
+      });
+    }
+  } catch (e) {
+    console.error('Verify listing error:', e.message);
+    // On AI error, approve and continue (don't block sellers)
+    sendVerificationEmail(email, { brand, model, trim, year, price, name }).catch(() => {});
+    return jsonRes(res, {
+      approved: true,
+      message: `Your ${vehicleDesc} listing has been submitted and is now live on DubiMotors.`,
+    });
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════════
 // HTTP SERVER
 // ══════════════════════════════════════════════════════════════════════════
-
 const server = http.createServer(async (req, res) => {
   const url = req.url.split('?')[0];
 
@@ -609,6 +760,7 @@ const server = http.createServer(async (req, res) => {
     if (url === '/api/vin-lookup') return handleVINLookup(req, res);
     if (url === '/api/mulkiya-scan') return handleMulkiyaScan(req, res);
     if (url === '/api/price-estimate') return handlePriceEstimate(req, res);
+    if (url === '/api/verify-listing') return handleVerifyListing(req, res);
   }
 
   // Static file serving

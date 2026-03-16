@@ -20,7 +20,7 @@
       inset: 0;
       background:
         linear-gradient(to bottom, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.75) 100%),
-        url('https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=1800&q=85&fit=crop') center/cover no-repeat;
+        url('hero-porsche.jpg') center/cover no-repeat;
     }
     .hero-content {
       position: relative;
@@ -286,6 +286,9 @@
       grid-template-columns: repeat(4, 1fr);
       gap: 16px;
     }
+    @media (min-width: 769px) {
+      .showcase-grid { grid-template-columns: repeat(4, 1fr); }
+    }
     .showcase-card {
       border-radius: 14px;
       overflow: hidden;
@@ -481,10 +484,10 @@
 
       /* Category strip */
       .cat-strip .container { overflow-x: auto; -webkit-overflow-scrolling: touch; gap: 0; }
-      .cat-item { flex: 0 0 auto; padding: 14px 16px; gap: 8px; }
-      .cat-icon-box { width: 34px; height: 34px; font-size: 16px; }
-      .cat-item-label { font-size: 12px; }
-      .cat-item-count { font-size: 10px; }
+      .cat-item { flex: 0 0 auto; padding: 12px 14px; gap: 6px; min-width: 0; }
+      .cat-icon-box { width: 30px; height: 30px; font-size: 14px; flex-shrink: 0; }
+      .cat-item-label { font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 80px; }
+      .cat-item-count { font-size: 10px; white-space: nowrap; }
 
       /* Post ad banner */
       .post-ad-banner .container { flex-direction: column; gap: 24px; }
@@ -543,6 +546,9 @@
           <button class="s-tab" onclick="setTab(this,'boats')">Boats</button>
           <button class="s-tab" onclick="setTab(this,'bikes')">Motorcycles</button>
           <button class="s-tab" onclick="setTab(this,'jetski')">Jet Skis</button>
+          <button class="s-tab" onclick="setTab(this,'heavy')">Heavy Vehicles</button>
+          <button class="s-tab" onclick="setTab(this,'plates')">Number Plates</button>
+          <button class="s-tab" onclick="setTab(this,'accessories')">Accessories</button>
         </div>
         <div class="search-input-row">
           <span class="search-icon">🔍</span>
@@ -620,6 +626,27 @@
         <div class="cat-item-count" id="count-jetski">Loading...</div>
       </div>
     </a>
+    <a class="cat-item" href="heavy.html">
+      <div class="cat-icon-box">🚛</div>
+      <div class="cat-item-text">
+        <div class="cat-item-label">Heavy Vehicles</div>
+        <div class="cat-item-count">Coming Soon</div>
+      </div>
+    </a>
+    <a class="cat-item" href="plates.html">
+      <div class="cat-icon-box">🔢</div>
+      <div class="cat-item-text">
+        <div class="cat-item-label">Number Plates</div>
+        <div class="cat-item-count">Coming Soon</div>
+      </div>
+    </a>
+    <a class="cat-item" href="accessories.html">
+      <div class="cat-icon-box">🔧</div>
+      <div class="cat-item-text">
+        <div class="cat-item-label">Accessories</div>
+        <div class="cat-item-count">Coming Soon</div>
+      </div>
+    </a>
   </div>
 </div>
 
@@ -665,7 +692,7 @@
       <div>
         <div class="section-eyebrow">Browse by Category</div>
         <div class="section-title">Find Your Perfect Ride</div>
-        <div class="section-subtitle">From luxury supercars to ocean-ready yachts. Explore every category in the UAE.</div>
+        <div class="section-subtitle">From luxury supercars to ocean-ready yachts, heavy vehicles, number plates, and auto accessories. Explore every category in the UAE.</div>
       </div>
     </div>
     <div class="showcase-grid">
@@ -703,6 +730,33 @@
         <div class="showcase-label">
           <div class="showcase-cat">Jet Skis</div>
           <div class="showcase-count" id="sc-jetski">Loading...</div>
+        </div>
+      </a>
+      <a class="showcase-card" href="heavy.html">
+        <img src="cat-heavy.jpg" alt="Heavy Vehicles" loading="lazy" />
+        <div class="showcase-overlay"></div>
+        <div class="showcase-arrow">→</div>
+        <div class="showcase-label">
+          <div class="showcase-cat">Heavy Vehicles</div>
+          <div class="showcase-count">Trucks, Buses &amp; More</div>
+        </div>
+      </a>
+      <a class="showcase-card" href="plates.html">
+        <img src="cat-plates.jpg" alt="Number Plates" loading="lazy" />
+        <div class="showcase-overlay"></div>
+        <div class="showcase-arrow">→</div>
+        <div class="showcase-label">
+          <div class="showcase-cat">Number Plates</div>
+          <div class="showcase-count">VIP &amp; Fancy Plates</div>
+        </div>
+      </a>
+      <a class="showcase-card" href="accessories.html">
+        <img src="cat-accessories.jpg" alt="Auto Accessories" loading="lazy" />
+        <div class="showcase-overlay"></div>
+        <div class="showcase-arrow">→</div>
+        <div class="showcase-label">
+          <div class="showcase-cat">Auto Accessories</div>
+          <div class="showcase-count">Parts, Mods &amp; More</div>
         </div>
       </a>
     </div>
@@ -870,7 +924,7 @@
     const params = new URLSearchParams({ cat: activeTab });
     if (q) params.set('q', q);
     if (loc) params.set('location', loc);
-    const pages = { cars: 'cars.html', boats: 'boats.html', bikes: 'bikes.html', jetski: 'jetski.html' };
+    const pages = { cars: 'cars.html', boats: 'boats.html', bikes: 'bikes.html', jetski: 'jetski.html', heavy: 'heavy.html', plates: 'plates.html', accessories: 'accessories.html' };
     window.location.href = (pages[activeTab] || 'cars.html') + '?' + params.toString();
   }
 

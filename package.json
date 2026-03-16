@@ -10,6 +10,7 @@
     "node": ">=18.0.0"
   },
   "dependencies": {
+    "nodemailer": "^8.0.2",
     "openai": "^6.29.0"
   }
 }
