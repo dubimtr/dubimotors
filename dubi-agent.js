@@ -28,6 +28,7 @@
       50%       { box-shadow: 0 6px 28px rgba(232,69,10,0.50), 0 0 0 12px rgba(232,69,10,0); }
     }
     #dubi-agent-btn svg { width: 34px; height: 34px; }
+    #dubi-agent-btn img { width: 100%; height: 100%; object-fit: contain; border-radius: 50%; }
     #dubi-agent-badge {
       position: absolute; top: -3px; right: -3px;
       background: #0D0D0D; color: #E8450A;
@@ -197,55 +198,20 @@
   style.textContent = css;
   document.head.appendChild(style);
 
-  /* ── Burj Khalifa + AI circuit icon SVG ── */
-  const agentIconSVG = `
-    <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-      <!-- Burj Khalifa silhouette (stylised) -->
-      <g fill="#fff" opacity="0.95">
-        <!-- Spire -->
-        <rect x="48.5" y="4" width="3" height="18" rx="1.5"/>
-        <!-- Upper tower -->
-        <rect x="44" y="20" width="12" height="10" rx="2"/>
-        <!-- Mid setback 1 -->
-        <rect x="41" y="30" width="18" height="8" rx="1.5"/>
-        <!-- Mid setback 2 -->
-        <rect x="38" y="38" width="24" height="8" rx="1.5"/>
-        <!-- Lower tower -->
-        <rect x="35" y="46" width="30" height="28" rx="2"/>
-        <!-- Base -->
-        <rect x="30" y="74" width="40" height="6" rx="2"/>
-        <!-- Ground -->
-        <rect x="22" y="80" width="56" height="4" rx="2"/>
-      </g>
-      <!-- AI circuit nodes on the tower -->
-      <g fill="#E8450A">
-        <circle cx="50" cy="52" r="3"/>
-        <circle cx="42" cy="60" r="2.5"/>
-        <circle cx="58" cy="60" r="2.5"/>
-        <circle cx="46" cy="68" r="2"/>
-        <circle cx="54" cy="68" r="2"/>
-      </g>
-      <!-- Circuit lines -->
-      <g stroke="#E8450A" stroke-width="1.2" fill="none" opacity="0.8">
-        <line x1="50" y1="52" x2="42" y2="60"/>
-        <line x1="50" y1="52" x2="58" y2="60"/>
-        <line x1="42" y1="60" x2="46" y2="68"/>
-        <line x1="58" y1="60" x2="54" y2="68"/>
-        <line x1="46" y1="68" x2="54" y2="68"/>
-      </g>
-    </svg>`;
+  /* ── DM Robot mascot icon ── */
+  const agentIconSVG = `<img src="dubi-agent-icon.png" alt="Dubi Agent" style="width:100%;height:100%;object-fit:contain" />`;
 
   /* ── Build HTML ── */
   const widget = document.createElement('div');
   widget.innerHTML = `
-    <button id="dubi-agent-btn" onclick="dubiAgentToggle()" title="Chat with Dubi Agent">
-      ${agentIconSVG}
+    <button id="dubi-agent-btn" onclick="dubiAgentToggle()" title="Chat with Dubi Agent" style="background:transparent;padding:0;overflow:hidden">
+      <img src="dubi-agent-icon.png" alt="Dubi Agent" style="width:100%;height:100%;object-fit:cover;border-radius:50%" />
       <span id="dubi-agent-badge">AI</span>
     </button>
 
     <div id="dubi-agent-window">
       <div class="dubi-agent-header">
-        <div class="dubi-agent-avatar">${agentIconSVG}</div>
+        <div class="dubi-agent-avatar" style="overflow:hidden;padding:0"><img src="dubi-agent-icon.png" alt="Dubi Agent" style="width:100%;height:100%;object-fit:cover;border-radius:50%" /></div>
         <div class="dubi-agent-info">
           <div class="dubi-agent-name">Dubi <span>Agent</span></div>
           <div class="dubi-agent-status">Online — Ready to help</div>

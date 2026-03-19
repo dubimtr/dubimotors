@@ -6,36 +6,67 @@
   <title>Heavy Vehicles for Sale in UAE — DUBIMOTORS</title>
   <link rel="stylesheet" href="style.css" />
   <style>
-    .page-hero { background: var(--dark); padding: 32px 0 28px; }
-    .page-hero .container { display: flex; align-items: center; justify-content: space-between; gap: 24px; }
-    .page-hero-title { font-size: 30px; font-weight: 900; color: var(--white); margin-bottom: 4px; }
-    .page-hero-sub { font-size: 14px; color: #666; }
-    .breadcrumb { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #555; margin-bottom: 10px; }
-    .breadcrumb a { color: #555; } .breadcrumb a:hover { color: var(--orange); }
-    .type-strip { background: var(--white); border-bottom: 1px solid var(--border); padding: 12px 0; overflow: hidden; }
-    .type-strip-inner { display: flex; align-items: center; gap: 8px; overflow-x: auto; scrollbar-width: none; padding: 0 4px; }
-    .type-strip-inner::-webkit-scrollbar { display: none; }
-    .type-btn { padding: 8px 18px; border: 1.5px solid var(--border); border-radius: 20px; font-size: 13px; font-weight: 600; color: #555; background: var(--white); cursor: pointer; white-space: nowrap; flex-shrink: 0; transition: all 0.2s; }
-    .type-btn:hover, .type-btn.active { border-color: var(--orange); background: #FFF8F6; color: var(--orange); }
-    .filter-bar { background: #F7F7F7; border-bottom: 1px solid var(--border); padding: 12px 0; }
-    .filter-bar .container { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-    .filter-select { padding: 9px 14px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 13px; font-family: 'Inter',sans-serif; color: var(--dark); background: var(--white); cursor: pointer; }
-    .filter-select:focus { outline: none; border-color: var(--orange); }
-    .filter-count { margin-left: auto; font-size: 13px; color: #888; font-weight: 600; }
-    .results-section { padding: 32px 0; background: var(--light); min-height: 60vh; }
-    .results-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
-    .results-title { font-size: 18px; font-weight: 800; color: var(--dark); }
-    .listings-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
-    @media (max-width: 1100px) { .listings-grid { grid-template-columns: repeat(3, 1fr); } }
-    @media (max-width: 768px) { .listings-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; } }
-    @media (max-width: 480px) { .listings-grid { grid-template-columns: 1fr; } }
-    .no-results { text-align: center; padding: 80px 20px; color: #888; }
-    .no-results-icon { font-size: 48px; margin-bottom: 16px; }
-    .no-results-title { font-size: 20px; font-weight: 800; color: var(--dark); margin-bottom: 8px; }
-    .pagination { display: flex; gap: 8px; justify-content: center; margin-top: 32px; }
-    .page-btn { padding: 8px 16px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 14px; font-weight: 600; background: var(--white); cursor: pointer; }
-    .page-btn.active { background: var(--orange); color: var(--white); border-color: var(--orange); }
-    @media (max-width: 768px) { .page-hero .container { flex-direction: column; align-items: flex-start; } }
+    .page-hero{background:var(--dark);padding:32px 0 28px}
+    .page-hero .container{display:flex;align-items:center;justify-content:space-between;gap:24px}
+    .page-hero-title{font-size:30px;font-weight:900;color:var(--white);margin-bottom:4px}
+    .page-hero-sub{font-size:14px;color:#666}
+    .breadcrumb{display:flex;align-items:center;gap:8px;font-size:12px;color:#555;margin-bottom:10px}
+    .breadcrumb a{color:#555}.breadcrumb a:hover{color:var(--orange)}
+    .btn-place-ad{background:var(--orange);color:var(--white);border:none;border-radius:8px;padding:12px 22px;font-size:14px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0}
+    .btn-place-ad:hover{background:var(--orange-hover)}
+    .brand-strip{background:var(--white);border-bottom:1px solid var(--border);padding:14px 0;overflow:hidden}
+    .brand-strip-inner{display:flex;align-items:center;gap:6px;overflow-x:auto;scrollbar-width:none;padding:0 4px}
+    .brand-strip-inner::-webkit-scrollbar{display:none}
+    .brand-logo-btn{display:flex;flex-direction:column;align-items:center;gap:5px;padding:8px 12px;border:1.5px solid var(--border);border-radius:10px;cursor:pointer;background:var(--white);flex-shrink:0;transition:border-color .2s,background .2s;min-width:68px}
+    .brand-logo-btn:hover,.brand-logo-btn.active{border-color:var(--orange);background:#FFF8F6}
+    .brand-logo-btn img{width:40px;height:28px;object-fit:contain;filter:grayscale(30%)}
+    .brand-logo-btn:hover img,.brand-logo-btn.active img{filter:grayscale(0%)}
+    .brand-logo-btn span{font-size:10px;font-weight:700;color:#555;white-space:nowrap}
+    .brand-logo-btn.active span{color:var(--orange)}
+    .filter-bar{background:#F7F7F7;border-bottom:1px solid var(--border);padding:12px 0;position:relative;z-index:1}
+    .filter-bar .container{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    .filter-select{border:1.5px solid var(--border);border-radius:8px;padding:9px 30px 9px 12px;font-size:13px;font-family:inherit;outline:none;cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23888' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;background-color:var(--white)}
+    .filter-select:focus{border-color:var(--orange)}
+    .filter-select-wide{min-width:140px}
+    .filter-count{font-size:13px;color:var(--orange);font-weight:700;margin-left:auto;white-space:nowrap}
+    .btn-filter-reset{background:transparent;border:1.5px solid var(--border);border-radius:8px;padding:9px 14px;font-size:13px;font-weight:600;color:var(--grey);cursor:pointer}
+    .btn-filter-reset:hover{border-color:var(--orange);color:var(--orange)}
+    .btn-mobile-filter{display:none;background:var(--dark);color:var(--white);border:none;border-radius:8px;padding:9px 14px;font-size:13px;font-weight:700;cursor:pointer}
+    .listing-layout{display:grid;grid-template-columns:260px 1fr;gap:28px;padding:32px 0 72px}
+    .sidebar{position:sticky;top:130px;height:fit-content;max-height:calc(100vh - 140px);overflow-y:auto}
+    .sidebar-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:18px;margin-bottom:12px}
+    .sidebar-title{font-size:12px;font-weight:800;color:var(--dark);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px}
+    .range-row{display:flex;gap:8px;align-items:center}
+    .range-input{flex:1;border:1.5px solid var(--border);border-radius:8px;padding:8px 10px;font-size:13px;font-family:inherit;outline:none;min-width:0}
+    .range-input:focus{border-color:var(--orange)}
+    .range-sep{font-size:12px;color:#999;flex-shrink:0}
+    .checkbox-list{display:flex;flex-direction:column;gap:9px}
+    .checkbox-item{display:flex;align-items:center;gap:9px;cursor:pointer}
+    .checkbox-item input[type="checkbox"]{width:15px;height:15px;accent-color:var(--orange);cursor:pointer;flex-shrink:0}
+    .checkbox-item label{font-size:13px;color:#444;cursor:pointer;line-height:1.3}
+    .sidebar-select{width:100%;border:1.5px solid var(--border);border-radius:8px;padding:9px 30px 9px 12px;font-size:13px;font-family:inherit;outline:none;cursor:pointer;appearance:none;background:var(--white);background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23888' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center}
+    .sidebar-select:focus{border-color:var(--orange)}
+    .sidebar-reset{width:100%;background:transparent;color:var(--grey);border:1.5px solid var(--border);border-radius:8px;padding:9px;font-size:13px;font-weight:600;cursor:pointer;margin-top:8px}
+    .sidebar-reset:hover{border-color:var(--orange);color:var(--orange)}
+    .results-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px}
+    .results-title{font-size:17px;font-weight:800;color:var(--dark)}
+    .sort-select{border:1.5px solid var(--border);border-radius:8px;padding:8px 30px 8px 12px;font-size:13px;font-family:inherit;outline:none;cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23888' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center}
+    .no-results{text-align:center;padding:60px 20px;color:var(--grey)}
+    .no-results-icon{font-size:48px;margin-bottom:16px}
+    .no-results-title{font-size:20px;font-weight:700;color:var(--dark);margin-bottom:8px}
+    @media(max-width:900px){
+      .listing-layout{grid-template-columns:1fr;gap:0;padding:0 0 48px}
+      .sidebar{position:static;max-height:none;overflow:visible;display:none}
+      .sidebar.open{display:block;padding:16px 0;border-bottom:1px solid var(--border);margin-bottom:16px}
+      .btn-mobile-filter{display:inline-flex;align-items:center;gap:6px}
+      .page-hero .container{flex-direction:column;align-items:flex-start;gap:12px}
+      .page-hero-title{font-size:22px}
+      .results-header{margin-top:16px}
+      .listings-grid{grid-template-columns:repeat(2,1fr);gap:12px}
+    }
+    @media(max-width:480px){
+      .listings-grid{grid-template-columns:1fr}
+    }
   </style>
 </head>
 <body>
@@ -46,131 +77,225 @@
     <div>
       <div class="breadcrumb"><a href="index.html">Home</a><span>›</span><span>Heavy Vehicles</span></div>
       <div class="page-hero-title">Heavy Vehicles for Sale in UAE</div>
-      <div class="page-hero-sub" id="hero-count">Trucks, Buses, Construction Equipment &amp; More</div>
+      <div class="page-hero-sub">Browse trucks, buses, construction equipment and more from verified sellers.</div>
     </div>
-    <a class="btn-orange" href="place-ad.html?cat=heavy" style="white-space:nowrap;flex-shrink:0;padding:12px 24px;border-radius:10px;font-weight:700;font-size:14px;background:var(--orange);color:#fff;text-decoration:none;">+ List Your Vehicle</a>
+    <button class="btn-place-ad" onclick="window.location.href='place-ad.html'">+ Place Your Ad</button>
   </div>
 </div>
 
-<div class="type-strip">
-  <div class="container">
-    <div class="type-strip-inner">
-      <button class="type-btn active" onclick="filterType(this,'')">All Types</button>
-      <button class="type-btn" onclick="filterType(this,'Truck')">Trucks</button>
-      <button class="type-btn" onclick="filterType(this,'Tipper')">Tippers</button>
-      <button class="type-btn" onclick="filterType(this,'Tanker')">Tankers</button>
-      <button class="type-btn" onclick="filterType(this,'Bus')">Buses</button>
-      <button class="type-btn" onclick="filterType(this,'Van')">Vans &amp; Pickups</button>
-      <button class="type-btn" onclick="filterType(this,'Excavator')">Excavators</button>
-      <button class="type-btn" onclick="filterType(this,'Forklift')">Forklifts</button>
-      <button class="type-btn" onclick="filterType(this,'Crane')">Cranes</button>
-    </div>
-  </div>
+<div class="brand-strip">
+  <div class="container"><div class="brand-strip-inner" id="brand-strip"></div></div>
 </div>
 
 <div class="filter-bar">
   <div class="container">
-    <select class="filter-select" id="filterCity" onchange="applyFilters()">
-      <option value="">All Emirates</option>
-      <option>Dubai</option><option>Abu Dhabi</option><option>Sharjah</option>
-      <option>Ajman</option><option>Ras Al Khaimah</option><option>Fujairah</option><option>Umm Al Quwain</option>
+    <button class="btn-mobile-filter" onclick="toggleSidebar()">&#9881; Filters</button>
+    <select class="filter-select filter-select-wide" id="filterCity" onchange="applyFilters()">
+      <option value="">All Emirates</option><option>Dubai</option><option>Abu Dhabi</option><option>Sharjah</option><option>Ajman</option><option>Fujairah</option><option>Ras Al Khaimah</option><option>Umm Al Quwain</option>
     </select>
-    <select class="filter-select" id="filterMake" onchange="applyFilters()">
-      <option value="">All Makes</option>
-      <option>Mercedes-Benz</option><option>Volvo</option><option>MAN</option><option>Scania</option>
-      <option>DAF</option><option>Iveco</option><option>Renault</option><option>Hino</option>
-      <option>Mitsubishi Fuso</option><option>Isuzu</option><option>Toyota</option><option>Ford</option>
-      <option>Caterpillar</option><option>Komatsu</option><option>JCB</option>
-    </select>
+    <select class="filter-select filter-select-wide" id="filterMake" onchange="onTopMakeChange()"><option value="">All Makes</option></select>
+    <select class="filter-select filter-select-wide" id="filterModel" onchange="applyFilters()" disabled><option value="">All Models</option></select>
     <select class="filter-select" id="filterCondition" onchange="applyFilters()">
-      <option value="">Any Condition</option>
-      <option>Brand New</option><option>Used</option>
+      <option value="">All Conditions</option><option>Brand New</option><option>Used</option>
     </select>
-    <select class="filter-select" id="filterSort" onchange="applyFilters()">
-      <option value="newest">Newest First</option>
-      <option value="price-asc">Price: Low to High</option>
-      <option value="price-desc">Price: High to Low</option>
-    </select>
-    <span class="filter-count" id="filter-count">Loading...</span>
+    <div class="filter-count" id="filter-count"></div>
+    <button class="btn-filter-reset" onclick="resetFilters()">Clear</button>
   </div>
 </div>
 
-<section class="results-section">
-  <div class="container">
-    <div class="results-header">
-      <div class="results-title" id="results-title">Loading...</div>
+<div class="container">
+  <div class="listing-layout">
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-card">
+        <div class="sidebar-title">Price Range (AED)</div>
+        <div class="range-row">
+          <input class="range-input" id="priceMin" type="number" placeholder="Min" oninput="applyFilters()" />
+          <span class="range-sep">to</span>
+          <input class="range-input" id="priceMax" type="number" placeholder="Max" oninput="applyFilters()" />
+        </div>
+      </div>
+      <div class="sidebar-card">
+        <div class="sidebar-title">Year</div>
+        <div class="range-row">
+          <input class="range-input" id="yearMin" type="number" placeholder="From" oninput="applyFilters()" />
+          <span class="range-sep">to</span>
+          <input class="range-input" id="yearMax" type="number" placeholder="To" oninput="applyFilters()" />
+        </div>
+      </div>
+      <div class="sidebar-card">
+        <div class="sidebar-title">Listing Status</div>
+        <div class="checkbox-list">
+          <div class="checkbox-item"><input type="checkbox" id="cb-verified" onchange="applyFilters()" /><label for="cb-verified">&#10003; Verified</label></div>
+          <div class="checkbox-item"><input type="checkbox" id="cb-owner" onchange="applyFilters()" /><label for="cb-owner">Private Owner</label></div>
+          <div class="checkbox-item"><input type="checkbox" id="cb-dealer" onchange="applyFilters()" /><label for="cb-dealer">Dealer</label></div>
+        </div>
+      </div>
+      <div class="sidebar-card">
+        <div class="sidebar-title">Vehicle Type</div>
+        <div class="checkbox-list">
+          <div class="checkbox-item"><input type="checkbox" class="cb-body" value="Truck / Semi-Truck" onchange="applyFilters()" /><label>Truck / Semi-Truck</label></div>
+          <div class="checkbox-item"><input type="checkbox" class="cb-body" value="Tipper / Dump Truck" onchange="applyFilters()" /><label>Tipper / Dump Truck</label></div>
+          <div class="checkbox-item"><input type="checkbox" class="cb-body" value="Tanker" onchange="applyFilters()" /><label>Tanker</label></div>
+          <div class="checkbox-item"><input type="checkbox" class="cb-body" value="Flatbed" onchange="applyFilters()" /><label>Flatbed</label></div>
+          <div class="checkbox-item"><input type="checkbox" class="cb-body" value="Refrigerated" onchange="applyFilters()" /><label>Refrigerated</label></div>
+          <div class="checkbox-item"><input type="checkbox" class="cb-body" value="Bus / Coach" onchange="applyFilters()" /><label>Bus / Coach</label></div>
+          <div class="checkbox-item"><input type="checkbox" class="cb-body" value="Mini Bus" onchange="applyFilters()" /><label>Mini Bus</label></div>
+          <div class="checkbox-item"><input type="checkbox" class="cb-body" value="Excavator" onchange="applyFilters()" /><label>Excavator</label></div>
+          <div class="checkbox-item"><input type="checkbox" class="cb-body" value="Forklift" onchange="applyFilters()" /><label>Forklift</label></div>
+          <div class="checkbox-item"><input type="checkbox" class="cb-body" value="Crane" onchange="applyFilters()" /><label>Crane</label></div>
+          <div class="checkbox-item"><input type="checkbox" class="cb-body" value="Bulldozer" onchange="applyFilters()" /><label>Bulldozer</label></div>
+          <div class="checkbox-item"><input type="checkbox" class="cb-body" value="Loader" onchange="applyFilters()" /><label>Loader</label></div>
+        </div>
+      </div>
+      <div class="sidebar-card">
+        <div class="sidebar-title">GVW / Payload (tonnes)</div>
+        <div class="range-row">
+          <input class="range-input" id="gvwMin" type="number" placeholder="Min" oninput="applyFilters()" />
+          <span class="range-sep">to</span>
+          <input class="range-input" id="gvwMax" type="number" placeholder="Max" oninput="applyFilters()" />
+        </div>
+      </div>
+      <div class="sidebar-card">
+        <div class="sidebar-title">Axles</div>
+        <div class="checkbox-list">
+          <div class="checkbox-item"><input type="checkbox" class="cb-axle" value="2" onchange="applyFilters()" /><label>2 Axles (4x2)</label></div>
+          <div class="checkbox-item"><input type="checkbox" class="cb-axle" value="3" onchange="applyFilters()" /><label>3 Axles (6x4)</label></div>
+          <div class="checkbox-item"><input type="checkbox" class="cb-axle" value="4" onchange="applyFilters()" /><label>4 Axles (8x4)</label></div>
+          <div class="checkbox-item"><input type="checkbox" class="cb-axle" value="5+" onchange="applyFilters()" /><label>5+ Axles</label></div>
+        </div>
+      </div>
+      <button class="sidebar-reset" onclick="resetFilters()">Reset All Filters</button>
+    </aside>
+
+    <div>
+      <div class="results-header">
+        <div class="results-title" id="results-title">All Listings</div>
+        <select class="sort-select" id="sortSelect" onchange="applyFilters()">
+          <option value="default">Sort: Featured</option><option value="price-asc">Price: Low to High</option><option value="price-desc">Price: High to Low</option><option value="year-desc">Newest First</option>
+        </select>
+      </div>
+      <div class="listings-grid cols-3" id="results-grid"></div>
+      <div id="no-results" class="no-results" style="display:none;">
+        <div class="no-results-icon">&#128269;</div>
+        <div class="no-results-title">No listings found</div>
+        <div>Try adjusting your filters or <a href="place-ad.html" style="color:var(--orange)">post your listing</a>.</div>
+      </div>
+      <div class="pagination" id="pagination"></div>
     </div>
-    <div class="listings-grid" id="results-grid"></div>
-    <div class="no-results" id="no-results" style="display:none;">
-      <div class="no-results-icon">🚛</div>
-      <div class="no-results-title">No heavy vehicles found</div>
-      <p>Try adjusting your filters or <a href="place-ad.html?cat=heavy" style="color:var(--orange)">be the first to list one</a>.</p>
-    </div>
-    <div class="pagination" id="pagination"></div>
   </div>
-</section>
+</div>
 
 <div id="footer-placeholder"></div>
 <div id="toast" class="toast"></div>
-<script src="shared.js"></script>
 <script src="vehicles.js"></script>
+<script src="shared.js"></script>
 <script src="components.js"></script>
 <script>
   renderNavbar('heavy');
   renderFooter();
 
-  const PER_PAGE = 12;
-  let allListings = [], filtered = [], currentPage = 1, activeType = '';
-
-  const heavyData = [
-    { make:'Mercedes-Benz', model:'Actros 2545', year:2022, price:320000, type:'Truck', km:85000, city:'Dubai', cond:'Used', seller:'Al Futtaim Trucks', verified:true },
-    { make:'Volvo', model:'FH16 750', year:2023, price:480000, type:'Truck', km:12000, city:'Abu Dhabi', cond:'Used', seller:'Emirates Heavy Equipment', verified:true },
-    { make:'MAN', model:'TGX 26.440', year:2021, price:265000, type:'Truck', km:120000, city:'Sharjah', cond:'Used', seller:'Private Seller', verified:false },
-    { make:'Scania', model:'R500 6x4', year:2022, price:390000, type:'Tipper', km:65000, city:'Dubai', cond:'Used', seller:'Gulf Trucks LLC', verified:true },
-    { make:'Hino', model:'500 Series', year:2023, price:195000, type:'Truck', km:8000, city:'Ajman', cond:'Used', seller:'Hino UAE Dealer', verified:true },
-    { make:'Isuzu', model:'FVR 34L', year:2021, price:145000, type:'Van', km:95000, city:'Dubai', cond:'Used', seller:'Private Seller', verified:false },
-    { make:'Mercedes-Benz', model:'Arocs 3240', year:2020, price:285000, type:'Tipper', km:145000, city:'Ras Al Khaimah', cond:'Used', seller:'RAK Heavy Vehicles', verified:false },
-    { make:'Volvo', model:'FM 420', year:2023, price:355000, type:'Tanker', km:5000, city:'Abu Dhabi', cond:'Brand New', seller:'Volvo Trucks UAE', verified:true },
-    { make:'MAN', model:'TGS 18.400', year:2022, price:230000, type:'Bus', km:78000, city:'Dubai', cond:'Used', seller:'Emirates Bus Trading', verified:true },
-    { make:'Caterpillar', model:'320 GC Excavator', year:2021, price:520000, type:'Excavator', km:0, city:'Dubai', cond:'Used', seller:'CAT Dealer UAE', verified:true },
-    { make:'JCB', model:'3CX Backhoe Loader', year:2022, price:280000, type:'Excavator', km:0, city:'Sharjah', cond:'Used', seller:'JCB UAE', verified:true },
-    { make:'Toyota', model:'Land Cruiser Pickup 79', year:2024, price:185000, type:'Van', km:0, city:'Dubai', cond:'Brand New', seller:'Al Futtaim Toyota', verified:true },
-    { make:'Mitsubishi Fuso', model:'Super Great V', year:2022, price:310000, type:'Truck', km:55000, city:'Abu Dhabi', cond:'Used', seller:'Mitsubishi Fuso UAE', verified:true },
-    { make:'Scania', model:'S730 8x4', year:2023, price:620000, type:'Truck', km:3000, city:'Dubai', cond:'Brand New', seller:'Scania UAE', verified:true },
-    { make:'Komatsu', model:'PC200-8M0', year:2020, price:445000, type:'Excavator', km:0, city:'Abu Dhabi', cond:'Used', seller:'Komatsu UAE', verified:false },
-    { make:'Iveco', model:'Stralis 460', year:2021, price:198000, type:'Truck', km:110000, city:'Fujairah', cond:'Used', seller:'Private Seller', verified:false },
+  /* ── Brand strip ── */
+  const brandList = [
+    { name: 'Mercedes-Benz', logo: 'logos/mercedes-benz.png' },
+    { name: 'Volvo', logo: '' },
+    { name: 'MAN', logo: '' },
+    { name: 'Scania', logo: '' },
+    { name: 'Hino', logo: '' },
+    { name: 'Isuzu', logo: '' },
+    { name: 'Mitsubishi', logo: 'logos/mitsubishi.png' },
+    { name: 'DAF', logo: '' },
+    { name: 'Iveco', logo: '' },
+    { name: 'Renault', logo: '' }
   ];
+  const strip = document.getElementById('brand-strip');
+  if (strip) {
+    brandList.forEach(b => {
+      const btn = document.createElement('button');
+      btn.className = 'brand-logo-btn';
+      btn.dataset.brand = b.name;
+      if (b.logo) {
+        const img = document.createElement('img');
+        img.src = b.logo; img.alt = b.name;
+        img.onerror = () => { img.style.display='none'; };
+        btn.appendChild(img);
+      } else {
+        const abbr = document.createElement('div');
+        abbr.style.cssText = 'width:40px;height:28px;display:flex;align-items:center;justify-content:center;background:#1A1A1A;border-radius:4px;font-size:9px;font-weight:900;color:white';
+        abbr.textContent = b.name.substring(0,3).toUpperCase();
+        btn.appendChild(abbr);
+      }
+      const s = document.createElement('span'); s.textContent = b.name;
+      btn.appendChild(s);
+      btn.onclick = () => {
+        const isActive = btn.classList.contains('active');
+        document.querySelectorAll('.brand-logo-btn').forEach(x => x.classList.remove('active'));
+        if (!isActive) { btn.classList.add('active'); document.getElementById('filterMake').value = b.name; }
+        else { document.getElementById('filterMake').value = ''; }
+        onTopMakeChange();
+      };
+      strip.appendChild(btn);
+    });
+  }
 
-  const imgs = [
-    'cat-heavy-new.jpg',
-    'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80',
-    'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?w=600&q=80',
-    'https://images.unsplash.com/photo-1519003722824-194d4455a60c?w=600&q=80',
-  ];
+  /* ── Populate Makes ── */
+  const makes = getDM_Makes('heavy');
+  const topMakeSel = document.getElementById('filterMake');
+  if (topMakeSel && makes) {
+    makes.forEach(m => { const o = document.createElement('option'); o.value = m; o.textContent = m; topMakeSel.appendChild(o); });
+  }
 
-  allListings = heavyData.map((d, i) => ({ ...d, id: 'hv' + i, img: imgs[i % imgs.length], location: d.city, condition: d.cond, title: `${d.year} ${d.make} ${d.model}` }));
-
-  function filterType(btn, type) {
-    document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    activeType = type;
+  function onTopMakeChange() {
+    const brand = document.getElementById('filterMake') ? document.getElementById('filterMake').value : '';
+    document.querySelectorAll('.brand-logo-btn').forEach(b => b.classList.toggle('active', b.dataset.brand === brand));
+    const modelSel = document.getElementById('filterModel');
+    if (modelSel) {
+      modelSel.innerHTML = '<option value="">All Models</option>';
+      if (brand) {
+        const models = getDM_Models('heavy', brand);
+        if (models) models.forEach(m => { const o = document.createElement('option'); o.value = m; o.textContent = m; modelSel.appendChild(o); });
+        modelSel.disabled = false;
+      } else { modelSel.disabled = true; }
+    }
     applyFilters();
   }
 
+  function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }
+
+  let allListings = DM.getByCategory('heavy'), filtered = [...allListings], PER_PAGE = 9, currentPage = 1;
+
   function applyFilters() {
     const city = document.getElementById('filterCity').value;
-    const make = document.getElementById('filterMake').value;
+    const make = document.getElementById('filterMake') ? document.getElementById('filterMake').value.toLowerCase() : '';
+    const model = document.getElementById('filterModel') ? document.getElementById('filterModel').value.toLowerCase() : '';
     const cond = document.getElementById('filterCondition').value;
-    const sort = document.getElementById('filterSort').value;
+    const minP = parseFloat(document.getElementById('priceMin').value) || 0;
+    const maxP = parseFloat(document.getElementById('priceMax').value) || Infinity;
+    const minYr = parseInt(document.getElementById('yearMin').value) || 0;
+    const maxYr = parseInt(document.getElementById('yearMax').value) || 9999;
+    const sort = document.getElementById('sortSelect').value;
+    const cbV = document.getElementById('cb-verified') ? document.getElementById('cb-verified').checked : false;
+    const cbO = document.getElementById('cb-owner') ? document.getElementById('cb-owner').checked : false;
+    const cbD = document.getElementById('cb-dealer') ? document.getElementById('cb-dealer').checked : false;
+    const bodies = [...document.querySelectorAll('.cb-body:checked')].map(e => e.value);
+
     filtered = allListings.filter(l => {
-      if (city && l.location !== city) return false;
-      if (make && l.make !== make) return false;
+      if (city && l.location && !l.location.includes(city)) return false;
+      if (make && !(l.make || l.title || '').toLowerCase().includes(make)) return false;
+      if (model && !(l.model || l.title || '').toLowerCase().includes(model)) return false;
       if (cond && l.condition !== cond) return false;
-      if (activeType && l.type !== activeType) return false;
+      if (l.price < minP || l.price > maxP) return false;
+      if (l.year && (l.year < minYr || l.year > maxYr)) return false;
+      if (cbV && !l.verified) return false;
+      if (cbO && !cbD && l.sellerType === 'dealer') return false;
+      if (!cbO && cbD && l.sellerType !== 'dealer') return false;
+      if (bodies.length && l.bodyType && !bodies.includes(l.bodyType)) return false;
       return true;
     });
-    if (sort === 'price-asc') filtered.sort((a,b) => a.price - b.price);
-    else if (sort === 'price-desc') filtered.sort((a,b) => b.price - a.price);
+
+    if (sort === 'price-asc') filtered.sort((a, b) => a.price - b.price);
+    else if (sort === 'price-desc') filtered.sort((a, b) => b.price - a.price);
+    else if (sort === 'year-desc') filtered.sort((a, b) => (b.year || 0) - (a.year || 0));
+    else if (sort === 'km-asc') filtered.sort((a, b) => (a.km || 0) - (b.km || 0));
     currentPage = 1;
     renderPage();
   }
@@ -182,33 +307,11 @@
     const page = filtered.slice(start, start + PER_PAGE);
     const count = filtered.length;
     document.getElementById('filter-count').textContent = count + ' listing' + (count !== 1 ? 's' : '');
-    document.getElementById('results-title').textContent = count + ' heavy vehicle' + (count !== 1 ? 's' : '') + ' found';
-    document.getElementById('hero-count').textContent = count + ' heavy vehicles listed across the UAE';
+    document.getElementById('results-title').textContent = count + ' listing' + (count !== 1 ? 's' : '') + ' found';
     if (count === 0) { grid.innerHTML = ''; noRes.style.display = 'block'; }
     else {
       noRes.style.display = 'none';
-      grid.innerHTML = page.map(l => `
-        <div class="listing-card" onclick="window.location.href='listing.html?id=${l.id}'">
-          <div class="card-img-wrap">
-            <img src="${l.img}" alt="${l.title}" loading="lazy" onerror="this.src='cat-heavy-new.jpg'" />
-            <span class="card-badge ${l.condition === 'Brand New' ? 'badge-new' : 'badge-used'}">${l.condition}</span>
-            ${l.verified ? '<span class="card-verified">&#10003; Verified</span>' : ''}
-          </div>
-          <div class="card-body">
-            <div class="card-price">${DM.formatPrice(l.price)}</div>
-            <div class="card-title">${l.title}</div>
-            <div class="card-pills">
-              <span class="pill">${l.year}</span>
-              <span class="pill">${l.type}</span>
-              ${l.km > 0 ? `<span class="pill">${l.km.toLocaleString()} KM</span>` : '<span class="pill">0 KM</span>'}
-            </div>
-            <div class="card-location">&#128205; ${l.location}</div>
-          </div>
-          <div class="card-footer">
-            <div class="card-seller">${l.seller}</div>
-            <button class="btn-sm-orange" onclick="event.stopPropagation();window.location.href='listing.html?id=${l.id}'">Details</button>
-          </div>
-        </div>`).join('');
+      grid.innerHTML = page.map(l => DM.renderCard(l)).join('');
     }
     const totalPages = Math.ceil(count / PER_PAGE);
     const pag = document.getElementById('pagination');
@@ -219,7 +322,19 @@
       }
     }
   }
+
   function goPage(p) { currentPage = p; renderPage(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+
+  function resetFilters() {
+    ['filterCity','filterMake','filterCondition'].forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
+    const modelSel = document.getElementById('filterModel');
+    if (modelSel) { modelSel.innerHTML = '<option value="">All Models</option>'; modelSel.disabled = true; }
+    ['priceMin','priceMax','yearMin','yearMax'].forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
+    document.querySelectorAll('input[type="checkbox"]').forEach(el => el.checked = false);
+    document.querySelectorAll('.brand-logo-btn').forEach(b => b.classList.remove('active'));
+    applyFilters();
+  }
+
   applyFilters();
 </script>
 </body>
