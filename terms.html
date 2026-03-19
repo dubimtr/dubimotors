@@ -6,15 +6,30 @@
   <title>Terms of Use — DUBIMOTORS</title>
   <link rel="stylesheet" href="style.css" />
   <style>
-    .legal-hero { background: var(--dark); padding: 56px 0 40px; }
+    .legal-hero { background: var(--dark); padding: 48px 0 36px; }
     .legal-hero-title { font-size: 36px; font-weight: 900; color: var(--white); margin-bottom: 8px; }
-    .legal-hero-sub { font-size: 14px; color: #666; }
-    .legal-body { max-width: 800px; margin: 0 auto; padding: 56px 0 80px; }
-    .legal-body h2 { font-size: 20px; font-weight: 900; color: var(--dark); margin: 36px 0 12px; }
-    .legal-body p { font-size: 14px; color: #555; line-height: 1.8; margin-bottom: 14px; }
-    .legal-body ul { padding-left: 20px; margin-bottom: 14px; }
-    .legal-body ul li { font-size: 14px; color: #555; line-height: 1.8; margin-bottom: 6px; }
-    .legal-updated { display: inline-block; background: rgba(232,69,10,0.1); color: var(--orange); font-size: 12px; font-weight: 700; padding: 4px 12px; border-radius: 20px; margin-bottom: 32px; }
+    .legal-hero-sub { font-size: 15px; color: #888; }
+    .legal-layout { display: grid; grid-template-columns: 240px 1fr; gap: 48px; padding: 48px 0 80px; align-items: start; }
+    .legal-toc { position: sticky; top: 80px; background: var(--white); border: 1px solid var(--border); border-radius: 16px; padding: 24px; }
+    .legal-toc-title { font-size: 11px; font-weight: 800; color: #888; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 14px; }
+    .legal-toc a { display: block; font-size: 13px; color: #555; padding: 6px 0; border-bottom: 1px solid #f0f0f0; text-decoration: none; transition: color 0.2s; }
+    .legal-toc a:hover { color: var(--orange); }
+    .legal-toc a:last-child { border-bottom: none; }
+    .legal-body { max-width: 760px; }
+    .legal-body h2 { font-size: 20px; font-weight: 900; color: var(--dark); margin: 40px 0 14px; padding-top: 8px; border-top: 2px solid var(--border); }
+    .legal-body h2:first-of-type { border-top: none; margin-top: 0; }
+    .legal-body h3 { font-size: 15px; font-weight: 800; color: var(--dark); margin: 22px 0 8px; }
+    .legal-body p { font-size: 14px; line-height: 1.85; color: #444; margin-bottom: 14px; }
+    .legal-body ul { margin: 0 0 14px 20px; }
+    .legal-body ul li { font-size: 14px; line-height: 1.85; color: #444; margin-bottom: 6px; }
+    .legal-body table { width: 100%; border-collapse: collapse; margin: 14px 0 22px; font-size: 13px; }
+    .legal-body table th { background: var(--dark); color: var(--white); padding: 10px 14px; text-align: left; font-weight: 700; }
+    .legal-body table td { padding: 10px 14px; border-bottom: 1px solid var(--border); color: #444; vertical-align: top; }
+    .legal-body table tr:nth-child(even) td { background: #fafafa; }
+    .effective-badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(232,69,10,0.1); color: var(--orange); border: 1px solid rgba(232,69,10,0.25); border-radius: 8px; padding: 8px 16px; font-size: 13px; font-weight: 700; margin-bottom: 28px; }
+    .highlight-box { background: #FFF8F6; border-left: 4px solid var(--orange); border-radius: 0 8px 8px 0; padding: 14px 18px; margin: 14px 0 22px; font-size: 14px; color: #444; line-height: 1.7; }
+    .warning-box { background: #FFF5F5; border-left: 4px solid #e53e3e; border-radius: 0 8px 8px 0; padding: 14px 18px; margin: 14px 0 22px; font-size: 14px; color: #444; line-height: 1.7; }
+    @media (max-width: 900px) { .legal-layout { grid-template-columns: 1fr; } .legal-toc { position: static; } }
   </style>
 </head>
 <body>
@@ -23,76 +38,212 @@
 <div class="legal-hero">
   <div class="container">
     <div class="legal-hero-title">Terms of Use</div>
-    <div class="legal-hero-sub">The rules and conditions governing your use of the DUBIMOTORS platform.</div>
+    <div class="legal-hero-sub">The rules governing your use of the DubiMotors platform</div>
   </div>
 </div>
 
-<div class="container">
-  <div class="legal-body">
-    <div class="legal-updated">Last updated: 1 March 2025</div>
+<div style="background:var(--light); padding: 0 0 80px;">
+  <div class="container">
+    <div class="legal-layout">
 
-    <p>These Terms of Use ("Terms") govern your access to and use of the DUBIMOTORS website, mobile applications, and services (collectively, the "Platform"). By accessing or using the Platform, you agree to be bound by these Terms. If you do not agree, please do not use the Platform.</p>
+      <div class="legal-toc">
+        <div class="legal-toc-title">Contents</div>
+        <a href="#who-we-are">1. Who We Are</a>
+        <a href="#acceptance">2. Acceptance of Terms</a>
+        <a href="#changes-terms">3. Changes to Terms</a>
+        <a href="#platform-changes">4. Platform Changes</a>
+        <a href="#access-rights">5. Your Right to Use</a>
+        <a href="#restrictions">6. Restrictions</a>
+        <a href="#account">7. Account Creation</a>
+        <a href="#listings">8. Listings</a>
+        <a href="#ai-features">9. AI Features</a>
+        <a href="#verified-ai">10. Verified by AI</a>
+        <a href="#number-plates">11. Number Plates</a>
+        <a href="#paid-services">12. Paid Services</a>
+        <a href="#liability">13. Liability</a>
+        <a href="#reviews">14. Reviews and Ratings</a>
+        <a href="#content">15. User Content</a>
+        <a href="#acceptable-use">16. Acceptable Use</a>
+        <a href="#ip">17. Intellectual Property</a>
+        <a href="#dispute">18. Dispute Resolution</a>
+        <a href="#governing-law">19. Governing Law</a>
+        <a href="#contact">20. Contact Us</a>
+      </div>
 
-    <h2>1. Eligibility</h2>
-    <p>You must be at least 18 years of age to use the Platform. By using the Platform, you represent and warrant that you meet this requirement and that you have the legal capacity to enter into a binding agreement.</p>
+      <div class="legal-body">
+        <div class="effective-badge">Effective Date: 19 March 2026</div>
 
-    <h2>2. Account Registration</h2>
-    <p>To access certain features, you must create an account. You agree to provide accurate, current, and complete information during registration and to keep your account information updated. You are responsible for maintaining the confidentiality of your password and for all activity that occurs under your account. You must notify us immediately of any unauthorised use of your account.</p>
+        <p>These DubiMotors Platform Terms of Use ("Terms") tell you the rules for using the platform available at <strong>dubimotors.com</strong> and through any DubiMotors mobile application (collectively, the "Platform"), as well as any information, content, or materials published on or available via the Platform (collectively, the "Content"). By accessing or using the Platform, you agree to be bound by these Terms.</p>
 
-    <h2>3. Listing Rules</h2>
-    <p>When placing an advertisement on the Platform, you agree that:</p>
-    <ul>
-      <li>You are the legal owner of the vehicle or are authorised to sell it on behalf of the owner.</li>
-      <li>All information provided in the listing is accurate, complete, and not misleading.</li>
-      <li>Photos used are genuine photos of the actual vehicle being sold.</li>
-      <li>The asking price is genuine and you intend to sell at or near that price.</li>
-      <li>You will not post duplicate listings for the same vehicle.</li>
-      <li>You will not post listings for vehicles that are stolen, have outstanding finance, or have a salvage title without clear disclosure.</li>
-      <li>You will remove the listing promptly once the vehicle is sold.</li>
-    </ul>
+        <h2 id="who-we-are">1. Who We Are and How to Contact Us</h2>
+        <p><strong>DubiMotors</strong> operates the Platform. We are an AI-powered vehicle marketplace for the UAE, covering cars, motorcycles, boats, jet skis, heavy vehicles, number plates, and auto accessories.</p>
+        <p>To contact us about these Terms, please email: <a href="mailto:support@dubimotors.com" style="color:var(--orange)">support@dubimotors.com</a></p>
 
-    <h2>4. Prohibited Conduct</h2>
-    <p>You agree not to:</p>
-    <ul>
-      <li>Use the Platform for any unlawful purpose or in violation of UAE law.</li>
-      <li>Post false, misleading, or fraudulent listings or information.</li>
-      <li>Harass, threaten, or abuse other users.</li>
-      <li>Attempt to circumvent any security measures or access controls.</li>
-      <li>Use automated tools, bots, or scrapers to access or collect data from the Platform without our written consent.</li>
-      <li>Impersonate any person or entity or misrepresent your affiliation with any person or entity.</li>
-      <li>Post content that infringes the intellectual property rights of any third party.</li>
-    </ul>
+        <h2 id="acceptance">2. By Using the Platform, You Accept These Terms</h2>
+        <p>By accessing and continuing to use the Platform, you confirm that you accept these Terms and acknowledge that they constitute a legally binding agreement between you and DubiMotors. If you are using the Platform on behalf of a business entity, you represent that you have the authority to legally bind that entity. If you do not agree to these Terms, you must not access or use the Platform.</p>
 
-    <h2>5. Fees and Payments</h2>
-    <p>Basic listings are free. Featured and Premium listing packages are subject to fees as displayed on the Platform at the time of purchase. All fees are in UAE Dirhams (AED) and are non-refundable unless otherwise stated. We reserve the right to change our fee structure at any time with reasonable notice.</p>
+        <h2 id="changes-terms">3. We May Make Changes to These Terms</h2>
+        <p>We may amend these Terms from time to time, with or without notice to you. The new version will be made available on this page. If you are a registered user, we may also notify you of material updates by email. Your continued use of the Platform after changes are posted constitutes your acceptance of the updated Terms.</p>
 
-    <h2>6. Disclaimer of Warranties</h2>
-    <p>The Platform is provided "as is" and "as available" without warranties of any kind, either express or implied. DUBIMOTORS does not warrant that the Platform will be uninterrupted, error-free, or free of viruses. We do not verify the accuracy of listings posted by users and are not responsible for any transactions between buyers and sellers.</p>
+        <h2 id="platform-changes">4. We May Make Changes to the Platform</h2>
+        <p>We may change the way the Platform operates, add or remove features, or change any Content from time to time without notice. We do not guarantee that the Platform will always be available free of charge or without interruption. We may suspend or withdraw all or any part of the Platform for business or operational reasons.</p>
 
-    <h2>7. Limitation of Liability</h2>
-    <p>To the maximum extent permitted by UAE law, DUBIMOTORS shall not be liable for any indirect, incidental, special, consequential, or punitive damages arising from your use of the Platform or any transaction conducted through the Platform. Our total liability to you for any claim shall not exceed the amount you paid us in the 12 months preceding the claim.</p>
+        <h2 id="access-rights">5. Your Right to Use the Platform</h2>
+        <p>Subject to your continued compliance with these Terms, DubiMotors grants you a personal, limited, non-transferable, non-exclusive, revocable right to use the Platform and the Content for personal, non-commercial purposes. You may not use any part of the Content for commercial purposes without obtaining a licence from us.</p>
 
-    <h2>8. Intellectual Property</h2>
-    <p>All content on the Platform, including but not limited to the DUBIMOTORS name, logo, design, text, graphics, and software, is owned by or licensed to DUBIMOTORS and is protected by UAE and international intellectual property laws. You may not reproduce, distribute, or create derivative works from any Platform content without our written consent.</p>
+        <h2 id="restrictions">6. Restrictions</h2>
+        <p>You must not:</p>
+        <ul>
+          <li>Use the Platform if you are under the age of 18</li>
+          <li>Use the Platform in any unlawful manner or for any unlawful purpose under UAE law</li>
+          <li>Attempt to gain unauthorised access to the Platform, its servers, or any connected systems</li>
+          <li>Interfere with, damage, or disrupt any part of the Platform or its infrastructure</li>
+          <li>Knowingly introduce viruses, trojans, worms, or other malicious code</li>
+          <li>Impersonate any other person or entity while using the Platform</li>
+          <li>Conduct yourself in a vulgar, offensive, harassing, or objectionable manner</li>
+          <li>Use the Platform to generate unsolicited advertisements or spam</li>
+          <li>Reproduce, sell, trade, or exploit for commercial purposes any portion of the Platform or Content</li>
+          <li>Use bots, spiders, scrapers, or automated tools to scrape or harvest data from the Platform</li>
+          <li>Reverse-engineer, decompile, or attempt to derive the source code of the Platform</li>
+          <li>Post listings on behalf of third parties as an agent or intermediary service</li>
+          <li>Circumvent or attempt to bypass our AI verification system</li>
+        </ul>
+        <p>We will report any breach of the above restrictions to the relevant UAE law enforcement authorities and will cooperate with those authorities by disclosing your identity to them.</p>
 
-    <h2>9. Termination</h2>
-    <p>We reserve the right to suspend or terminate your account and access to the Platform at any time, with or without notice, for conduct that we determine violates these Terms, is harmful to other users, or is otherwise objectionable. You may terminate your account at any time by contacting us.</p>
+        <h2 id="account">7. Account Creation</h2>
+        <p>Although you can browse the Platform as a guest, you will need to create an account to access certain features, including placing listings, using the chat feature, and saving searches.</p>
+        <ul>
+          <li><strong>Accurate information:</strong> All registration information you submit must be truthful and accurate. You must keep this information up to date.</li>
+          <li><strong>Account security:</strong> You are responsible for maintaining the confidentiality of your account credentials and for all activities that occur under your account.</li>
+          <li><strong>Unauthorised access:</strong> Notify us immediately if you suspect unauthorised use of your account at <a href="mailto:support@dubimotors.com" style="color:var(--orange)">support@dubimotors.com</a>.</li>
+          <li><strong>Account deletion:</strong> You may request deletion of your account by emailing <a href="mailto:support@dubimotors.com" style="color:var(--orange)">support@dubimotors.com</a>.</li>
+          <li><strong>One account per person:</strong> You may not create multiple accounts for the same individual or entity.</li>
+        </ul>
 
-    <h2>10. Governing Law</h2>
-    <p>These Terms shall be governed by and construed in accordance with the laws of the United Arab Emirates. Any disputes arising from these Terms or your use of the Platform shall be subject to the exclusive jurisdiction of the courts of Dubai, UAE.</p>
+        <h2 id="listings">8. Listings</h2>
+        <p>The Platform enables sellers to advertise vehicles, number plates, and auto accessories ("Listings") to other users. A user interested in a Listing may contact the seller to make an offer.</p>
 
-    <h2>11. Changes to These Terms</h2>
-    <p>We may update these Terms from time to time. We will notify you of material changes by posting a notice on the Platform or sending you an email. Your continued use of the Platform after changes are posted constitutes your acceptance of the updated Terms.</p>
+        <h3>If you are a Seller, you must:</h3>
+        <ul>
+          <li>Be legally permitted to sell the item on the Platform</li>
+          <li>Be the legal owner of the item, or be legally permitted to sell it</li>
+          <li>Include a complete and accurate description of the item</li>
+          <li>Only include one item per Listing — multiple items may not be bundled in a single Listing</li>
+          <li>Not post Listings in inappropriate categories</li>
+          <li>Not post Listings for counterfeit items or items that infringe third-party rights</li>
+          <li>Not post duplicate Listings for the same item</li>
+          <li>Comply with all applicable UAE laws and regulations in connection with your Listing</li>
+          <li>Act lawfully and in good faith in your dealings with Buyers</li>
+          <li>Ensure that vehicles listed are roadworthy and that all information (mileage, condition, accident history) is accurate</li>
+          <li>For number plates: confirm that the plate is legally transferable and that you have the right to sell it</li>
+        </ul>
 
-    <h2>12. Contact Us</h2>
-    <p>If you have any questions about these Terms, please contact us at:<br>
-    <strong>DUBIMOTORS</strong><br>
-    Email: legal@dubimotors.ae<br>
-    Address: Dubai, United Arab Emirates</p>
+        <h3>If you are a Buyer, you must:</h3>
+        <ul>
+          <li>Be legally permitted to purchase the item through the Platform</li>
+          <li>Act lawfully and in good faith in your dealings with Sellers</li>
+          <li>Conduct your own due diligence before completing any purchase, including vehicle inspections</li>
+          <li>Comply with all UAE laws relating to vehicle ownership, registration, and number plate transfers</li>
+        </ul>
+
+        <div class="warning-box"><strong>Important:</strong> DubiMotors is not a party to any transaction between buyers and sellers. All transactions are directly between the buyer and seller. DubiMotors does not guarantee the accuracy of any Listing or the quality, safety, or legality of any item listed.</div>
+
+        <h2 id="ai-features">9. AI Features</h2>
+        <p>DubiMotors makes available several AI-powered features for your convenience:</p>
+        <ul>
+          <li><strong>AI Listing Assistant:</strong> Automatically fills in listing details based on a description or VIN number. Due to the nature of AI, results may not always be accurate or complete. You are responsible for verifying all information before publishing.</li>
+          <li><strong>AI Price Estimator:</strong> Provides a suggested price range based on market data. This is a guide only and does not constitute a valuation or guarantee of sale price.</li>
+          <li><strong>AI Description Generator:</strong> Generates a listing description based on vehicle details. You are responsible for reviewing and approving the generated content.</li>
+          <li><strong>Dubi AI Agent:</strong> A conversational AI assistant to help you search and navigate the Platform. Responses are generated by AI and may not always be accurate.</li>
+        </ul>
+        <p>DubiMotors excludes all liability in connection with your use of AI features. You remain solely responsible for the accuracy and completeness of your Listings.</p>
+
+        <h2 id="verified-ai">10. "Verified by AI" Badge</h2>
+        <p>When a Listing passes our automated AI verification process, it receives a "Verified by AI" badge. This badge indicates that our AI system did not detect obvious signs of fraud, fake information, wrong category, or unrealistic pricing at the time of submission.</p>
+        <div class="highlight-box">The "Verified by AI" badge does not constitute a guarantee by DubiMotors that the item is as described, that the seller is legitimate, or that the transaction will be successful. Buyers should always conduct independent due diligence.</div>
+        <p>DubiMotors reserves the right to remove the "Verified by AI" badge or remove a Listing entirely if we subsequently determine that it does not meet our standards, without notice to the seller.</p>
+
+        <h2 id="number-plates">11. Number Plate Listings</h2>
+        <p>Number plate listings are subject to additional rules under UAE law. By listing a number plate on the Platform, you confirm that:</p>
+        <ul>
+          <li>You are the registered owner of the plate or have legal authority to sell it</li>
+          <li>The plate is not currently subject to any legal dispute, fine, or encumbrance</li>
+          <li>You will comply with all UAE RTA and emirate-specific regulations governing number plate transfers</li>
+          <li>The agreed transfer will be completed through the appropriate official channels (RTA, ADTA, etc.)</li>
+        </ul>
+        <p>DubiMotors is not responsible for facilitating the legal transfer of number plates and is not liable for any disputes arising from plate transactions.</p>
+
+        <h2 id="paid-services">12. Paid Services</h2>
+        <p>DubiMotors may, from time to time, offer paid services on the Platform, such as featured listings, promoted placements, or verified seller badges. You acknowledge and agree that:</p>
+        <ul>
+          <li>Any fee paid for a Paid Service is non-refundable in all circumstances</li>
+          <li>Paid Services are provided for your convenience and do not guarantee that your Listing will result in a sale or any minimum number of enquiries</li>
+          <li>DubiMotors reserves the right to change the pricing of Paid Services at any time</li>
+        </ul>
+
+        <h2 id="liability">13. Liability</h2>
+        <p>To the fullest extent permitted by applicable UAE law:</p>
+        <ul>
+          <li>DubiMotors provides the Platform on an "as is" and "as available" basis without warranties of any kind</li>
+          <li>DubiMotors is not responsible for the accuracy, completeness, or legality of any Listing or user-generated content</li>
+          <li>DubiMotors is not liable for any loss or damage arising from your use of the Platform, including but not limited to loss of profit, loss of data, or indirect or consequential loss</li>
+          <li>DubiMotors is not liable for any transactions entered into between buyers and sellers through the Platform</li>
+          <li>DubiMotors is not liable for any inaccuracies in AI-generated content, price estimates, or VIN data</li>
+          <li>Our total liability to you in connection with these Terms shall not exceed the amount you have paid to us in the 12 months preceding the relevant claim</li>
+        </ul>
+
+        <h2 id="reviews">14. Reviews and Ratings</h2>
+        <p>DubiMotors allows users to rate and review their interactions with other users. Any Review posted must:</p>
+        <ul>
+          <li>Be factual, accurate, and represent the genuine opinion of the reviewer</li>
+          <li>Be based on the reviewer's actual experience</li>
+          <li>Not be defamatory, malicious, obscene, or inflammatory</li>
+          <li>Not be posted in exchange for payment or other incentives</li>
+        </ul>
+        <p>DubiMotors does not endorse any Review and is not liable for any Review posted on the Platform. We reserve the right to remove any Review that breaches these Terms.</p>
+
+        <h2 id="content">15. Uploading Content to the Platform</h2>
+        <p>Any content you upload to the Platform, including as part of a Listing, will be considered non-confidential and non-proprietary. You retain ownership of your content, but by uploading it you grant DubiMotors a perpetual, worldwide, non-exclusive, royalty-free licence to use, reproduce, distribute, display, and promote that content in connection with the Platform.</p>
+        <p>You are solely responsible for securing and backing up your content. We reserve the right to remove any content that does not comply with these Terms, with or without notice.</p>
+
+        <h2 id="acceptable-use">16. Acceptable Use Policy</h2>
+        <p>When using any feature of the Platform that allows you to post content or communicate with other users, you must not post or share content that:</p>
+        <ul>
+          <li>Is false, misleading, or fraudulent</li>
+          <li>Infringes the intellectual property rights of any third party</li>
+          <li>Is defamatory, obscene, offensive, or promotes discrimination</li>
+          <li>Advertises items that are illegal to sell in the UAE (e.g. stolen vehicles, unregistered weapons)</li>
+          <li>Contains personal data of third parties without their consent</li>
+          <li>Is spam, unsolicited advertising, or promotional material for competing platforms</li>
+          <li>Misrepresents the condition, history, or specifications of a vehicle or item</li>
+          <li>Includes a price that is intentionally misleading (e.g. bait-and-switch pricing)</li>
+        </ul>
+
+        <h2 id="ip">17. Intellectual Property</h2>
+        <p>DubiMotors is the owner or licensee of all intellectual property rights in the Platform and its Content, including designs, text, graphics, logos, and the "DUBIMOTORS" name and brand. The Platform and Content are protected by UAE and international copyright laws. All rights are reserved.</p>
+        <p>You are not permitted to use the DubiMotors name, logo, or any other brand elements without our prior written consent.</p>
+
+        <h2 id="dispute">18. Dispute Resolution</h2>
+        <p>If a dispute arises between you and DubiMotors, we strongly encourage you to first contact us directly to seek a resolution by emailing <a href="mailto:support@dubimotors.com" style="color:var(--orange)">support@dubimotors.com</a>. We will review your complaint and do our best to address it within 14 business days.</p>
+        <p>For disputes between buyers and sellers, DubiMotors may, at its discretion, provide a mediation service, but is under no obligation to do so. DubiMotors is not responsible for resolving disputes between users.</p>
+
+        <h2 id="governing-law">19. Governing Law</h2>
+        <p>These Terms of Use, their subject matter, and their formation are governed by the laws of the Emirate of Dubai and the applicable federal laws of the United Arab Emirates. Any disputes arising out of or in connection with these Terms shall be subject to the exclusive jurisdiction of the courts of Dubai, UAE.</p>
+
+        <h2 id="contact">20. Contact Us</h2>
+        <p>If you have any questions about these Terms of Use, please contact us:</p>
+        <ul>
+          <li><strong>Email:</strong> <a href="mailto:support@dubimotors.com" style="color:var(--orange)">support@dubimotors.com</a></li>
+          <li><strong>Platform:</strong> <a href="https://dubimotors.com" style="color:var(--orange)">dubimotors.com</a></li>
+          <li><strong>Address:</strong> Dubai, United Arab Emirates</li>
+        </ul>
+      </div>
+    </div>
   </div>
 </div>
 
 <div id="footer-placeholder"></div>
+<div id="toast" class="toast"></div>
 <script src="shared.js"></script>
 <script src="components.js"></script>
 <script>renderNavbar(); renderFooter();</script>

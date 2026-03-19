@@ -6,15 +6,29 @@
   <title>Privacy Policy — DUBIMOTORS</title>
   <link rel="stylesheet" href="style.css" />
   <style>
-    .legal-hero { background: var(--dark); padding: 56px 0 40px; }
+    .legal-hero { background: var(--dark); padding: 48px 0 36px; }
     .legal-hero-title { font-size: 36px; font-weight: 900; color: var(--white); margin-bottom: 8px; }
-    .legal-hero-sub { font-size: 14px; color: #666; }
-    .legal-body { max-width: 800px; margin: 0 auto; padding: 56px 0 80px; }
-    .legal-body h2 { font-size: 20px; font-weight: 900; color: var(--dark); margin: 36px 0 12px; }
-    .legal-body p { font-size: 14px; color: #555; line-height: 1.8; margin-bottom: 14px; }
-    .legal-body ul { padding-left: 20px; margin-bottom: 14px; }
-    .legal-body ul li { font-size: 14px; color: #555; line-height: 1.8; margin-bottom: 6px; }
-    .legal-updated { display: inline-block; background: rgba(232,69,10,0.1); color: var(--orange); font-size: 12px; font-weight: 700; padding: 4px 12px; border-radius: 20px; margin-bottom: 32px; }
+    .legal-hero-sub { font-size: 15px; color: #888; }
+    .legal-layout { display: grid; grid-template-columns: 240px 1fr; gap: 48px; padding: 48px 0 80px; align-items: start; }
+    .legal-toc { position: sticky; top: 80px; background: var(--white); border: 1px solid var(--border); border-radius: 16px; padding: 24px; }
+    .legal-toc-title { font-size: 11px; font-weight: 800; color: #888; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 14px; }
+    .legal-toc a { display: block; font-size: 13px; color: #555; padding: 6px 0; border-bottom: 1px solid #f0f0f0; text-decoration: none; transition: color 0.2s; }
+    .legal-toc a:hover { color: var(--orange); }
+    .legal-toc a:last-child { border-bottom: none; }
+    .legal-body { max-width: 760px; }
+    .legal-body h2 { font-size: 20px; font-weight: 900; color: var(--dark); margin: 40px 0 14px; padding-top: 8px; border-top: 2px solid var(--border); }
+    .legal-body h2:first-of-type { border-top: none; margin-top: 0; }
+    .legal-body h3 { font-size: 15px; font-weight: 800; color: var(--dark); margin: 22px 0 8px; }
+    .legal-body p { font-size: 14px; line-height: 1.85; color: #444; margin-bottom: 14px; }
+    .legal-body ul { margin: 0 0 14px 20px; }
+    .legal-body ul li { font-size: 14px; line-height: 1.85; color: #444; margin-bottom: 6px; }
+    .legal-body table { width: 100%; border-collapse: collapse; margin: 14px 0 22px; font-size: 13px; }
+    .legal-body table th { background: var(--dark); color: var(--white); padding: 10px 14px; text-align: left; font-weight: 700; }
+    .legal-body table td { padding: 10px 14px; border-bottom: 1px solid var(--border); color: #444; vertical-align: top; }
+    .legal-body table tr:nth-child(even) td { background: #fafafa; }
+    .effective-badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(232,69,10,0.1); color: var(--orange); border: 1px solid rgba(232,69,10,0.25); border-radius: 8px; padding: 8px 16px; font-size: 13px; font-weight: 700; margin-bottom: 28px; }
+    .highlight-box { background: #FFF8F6; border-left: 4px solid var(--orange); border-radius: 0 8px 8px 0; padding: 14px 18px; margin: 14px 0 22px; font-size: 14px; color: #444; line-height: 1.7; }
+    @media (max-width: 900px) { .legal-layout { grid-template-columns: 1fr; } .legal-toc { position: static; } }
   </style>
 </head>
 <body>
@@ -23,91 +37,167 @@
 <div class="legal-hero">
   <div class="container">
     <div class="legal-hero-title">Privacy Policy</div>
-    <div class="legal-hero-sub">How DUBIMOTORS collects, uses, and protects your personal information.</div>
+    <div class="legal-hero-sub">How DubiMotors collects, uses, and protects your personal information</div>
   </div>
 </div>
 
-<div class="container">
-  <div class="legal-body">
-    <div class="legal-updated">Last updated: 1 March 2025</div>
+<div style="background:var(--light); padding: 0 0 80px;">
+  <div class="container">
+    <div class="legal-layout">
 
-    <p>This Privacy Policy describes how DUBIMOTORS ("we", "us", or "our") collects, uses, and shares information about you when you use our website, mobile applications, and services (collectively, the "Platform"). By using the Platform, you agree to the collection and use of information in accordance with this policy.</p>
+      <div class="legal-toc">
+        <div class="legal-toc-title">Contents</div>
+        <a href="#who-we-are">1. Who We Are</a>
+        <a href="#what-we-collect">2. What We Collect</a>
+        <a href="#how-we-collect">3. How We Collect It</a>
+        <a href="#how-we-use">4. How We Use Your Data</a>
+        <a href="#ai-data">5. AI Features and Data</a>
+        <a href="#sharing">6. Who We Share Data With</a>
+        <a href="#cookies">7. Cookies</a>
+        <a href="#retention">8. Data Retention</a>
+        <a href="#your-rights">9. Your Rights</a>
+        <a href="#security">10. Security</a>
+        <a href="#children">11. Children</a>
+        <a href="#transfers">12. International Transfers</a>
+        <a href="#changes">13. Changes to This Policy</a>
+        <a href="#contact">14. Contact Us</a>
+      </div>
 
-    <h2>1. Information We Collect</h2>
-    <p>We collect information you provide directly to us, information we collect automatically when you use the Platform, and information from third parties.</p>
-    <ul>
-      <li><strong>Account information:</strong> Name, email address, phone number, and password when you create an account.</li>
-      <li><strong>Listing information:</strong> Vehicle details, photos, pricing, and location when you place an advertisement.</li>
-      <li><strong>Identity documents:</strong> Emirates ID and driving licence images uploaded for finance quote requests (stored securely and not shared without consent).</li>
-      <li><strong>Usage data:</strong> Pages visited, search queries, filters applied, listings viewed, and time spent on the Platform.</li>
-      <li><strong>Device information:</strong> IP address, browser type, operating system, and device identifiers.</li>
-      <li><strong>Communications:</strong> Messages sent through the Platform, including enquiries to sellers and support requests.</li>
-    </ul>
+      <div class="legal-body">
+        <div class="effective-badge">Effective Date: 19 March 2026</div>
 
-    <h2>2. How We Use Your Information</h2>
-    <p>We use the information we collect to:</p>
-    <ul>
-      <li>Provide, maintain, and improve the Platform and our services.</li>
-      <li>Process and display your vehicle listings.</li>
-      <li>Facilitate communication between buyers and sellers.</li>
-      <li>Send you transactional emails and notifications about your account and listings.</li>
-      <li>Provide AI-powered features including price estimation, photo analysis, and the Dubi Agent chatbot.</li>
-      <li>Detect, prevent, and respond to fraud, abuse, and security incidents.</li>
-      <li>Comply with legal obligations under UAE law.</li>
-      <li>Send you marketing communications where you have given consent (you may opt out at any time).</li>
-    </ul>
+        <p>This Privacy Policy explains how <strong>DubiMotors</strong> ("we", "us", "our") collects, uses, stores, and shares your personal information when you use our platform at <strong>dubimotors.com</strong> and any associated mobile applications (collectively, the "Platform"). We are committed to protecting your privacy in accordance with the UAE Federal Decree-Law No. 45 of 2021 on the Protection of Personal Data (PDPL) and other applicable UAE laws.</p>
 
-    <h2 id="cookies">3. Cookies and Tracking Technologies</h2>
-    <p>We use cookies and similar tracking technologies to enhance your experience on the Platform. Cookies are small data files stored on your device. We use the following types of cookies:</p>
-    <ul>
-      <li><strong>Essential cookies:</strong> Required for the Platform to function. These cannot be disabled.</li>
-      <li><strong>Analytics cookies:</strong> Help us understand how users interact with the Platform (e.g., Google Analytics).</li>
-      <li><strong>Preference cookies:</strong> Remember your settings such as language and search filters.</li>
-      <li><strong>Marketing cookies:</strong> Used to show you relevant advertisements on third-party platforms.</li>
-    </ul>
-    <p>You can control cookies through your browser settings. Disabling certain cookies may affect the functionality of the Platform.</p>
+        <div class="highlight-box">By using the Platform, you consent to the collection and use of your personal information as described in this Privacy Policy.</div>
 
-    <h2>4. Sharing Your Information</h2>
-    <p>We do not sell your personal information. We may share your information with:</p>
-    <ul>
-      <li><strong>Other users:</strong> Your listing details and contact information (phone number) are visible to other users when you publish a listing.</li>
-      <li><strong>Service providers:</strong> Third-party vendors who help us operate the Platform (e.g., cloud hosting, payment processing, AI services). These providers are contractually obligated to protect your data.</li>
-      <li><strong>Legal authorities:</strong> When required by UAE law, court order, or to protect the rights and safety of our users.</li>
-      <li><strong>Business transfers:</strong> In connection with a merger, acquisition, or sale of assets, your information may be transferred as part of that transaction.</li>
-    </ul>
+        <h2 id="who-we-are">1. Who We Are</h2>
+        <p><strong>DubiMotors</strong> is an AI-powered vehicle marketplace operating in the UAE. We connect buyers and sellers of cars, motorcycles, boats, jet skis, heavy vehicles, number plates, and auto accessories.</p>
+        <p>For privacy-related enquiries, contact us at: <a href="mailto:privacy@dubimotors.com" style="color:var(--orange)">privacy@dubimotors.com</a></p>
 
-    <h2>5. Data Retention</h2>
-    <p>We retain your personal information for as long as your account is active or as needed to provide services. You may request deletion of your account and associated data at any time by contacting us at privacy@dubimotors.ae. We will process deletion requests within 30 days, subject to legal retention requirements.</p>
+        <h2 id="what-we-collect">2. What Personal Information We Collect</h2>
+        <p>We collect the following categories of personal information:</p>
+        <table>
+          <tr><th>Category</th><th>Examples</th></tr>
+          <tr><td><strong>Identity Data</strong></td><td>Full name, username, profile photo</td></tr>
+          <tr><td><strong>Contact Data</strong></td><td>Email address, phone number, location (emirate)</td></tr>
+          <tr><td><strong>Listing Data</strong></td><td>Vehicle details, photos, price, description, VIN number</td></tr>
+          <tr><td><strong>Transaction Data</strong></td><td>Payment information for paid services (processed via third-party payment providers)</td></tr>
+          <tr><td><strong>Usage Data</strong></td><td>Pages visited, search queries, listings viewed, time spent on Platform</td></tr>
+          <tr><td><strong>Device Data</strong></td><td>IP address, browser type, operating system, device identifiers</td></tr>
+          <tr><td><strong>Communications Data</strong></td><td>Messages sent via our in-platform chat feature</td></tr>
+          <tr><td><strong>AI Interaction Data</strong></td><td>Queries submitted to the Dubi AI Agent, VIN numbers entered, AI-generated listing content</td></tr>
+          <tr><td><strong>Saved Searches</strong></td><td>Search criteria and alert preferences you save on the Platform</td></tr>
+        </table>
 
-    <h2>6. Data Security</h2>
-    <p>We implement industry-standard security measures including encryption in transit (TLS), encryption at rest, access controls, and regular security audits. However, no method of transmission over the internet is 100% secure, and we cannot guarantee absolute security.</p>
+        <h2 id="how-we-collect">3. How We Collect Your Information</h2>
+        <p>We collect your information through the following means:</p>
+        <ul>
+          <li><strong>Direct interactions:</strong> When you register an account, place a listing, contact a seller, or communicate with us</li>
+          <li><strong>Automated technologies:</strong> Cookies, server logs, and similar tracking technologies when you use the Platform</li>
+          <li><strong>Third-party sources:</strong> Social login providers (if you sign in with Google or Apple), payment processors, and analytics providers</li>
+          <li><strong>AI features:</strong> When you use our AI Listing Assistant, VIN decoder, or Dubi AI Agent</li>
+        </ul>
 
-    <h2>7. Your Rights</h2>
-    <p>Under applicable UAE data protection law, you have the right to:</p>
-    <ul>
-      <li>Access the personal information we hold about you.</li>
-      <li>Correct inaccurate or incomplete information.</li>
-      <li>Request deletion of your personal information.</li>
-      <li>Object to or restrict certain processing of your information.</li>
-      <li>Withdraw consent where processing is based on consent.</li>
-    </ul>
-    <p>To exercise these rights, contact us at privacy@dubimotors.ae.</p>
+        <h2 id="how-we-use">4. How We Use Your Personal Information</h2>
+        <table>
+          <tr><th>Purpose</th><th>Legal Basis</th></tr>
+          <tr><td>To create and manage your account</td><td>Contract performance</td></tr>
+          <tr><td>To publish and manage your listings</td><td>Contract performance</td></tr>
+          <tr><td>To enable communication between buyers and sellers</td><td>Contract performance</td></tr>
+          <tr><td>To process payments for paid services</td><td>Contract performance</td></tr>
+          <tr><td>To send listing confirmation and verification emails</td><td>Contract performance</td></tr>
+          <tr><td>To send saved search alerts and notifications</td><td>Consent / Legitimate interest</td></tr>
+          <tr><td>To improve and personalise the Platform</td><td>Legitimate interest</td></tr>
+          <tr><td>To detect and prevent fraud, fake listings, and abuse</td><td>Legitimate interest / Legal obligation</td></tr>
+          <tr><td>To comply with UAE legal and regulatory requirements</td><td>Legal obligation</td></tr>
+          <tr><td>To send marketing communications (with your consent)</td><td>Consent</td></tr>
+          <tr><td>To conduct analytics and measure Platform performance</td><td>Legitimate interest</td></tr>
+        </table>
 
-    <h2>8. Children's Privacy</h2>
-    <p>The Platform is not directed at children under the age of 18. We do not knowingly collect personal information from children. If you believe a child has provided us with personal information, please contact us immediately.</p>
+        <h2 id="ai-data">5. AI Features and Your Data</h2>
 
-    <h2>9. Changes to This Policy</h2>
-    <p>We may update this Privacy Policy from time to time. We will notify you of significant changes by posting a notice on the Platform or sending you an email. Your continued use of the Platform after changes are posted constitutes your acceptance of the updated policy.</p>
+        <h3>AI Listing Verification</h3>
+        <p>When you submit a listing, our AI system analyses the listing content to detect fraud, fake listings, wrong categories, and unrealistic pricing. This analysis is automated. Listing data processed through this system is not used to train our AI models.</p>
 
-    <h2>10. Contact Us</h2>
-    <p>If you have any questions about this Privacy Policy, please contact us at:<br>
-    <strong>DUBIMOTORS</strong><br>
-    Email: privacy@dubimotors.ae<br>
-    Address: Dubai, United Arab Emirates</p>
+        <h3>AI Price Estimator</h3>
+        <p>Vehicle details you enter are sent to our AI system to generate a price estimate. This data is processed in real time and is not stored separately from your listing data.</p>
+
+        <h3>AI Description Generator</h3>
+        <p>Vehicle details you enter are used to generate a listing description. The generated content is presented to you for review before publishing.</p>
+
+        <h3>Dubi AI Agent</h3>
+        <p>Queries you submit to the Dubi AI Agent are processed by our AI system to generate responses. These queries may be stored for quality improvement and abuse prevention purposes. We do not share your AI Agent queries with third parties for marketing purposes.</p>
+
+        <h3>VIN Decoder</h3>
+        <p>VIN numbers you enter are sent to a third-party VIN database provider to retrieve vehicle specifications. The VIN number is shared with this provider solely for this purpose.</p>
+
+        <h2 id="sharing">6. Who We Share Your Information With</h2>
+        <p>We do not sell your personal information to third parties. We may share your information with:</p>
+        <ul>
+          <li><strong>Other users:</strong> Your name, phone number (if you choose to display it), and listing details are visible to other users</li>
+          <li><strong>Service providers:</strong> Cloud hosting (Render), email delivery, payment processors, analytics providers, and AI API providers (OpenAI)</li>
+          <li><strong>VIN data providers:</strong> Third-party vehicle data APIs used to decode VIN numbers</li>
+          <li><strong>Law enforcement:</strong> Where required by UAE law or in response to a valid legal request</li>
+          <li><strong>Business transfers:</strong> In the event of a merger or acquisition of DubiMotors</li>
+        </ul>
+
+        <h2 id="cookies">7. Cookies and Tracking Technologies</h2>
+        <p>We use cookies and similar technologies to keep you logged in, remember your preferences, analyse Platform usage, and detect fraudulent activity.</p>
+        <table>
+          <tr><th>Cookie Type</th><th>Purpose</th><th>Duration</th></tr>
+          <tr><td>Essential</td><td>Session management, security, login state</td><td>Session / 30 days</td></tr>
+          <tr><td>Functional</td><td>Saved preferences, recent searches</td><td>Up to 1 year</td></tr>
+          <tr><td>Analytics</td><td>Platform usage statistics and performance</td><td>Up to 2 years</td></tr>
+        </table>
+
+        <h2 id="retention">8. Data Retention</h2>
+        <ul>
+          <li><strong>Account data:</strong> Retained for the lifetime of your account, plus 12 months after deletion</li>
+          <li><strong>Listing data:</strong> Retained for 24 months after a listing expires or is removed</li>
+          <li><strong>Chat messages:</strong> Retained for 12 months</li>
+          <li><strong>Payment records:</strong> Retained for 7 years as required by UAE financial regulations</li>
+          <li><strong>AI interaction logs:</strong> Retained for up to 90 days for quality and abuse monitoring</li>
+        </ul>
+
+        <h2 id="your-rights">9. Your Rights</h2>
+        <p>Under the UAE PDPL and applicable law, you have the following rights:</p>
+        <ul>
+          <li><strong>Right to access:</strong> Request a copy of the personal information we hold about you</li>
+          <li><strong>Right to correction:</strong> Request that we correct inaccurate or incomplete information</li>
+          <li><strong>Right to deletion:</strong> Request deletion of your personal information (subject to legal retention requirements)</li>
+          <li><strong>Right to object:</strong> Object to our processing of your data for marketing purposes</li>
+          <li><strong>Right to withdraw consent:</strong> Withdraw consent for processing based on consent at any time</li>
+          <li><strong>Right to data portability:</strong> Request your data in a structured, machine-readable format</li>
+        </ul>
+        <p>To exercise any of these rights, email us at <a href="mailto:privacy@dubimotors.com" style="color:var(--orange)">privacy@dubimotors.com</a>. We will respond within 30 days.</p>
+
+        <h2 id="security">10. Security</h2>
+        <p>We implement appropriate technical and organisational measures to protect your personal information, including HTTPS encryption for all data in transit, secure server infrastructure, access controls, and regular security reviews. However, no method of transmission over the internet is 100% secure.</p>
+
+        <h2 id="children">11. Children's Privacy</h2>
+        <p>The Platform is not directed at children under the age of 18. We do not knowingly collect personal information from anyone under 18. If you believe a child has provided us with personal information, please contact us at <a href="mailto:privacy@dubimotors.com" style="color:var(--orange)">privacy@dubimotors.com</a> and we will delete it promptly.</p>
+
+        <h2 id="transfers">12. International Data Transfers</h2>
+        <p>Your personal information may be processed and stored on servers located outside the UAE, including in the United States and the European Union, by our third-party service providers. We ensure that such transfers comply with applicable UAE data protection law and that appropriate safeguards are in place.</p>
+
+        <h2 id="changes">13. Changes to This Privacy Policy</h2>
+        <p>We may update this Privacy Policy from time to time. We will notify you of material changes by posting a notice on the Platform or sending you an email. Your continued use of the Platform after changes are posted constitutes your acceptance of the updated Policy.</p>
+
+        <h2 id="contact">14. Contact Us</h2>
+        <p>For any questions, concerns, or requests regarding this Privacy Policy:</p>
+        <ul>
+          <li><strong>Email:</strong> <a href="mailto:privacy@dubimotors.com" style="color:var(--orange)">privacy@dubimotors.com</a></li>
+          <li><strong>General support:</strong> <a href="mailto:support@dubimotors.com" style="color:var(--orange)">support@dubimotors.com</a></li>
+          <li><strong>Platform:</strong> <a href="https://dubimotors.com" style="color:var(--orange)">dubimotors.com</a></li>
+          <li><strong>Address:</strong> Dubai, United Arab Emirates</li>
+        </ul>
+      </div>
+    </div>
   </div>
 </div>
 
 <div id="footer-placeholder"></div>
+<div id="toast" class="toast"></div>
 <script src="shared.js"></script>
 <script src="components.js"></script>
 <script>renderNavbar(); renderFooter();</script>

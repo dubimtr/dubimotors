@@ -765,52 +765,52 @@
 <div class="cat-strip">
   <div class="container">
     <a class="cat-item active" href="cars.html">
-      <div class="cat-icon-box">🚗</div>
+      <div class="cat-icon-box" id="ci-cars"></div>
       <div class="cat-item-text">
         <div class="cat-item-label">Cars</div>
         <div class="cat-item-count" id="count-cars">Loading...</div>
       </div>
     </a>
     <a class="cat-item" href="boats.html">
-      <div class="cat-icon-box">⛵</div>
+      <div class="cat-icon-box" id="ci-boats"></div>
       <div class="cat-item-text">
         <div class="cat-item-label">Boats &amp; Yachts</div>
         <div class="cat-item-count" id="count-boats">Loading...</div>
       </div>
     </a>
     <a class="cat-item" href="bikes.html">
-      <div class="cat-icon-box">🏍️</div>
+      <div class="cat-icon-box" id="ci-bikes"></div>
       <div class="cat-item-text">
         <div class="cat-item-label">Motorcycles</div>
         <div class="cat-item-count" id="count-bikes">Loading...</div>
       </div>
     </a>
     <a class="cat-item" href="jetski.html">
-      <div class="cat-icon-box">🚤</div>
+      <div class="cat-icon-box" id="ci-jetski"></div>
       <div class="cat-item-text">
         <div class="cat-item-label">Jet Skis</div>
         <div class="cat-item-count" id="count-jetski">Loading...</div>
       </div>
     </a>
     <a class="cat-item" href="heavy.html">
-      <div class="cat-icon-box">🚛</div>
+      <div class="cat-icon-box" id="ci-heavy"></div>
       <div class="cat-item-text">
         <div class="cat-item-label">Heavy Vehicles</div>
-        <div class="cat-item-count">Coming Soon</div>
+        <div class="cat-item-count" id="count-heavy">16 listings</div>
       </div>
     </a>
     <a class="cat-item" href="plates.html">
-      <div class="cat-icon-box">🔢</div>
+      <div class="cat-icon-box" id="ci-plates"></div>
       <div class="cat-item-text">
         <div class="cat-item-label">Number Plates</div>
-        <div class="cat-item-count">Coming Soon</div>
+        <div class="cat-item-count" id="count-plates">16 listings</div>
       </div>
     </a>
     <a class="cat-item" href="accessories.html">
-      <div class="cat-icon-box">🔧</div>
+      <div class="cat-icon-box" id="ci-accessories"></div>
       <div class="cat-item-text">
         <div class="cat-item-label">Accessories</div>
-        <div class="cat-item-count">Coming Soon</div>
+        <div class="cat-item-count" id="count-accessories">16 listings</div>
       </div>
     </a>
   </div>
@@ -863,7 +863,7 @@
     </div>
     <div class="showcase-grid">
       <a class="showcase-card" href="cars.html">
-        <img src="mclaren-dubai.jpg" alt="McLaren Dubai" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1544636331-e26879cd4d9b?w=800&q=85&fit=crop'" />
+        <img src="cat-cars-new.jpg" alt="Cars Dubai" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1544636331-e26879cd4d9b?w=800&q=85&fit=crop'" />
         <div class="showcase-overlay"></div>
         <div class="showcase-arrow">→</div>
         <div class="showcase-label">
@@ -899,7 +899,7 @@
         </div>
       </a>
       <a class="showcase-card" href="heavy.html">
-        <img src="cat-heavy.jpg" alt="Heavy Vehicles" loading="lazy" />
+        <img src="cat-heavy-new.jpg" alt="Heavy Vehicles" loading="lazy" />
         <div class="showcase-overlay"></div>
         <div class="showcase-arrow">→</div>
         <div class="showcase-label">
@@ -908,7 +908,7 @@
         </div>
       </a>
       <a class="showcase-card" href="plates.html">
-        <img src="cat-plates.jpg" alt="Number Plates" loading="lazy" />
+        <img src="cat-plates-new.jpg" alt="Number Plates" loading="lazy" />
         <div class="showcase-overlay"></div>
         <div class="showcase-arrow">→</div>
         <div class="showcase-label">
@@ -917,7 +917,7 @@
         </div>
       </a>
       <a class="showcase-card" href="accessories.html">
-        <img src="cat-accessories.jpg" alt="Auto Accessories" loading="lazy" />
+        <img src="cat-accessories-new.jpg" alt="Auto Accessories" loading="lazy" />
         <div class="showcase-overlay"></div>
         <div class="showcase-arrow">→</div>
         <div class="showcase-label">
@@ -968,7 +968,7 @@
     <button class="btn-primary" onclick="window.location.href='cars.html'">Browse Luxury Cars →</button>
   </div>
   <div class="editorial-img">
-    <img src="mclaren-dubai.jpg" alt="McLaren Dubai" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1544636331-e26879cd4d9b?w=800&q=85&fit=crop'" />
+    <img src="cat-cars-new.jpg" alt="Cars Dubai" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1544636331-e26879cd4d9b?w=800&q=85&fit=crop'" />
   </div>
 </div>
 
@@ -1125,7 +1125,7 @@
     if (e.key === 'Enter') doSearch();
   });
 
-  // Inject SVG icons into mobile category grid
+  // Inject SVG icons into mobile category grid AND desktop cat-strip
   if (typeof DM_ICONS !== 'undefined') {
     const iconMap = {
       'mci-cars': DM_ICONS.cars,
@@ -1135,6 +1135,14 @@
       'mci-heavy': DM_ICONS.heavy,
       'mci-plates': DM_ICONS.plates,
       'mci-accessories': DM_ICONS.accessories,
+      // Desktop cat-strip icons
+      'ci-cars': DM_ICONS.cars,
+      'ci-boats': DM_ICONS.boats,
+      'ci-bikes': DM_ICONS.bikes,
+      'ci-jetski': DM_ICONS.jetski,
+      'ci-heavy': DM_ICONS.heavy,
+      'ci-plates': DM_ICONS.plates,
+      'ci-accessories': DM_ICONS.accessories,
     };
     Object.entries(iconMap).forEach(([id, svg]) => {
       const el = document.getElementById(id);

@@ -6,103 +6,100 @@
   <title>Auto Accessories for Sale in UAE — DUBIMOTORS</title>
   <link rel="stylesheet" href="style.css" />
   <style>
-    .page-hero { background: var(--dark); padding: 40px 0 32px; }
+    .page-hero { background: var(--dark); padding: 32px 0 28px; }
     .page-hero .container { display: flex; align-items: center; justify-content: space-between; gap: 24px; }
-    .page-hero-title { font-size: 32px; font-weight: 900; color: var(--white); margin-bottom: 6px; }
-    .page-hero-sub { font-size: 15px; color: #666; }
-    .breadcrumb { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #555; margin-bottom: 14px; }
+    .page-hero-title { font-size: 30px; font-weight: 900; color: var(--white); margin-bottom: 4px; }
+    .page-hero-sub { font-size: 14px; color: #666; }
+    .breadcrumb { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #555; margin-bottom: 10px; }
     .breadcrumb a { color: #555; } .breadcrumb a:hover { color: var(--orange); }
-    .breadcrumb span { color: #999; }
-    .coming-soon-section {
-      min-height: 60vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: var(--light);
-    }
-    .coming-soon-card {
-      text-align: center;
-      padding: 64px 48px;
-      background: var(--white);
-      border-radius: 24px;
-      border: 1px solid var(--border);
-      max-width: 560px;
-      width: 100%;
-    }
-    .coming-soon-icon { font-size: 72px; margin-bottom: 24px; }
-    .coming-soon-title { font-size: 32px; font-weight: 900; color: var(--dark); margin-bottom: 12px; }
-    .coming-soon-text { font-size: 16px; color: var(--grey); line-height: 1.7; margin-bottom: 32px; }
-    .coming-soon-badge {
-      display: inline-block;
-      background: rgba(232,69,10,0.1);
-      color: var(--orange);
-      border: 1px solid rgba(232,69,10,0.3);
-      border-radius: 20px;
-      padding: 6px 18px;
-      font-size: 12px;
-      font-weight: 700;
-      letter-spacing: 1.5px;
-      text-transform: uppercase;
-      margin-bottom: 24px;
-    }
-    .subcats {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 12px;
-      margin-top: 24px;
-    }
-    .subcat-pill {
-      background: var(--light);
-      border: 1.5px solid var(--border);
-      border-radius: 10px;
-      padding: 12px 8px;
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--dark);
-      text-align: center;
-    }
-    @media (max-width: 600px) {
-      .coming-soon-card { padding: 40px 24px; }
-      .subcats { grid-template-columns: repeat(2, 1fr); }
-    }
+    .type-strip { background: var(--white); border-bottom: 1px solid var(--border); padding: 12px 0; overflow: hidden; }
+    .type-strip-inner { display: flex; align-items: center; gap: 8px; overflow-x: auto; scrollbar-width: none; padding: 0 4px; }
+    .type-strip-inner::-webkit-scrollbar { display: none; }
+    .type-btn { padding: 8px 18px; border: 1.5px solid var(--border); border-radius: 20px; font-size: 13px; font-weight: 600; color: #555; background: var(--white); cursor: pointer; white-space: nowrap; flex-shrink: 0; transition: all 0.2s; }
+    .type-btn:hover, .type-btn.active { border-color: var(--orange); background: #FFF8F6; color: var(--orange); }
+    .filter-bar { background: #F7F7F7; border-bottom: 1px solid var(--border); padding: 12px 0; }
+    .filter-bar .container { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .filter-select { padding: 9px 14px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 13px; font-family: 'Inter',sans-serif; color: var(--dark); background: var(--white); cursor: pointer; }
+    .filter-select:focus { outline: none; border-color: var(--orange); }
+    .filter-count { margin-left: auto; font-size: 13px; color: #888; font-weight: 600; }
+    .results-section { padding: 32px 0; background: var(--light); min-height: 60vh; }
+    .results-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+    .results-title { font-size: 18px; font-weight: 800; color: var(--dark); }
+    .listings-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+    @media (max-width: 1100px) { .listings-grid { grid-template-columns: repeat(3, 1fr); } }
+    @media (max-width: 768px) { .listings-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; } }
+    @media (max-width: 480px) { .listings-grid { grid-template-columns: 1fr; } }
+    .no-results { text-align: center; padding: 80px 20px; color: #888; }
+    .no-results-icon { font-size: 48px; margin-bottom: 16px; }
+    .no-results-title { font-size: 20px; font-weight: 800; color: var(--dark); margin-bottom: 8px; }
+    .pagination { display: flex; gap: 8px; justify-content: center; margin-top: 32px; }
+    .page-btn { padding: 8px 16px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 14px; font-weight: 600; background: var(--white); cursor: pointer; }
+    .page-btn.active { background: var(--orange); color: var(--white); border-color: var(--orange); }
+    @media (max-width: 768px) { .page-hero .container { flex-direction: column; align-items: flex-start; } }
   </style>
 </head>
 <body>
 <div id="navbar-placeholder"></div>
 
-<!-- PAGE HERO -->
 <div class="page-hero">
   <div class="container">
-    <div class="page-hero-left">
-      <div class="breadcrumb">
-        <a href="index.html">Home</a>
-        <span>/</span>
-        <span>Auto Accessories</span>
-      </div>
-      <div class="page-hero-title">🔧 Auto Accessories</div>
-      <div class="page-hero-sub">Spare parts, modifications, wheels, audio &amp; more across the UAE</div>
+    <div>
+      <div class="breadcrumb"><a href="index.html">Home</a><span>›</span><span>Auto Accessories</span></div>
+      <div class="page-hero-title">Auto Accessories for Sale in UAE</div>
+      <div class="page-hero-sub" id="hero-count">Body Kits, Exhausts, Wheels, Parts &amp; More</div>
     </div>
-    <button class="btn-primary" onclick="window.location.href='place-ad.html'">+ Sell Your Item</button>
+    <a href="place-ad.html?cat=accessories" style="white-space:nowrap;flex-shrink:0;padding:12px 24px;border-radius:10px;font-weight:700;font-size:14px;background:var(--orange);color:#fff;text-decoration:none;">+ Sell an Accessory</a>
   </div>
 </div>
 
-<!-- COMING SOON -->
-<section class="coming-soon-section">
-  <div class="coming-soon-card">
-    <div class="coming-soon-icon">🔧</div>
-    <div class="coming-soon-badge">Coming Soon</div>
-    <div class="coming-soon-title">Auto Accessories Marketplace</div>
-    <div class="coming-soon-text">Buy and sell genuine spare parts, performance upgrades, wheels, tyres, audio systems, and all kinds of automotive accessories across the UAE.</div>
-    <button class="btn-primary" onclick="window.location.href='place-ad.html'" style="margin-bottom:16px;">List Your Item</button>
-    <div style="font-size:13px;color:var(--grey);">Or <a href="index.html" style="color:var(--orange);">browse other categories</a></div>
-    <div class="subcats">
-      <div class="subcat-pill">🔩 Spare Parts</div>
-      <div class="subcat-pill">🏎️ Performance</div>
-      <div class="subcat-pill">🎵 Audio</div>
-      <div class="subcat-pill">🛞 Wheels &amp; Tyres</div>
-      <div class="subcat-pill">💡 Lighting</div>
-      <div class="subcat-pill">🪑 Interior</div>
+<div class="type-strip">
+  <div class="container">
+    <div class="type-strip-inner">
+      <button class="type-btn active" onclick="filterType(this,'')">All Categories</button>
+      <button class="type-btn" onclick="filterType(this,'Body Kit')">Body Kits</button>
+      <button class="type-btn" onclick="filterType(this,'Exhaust')">Exhausts</button>
+      <button class="type-btn" onclick="filterType(this,'Wheels')">Wheels &amp; Rims</button>
+      <button class="type-btn" onclick="filterType(this,'Tyres')">Tyres</button>
+      <button class="type-btn" onclick="filterType(this,'Suspension')">Suspension</button>
+      <button class="type-btn" onclick="filterType(this,'Audio')">Audio &amp; Electronics</button>
+      <button class="type-btn" onclick="filterType(this,'Spare Parts')">Spare Parts</button>
+      <button class="type-btn" onclick="filterType(this,'Interior')">Interior</button>
     </div>
+  </div>
+</div>
+
+<div class="filter-bar">
+  <div class="container">
+    <select class="filter-select" id="filterCity" onchange="applyFilters()">
+      <option value="">All Emirates</option>
+      <option>Dubai</option><option>Abu Dhabi</option><option>Sharjah</option>
+      <option>Ajman</option><option>Ras Al Khaimah</option><option>Fujairah</option><option>Umm Al Quwain</option>
+    </select>
+    <select class="filter-select" id="filterCondition" onchange="applyFilters()">
+      <option value="">Any Condition</option>
+      <option>Brand New</option><option>Used</option>
+    </select>
+    <select class="filter-select" id="filterSort" onchange="applyFilters()">
+      <option value="newest">Newest First</option>
+      <option value="price-asc">Price: Low to High</option>
+      <option value="price-desc">Price: High to Low</option>
+    </select>
+    <span class="filter-count" id="filter-count">Loading...</span>
+  </div>
+</div>
+
+<section class="results-section">
+  <div class="container">
+    <div class="results-header">
+      <div class="results-title" id="results-title">Loading...</div>
+    </div>
+    <div class="listings-grid" id="results-grid"></div>
+    <div class="no-results" id="no-results" style="display:none;">
+      <div class="no-results-icon">🔧</div>
+      <div class="no-results-title">No accessories found</div>
+      <p>Try adjusting your filters or <a href="place-ad.html?cat=accessories" style="color:var(--orange)">be the first to list one</a>.</p>
+    </div>
+    <div class="pagination" id="pagination"></div>
   </div>
 </section>
 
@@ -113,6 +110,99 @@
 <script>
   renderNavbar('accessories');
   renderFooter();
+
+  const PER_PAGE = 12;
+  let allListings = [], filtered = [], currentPage = 1, activeType = '';
+
+  const accessoriesData = [
+    { title:'Mansory Carbon Fiber Body Kit — Ferrari 488', category:'Body Kit', brand:'Mansory', price:85000, condition:'Brand New', city:'Dubai', seller:'Mansory UAE', verified:true, img:'cat-accessories-new.jpg' },
+    { title:'Akrapovic Titanium Exhaust — BMW M3', category:'Exhaust', brand:'Akrapovic', price:18500, condition:'Brand New', city:'Dubai', seller:'Performance Parts UAE', verified:true, img:'https://images.unsplash.com/photo-1558618047-f4e60cef3895?w=600&q=80' },
+    { title:'HRE P101 Forged Wheels 21" — Set of 4', category:'Wheels', brand:'HRE', price:42000, condition:'Brand New', city:'Abu Dhabi', seller:'Wheels Gallery', verified:true, img:'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80' },
+    { title:'Brabus Wide Body Kit — Mercedes G63', category:'Body Kit', brand:'Brabus', price:125000, condition:'Brand New', city:'Dubai', seller:'Brabus Middle East', verified:true, img:'cat-accessories-new.jpg' },
+    { title:'Armytrix Valvetronic Exhaust — Porsche 911', category:'Exhaust', brand:'Armytrix', price:22000, condition:'Used', city:'Dubai', seller:'Private Seller', verified:false, img:'https://images.unsplash.com/photo-1558618047-f4e60cef3895?w=600&q=80' },
+    { title:'Vossen CV10 Wheels 20" — Set of 4', category:'Wheels', brand:'Vossen', price:16500, condition:'Used', city:'Sharjah', seller:'Private Seller', verified:false, img:'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80' },
+    { title:'Michelin Pilot Sport 4S 255/35 R20 — Set of 4', category:'Tyres', brand:'Michelin', price:8800, condition:'Brand New', city:'Dubai', seller:'Michelin UAE', verified:true, img:'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80' },
+    { title:'KW Coilover Suspension Kit V3 — Audi RS6', category:'Suspension', brand:'KW', price:14500, condition:'Brand New', city:'Abu Dhabi', seller:'KW Suspensions UAE', verified:true, img:'cat-accessories-new.jpg' },
+    { title:'Pioneer 12" Subwoofer + Amplifier Kit', category:'Audio', brand:'Pioneer', price:3200, condition:'Brand New', city:'Dubai', seller:'Car Audio Dubai', verified:false, img:'https://images.unsplash.com/photo-1558618047-f4e60cef3895?w=600&q=80' },
+    { title:'Hamann Body Kit — BMW X6 M', category:'Body Kit', brand:'Hamann', price:68000, condition:'Used', city:'Dubai', seller:'Private Seller', verified:false, img:'cat-accessories-new.jpg' },
+    { title:'Borla ATAK Exhaust — Ford Mustang GT', category:'Exhaust', brand:'Borla', price:9500, condition:'Brand New', city:'Ajman', seller:'Mustang Parts UAE', verified:false, img:'https://images.unsplash.com/photo-1558618047-f4e60cef3895?w=600&q=80' },
+    { title:'Alcantara Steering Wheel + Interior Trim Kit', category:'Interior', brand:'Custom', price:4800, condition:'Brand New', city:'Dubai', seller:'Interior Mods Dubai', verified:true, img:'cat-accessories-new.jpg' },
+    { title:'Brembo GT Big Brake Kit — Lamborghini Urus', category:'Spare Parts', brand:'Brembo', price:38000, condition:'Brand New', city:'Dubai', seller:'Brembo UAE', verified:true, img:'cat-accessories-new.jpg' },
+    { title:'Pirelli P Zero 305/30 R21 — Set of 2 Rear', category:'Tyres', brand:'Pirelli', price:5600, condition:'Brand New', city:'Dubai', seller:'Tyre World Dubai', verified:false, img:'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80' },
+    { title:'Bilstein B12 Suspension Kit — VW Golf R', category:'Suspension', brand:'Bilstein', price:6200, condition:'Used', city:'Sharjah', seller:'Private Seller', verified:false, img:'cat-accessories-new.jpg' },
+    { title:'Alpine Halo9 9" Touchscreen — Universal Fit', category:'Audio', brand:'Alpine', price:5500, condition:'Brand New', city:'Dubai', seller:'Alpine UAE', verified:true, img:'https://images.unsplash.com/photo-1558618047-f4e60cef3895?w=600&q=80' },
+  ];
+
+  allListings = accessoriesData.map((d, i) => ({ ...d, id: 'acc' + i }));
+
+  function filterType(btn, type) {
+    document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    activeType = type;
+    applyFilters();
+  }
+
+  function applyFilters() {
+    const city = document.getElementById('filterCity').value;
+    const cond = document.getElementById('filterCondition').value;
+    const sort = document.getElementById('filterSort').value;
+    filtered = allListings.filter(l => {
+      if (city && l.city !== city) return false;
+      if (cond && l.condition !== cond) return false;
+      if (activeType && l.category !== activeType) return false;
+      return true;
+    });
+    if (sort === 'price-asc') filtered.sort((a,b) => a.price - b.price);
+    else if (sort === 'price-desc') filtered.sort((a,b) => b.price - a.price);
+    currentPage = 1;
+    renderPage();
+  }
+
+  function renderPage() {
+    const grid = document.getElementById('results-grid');
+    const noRes = document.getElementById('no-results');
+    const start = (currentPage - 1) * PER_PAGE;
+    const page = filtered.slice(start, start + PER_PAGE);
+    const count = filtered.length;
+    document.getElementById('filter-count').textContent = count + ' item' + (count !== 1 ? 's' : '');
+    document.getElementById('results-title').textContent = count + ' accessory listing' + (count !== 1 ? 's' : '') + ' found';
+    document.getElementById('hero-count').textContent = count + ' auto accessories listed across the UAE';
+    if (count === 0) { grid.innerHTML = ''; noRes.style.display = 'block'; }
+    else {
+      noRes.style.display = 'none';
+      grid.innerHTML = page.map(l => `
+        <div class="listing-card" onclick="window.location.href='listing.html?id=${l.id}'">
+          <div class="card-img-wrap">
+            <img src="${l.img}" alt="${l.title}" loading="lazy" onerror="this.src='cat-accessories-new.jpg'" />
+            <span class="card-badge ${l.condition === 'Brand New' ? 'badge-new' : 'badge-used'}">${l.condition}</span>
+            ${l.verified ? '<span class="card-verified">&#10003; Verified</span>' : ''}
+          </div>
+          <div class="card-body">
+            <div class="card-price">${DM.formatPrice(l.price)}</div>
+            <div class="card-title">${l.title}</div>
+            <div class="card-pills">
+              <span class="pill">${l.category}</span>
+              <span class="pill">${l.brand}</span>
+            </div>
+            <div class="card-location">&#128205; ${l.city}</div>
+          </div>
+          <div class="card-footer">
+            <div class="card-seller">${l.seller}</div>
+            <button class="btn-sm-orange" onclick="event.stopPropagation();window.location.href='listing.html?id=${l.id}'">Details</button>
+          </div>
+        </div>`).join('');
+    }
+    const totalPages = Math.ceil(count / PER_PAGE);
+    const pag = document.getElementById('pagination');
+    pag.innerHTML = '';
+    if (totalPages > 1) {
+      for (let i = 1; i <= totalPages; i++) {
+        pag.innerHTML += `<button class="page-btn${i === currentPage ? ' active' : ''}" onclick="goPage(${i})">${i}</button>`;
+      }
+    }
+  }
+  function goPage(p) { currentPage = p; renderPage(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+  applyFilters();
 </script>
 </body>
 </html>

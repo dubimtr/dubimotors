@@ -6,123 +6,113 @@
   <title>Number Plates for Sale in UAE — DUBIMOTORS</title>
   <link rel="stylesheet" href="style.css" />
   <style>
-    .page-hero { background: var(--dark); padding: 40px 0 32px; }
+    .page-hero { background: var(--dark); padding: 32px 0 28px; }
     .page-hero .container { display: flex; align-items: center; justify-content: space-between; gap: 24px; }
-    .page-hero-title { font-size: 32px; font-weight: 900; color: var(--white); margin-bottom: 6px; }
-    .page-hero-sub { font-size: 15px; color: #666; }
-    .breadcrumb { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #555; margin-bottom: 14px; }
+    .page-hero-title { font-size: 30px; font-weight: 900; color: var(--white); margin-bottom: 4px; }
+    .page-hero-sub { font-size: 14px; color: #666; }
+    .breadcrumb { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #555; margin-bottom: 10px; }
     .breadcrumb a { color: #555; } .breadcrumb a:hover { color: var(--orange); }
-    .breadcrumb span { color: #999; }
-    .coming-soon-section {
-      min-height: 60vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: var(--light);
-    }
-    .coming-soon-card {
-      text-align: center;
-      padding: 64px 48px;
-      background: var(--white);
-      border-radius: 24px;
-      border: 1px solid var(--border);
-      max-width: 560px;
-      width: 100%;
-    }
-    .coming-soon-icon { font-size: 72px; margin-bottom: 24px; }
-    .coming-soon-title { font-size: 32px; font-weight: 900; color: var(--dark); margin-bottom: 12px; }
-    .coming-soon-text { font-size: 16px; color: var(--grey); line-height: 1.7; margin-bottom: 32px; }
-    .coming-soon-badge {
-      display: inline-block;
-      background: rgba(232,69,10,0.1);
-      color: var(--orange);
-      border: 1px solid rgba(232,69,10,0.3);
-      border-radius: 20px;
-      padding: 6px 18px;
-      font-size: 12px;
-      font-weight: 700;
-      letter-spacing: 1.5px;
-      text-transform: uppercase;
-      margin-bottom: 24px;
-    }
-    .plate-preview {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      background: #fff;
-      border: 3px solid #c00;
-      border-radius: 8px;
-      padding: 10px 28px;
-      margin: 0 auto 28px;
-      font-size: 28px;
-      font-weight: 900;
-      color: var(--dark);
-      letter-spacing: 4px;
-      font-family: 'Arial', sans-serif;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.12);
-    }
-    .plate-preview span { color: #c00; font-size: 14px; display: block; letter-spacing: 1px; font-weight: 700; }
-    .subcats {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 12px;
-      margin-top: 24px;
-    }
-    .subcat-pill {
-      background: var(--light);
-      border: 1.5px solid var(--border);
-      border-radius: 10px;
-      padding: 12px 8px;
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--dark);
-      text-align: center;
-    }
-    @media (max-width: 600px) {
-      .coming-soon-card { padding: 40px 24px; }
-      .subcats { grid-template-columns: repeat(2, 1fr); }
-    }
+    .type-strip { background: var(--white); border-bottom: 1px solid var(--border); padding: 12px 0; overflow: hidden; }
+    .type-strip-inner { display: flex; align-items: center; gap: 8px; overflow-x: auto; scrollbar-width: none; padding: 0 4px; }
+    .type-strip-inner::-webkit-scrollbar { display: none; }
+    .type-btn { padding: 8px 18px; border: 1.5px solid var(--border); border-radius: 20px; font-size: 13px; font-weight: 600; color: #555; background: var(--white); cursor: pointer; white-space: nowrap; flex-shrink: 0; transition: all 0.2s; }
+    .type-btn:hover, .type-btn.active { border-color: var(--orange); background: #FFF8F6; color: var(--orange); }
+    .filter-bar { background: #F7F7F7; border-bottom: 1px solid var(--border); padding: 12px 0; }
+    .filter-bar .container { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .filter-select { padding: 9px 14px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 13px; font-family: 'Inter',sans-serif; color: var(--dark); background: var(--white); cursor: pointer; }
+    .filter-select:focus { outline: none; border-color: var(--orange); }
+    .filter-count { margin-left: auto; font-size: 13px; color: #888; font-weight: 600; }
+    .results-section { padding: 32px 0; background: var(--light); min-height: 60vh; }
+    .results-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+    .results-title { font-size: 18px; font-weight: 800; color: var(--dark); }
+    .plates-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+    @media (max-width: 1100px) { .plates-grid { grid-template-columns: repeat(3, 1fr); } }
+    @media (max-width: 768px) { .plates-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; } }
+    .plate-card { background: var(--white); border-radius: 16px; border: 1.5px solid var(--border); overflow: hidden; cursor: pointer; transition: box-shadow 0.2s, border-color 0.2s; }
+    .plate-card:hover { box-shadow: 0 8px 32px rgba(0,0,0,0.1); border-color: var(--orange); }
+    .plate-img-wrap { position: relative; height: 160px; background: #1a1a1a; display: flex; align-items: center; justify-content: center; }
+    .plate-badge-vip { position: absolute; top: 10px; left: 10px; background: #FFD700; color: #000; font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 6px; letter-spacing: 0.5px; }
+    .plate-display { background: #fff; border: 3px solid #333; border-radius: 8px; padding: 12px 24px; text-align: center; min-width: 140px; }
+    .plate-flag-row { display: flex; align-items: center; justify-content: center; gap: 4px; margin-bottom: 6px; }
+    .flag-block { display: flex; height: 10px; width: 20px; border-radius: 2px; overflow: hidden; }
+    .flag-block span:nth-child(1) { flex:1; background:#00732f; }
+    .flag-block span:nth-child(2) { flex:1; background:#fff; }
+    .flag-block span:nth-child(3) { flex:1; background:#000; }
+    .flag-red-bar { width: 5px; height: 10px; background: #ce1126; border-radius: 1px; }
+    .plate-uae-text { font-size: 9px; font-weight: 700; color: #555; letter-spacing: 0.5px; }
+    .plate-number { font-size: 36px; font-weight: 900; color: #111; letter-spacing: 3px; line-height: 1; }
+    .plate-code-text { font-size: 15px; font-weight: 700; color: #333; }
+    .plate-emirate-text { font-size: 9px; color: #777; margin-top: 3px; text-transform: uppercase; letter-spacing: 1px; }
+    .plate-card-body { padding: 14px 16px; }
+    .plate-card-price { font-size: 20px; font-weight: 900; color: var(--orange); margin-bottom: 6px; }
+    .plate-card-title { font-size: 13px; font-weight: 700; color: var(--dark); margin-bottom: 8px; }
+    .plate-card-pills { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 4px; }
+    .plate-card-footer { display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; border-top: 1px solid var(--border); }
+    .plate-card-seller { font-size: 12px; color: #888; }
+    .no-results { text-align: center; padding: 80px 20px; color: #888; }
+    .no-results-icon { font-size: 48px; margin-bottom: 16px; }
+    .no-results-title { font-size: 20px; font-weight: 800; color: var(--dark); margin-bottom: 8px; }
+    .pagination { display: flex; gap: 8px; justify-content: center; margin-top: 32px; }
+    .page-btn { padding: 8px 16px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 14px; font-weight: 600; background: var(--white); cursor: pointer; }
+    .page-btn.active { background: var(--orange); color: var(--white); border-color: var(--orange); }
+    @media (max-width: 768px) { .page-hero .container { flex-direction: column; align-items: flex-start; } }
   </style>
 </head>
 <body>
 <div id="navbar-placeholder"></div>
 
-<!-- PAGE HERO -->
 <div class="page-hero">
   <div class="container">
-    <div class="page-hero-left">
-      <div class="breadcrumb">
-        <a href="index.html">Home</a>
-        <span>/</span>
-        <span>Number Plates</span>
-      </div>
-      <div class="page-hero-title">🔢 Number Plates</div>
-      <div class="page-hero-sub">VIP, fancy &amp; special number plates across all UAE emirates</div>
+    <div>
+      <div class="breadcrumb"><a href="index.html">Home</a><span>›</span><span>Number Plates</span></div>
+      <div class="page-hero-title">Number Plates for Sale in UAE</div>
+      <div class="page-hero-sub" id="hero-count">VIP, Single Digit &amp; Fancy Plates across all Emirates</div>
     </div>
-    <button class="btn-primary" onclick="window.location.href='place-ad.html'">+ Sell Your Plate</button>
+    <a href="place-ad.html?cat=plates" style="white-space:nowrap;flex-shrink:0;padding:12px 24px;border-radius:10px;font-weight:700;font-size:14px;background:var(--orange);color:#fff;text-decoration:none;">+ Sell Your Plate</a>
   </div>
 </div>
 
-<!-- COMING SOON -->
-<section class="coming-soon-section">
-  <div class="coming-soon-card">
-    <div class="plate-preview">
-      <span>DUBAI</span>
-      7
+<div class="type-strip">
+  <div class="container">
+    <div class="type-strip-inner">
+      <button class="type-btn active" onclick="filterType(this,'')">All Plates</button>
+      <button class="type-btn" onclick="filterType(this,'Single Digit')">Single Digit</button>
+      <button class="type-btn" onclick="filterType(this,'Double Digit')">Double Digit</button>
+      <button class="type-btn" onclick="filterType(this,'Triple Digit')">Triple Digit</button>
+      <button class="type-btn" onclick="filterType(this,'VIP')">VIP Plates</button>
+      <button class="type-btn" onclick="filterType(this,'Standard')">Standard</button>
     </div>
-    <div class="coming-soon-badge">Coming Soon</div>
-    <div class="coming-soon-title">Number Plates Marketplace</div>
-    <div class="coming-soon-text">Buy and sell VIP, fancy, and special number plates from Dubai, Abu Dhabi, Sharjah, and all UAE emirates. From single-digit plates to custom combinations.</div>
-    <button class="btn-primary" onclick="window.location.href='place-ad.html'" style="margin-bottom:16px;">List Your Plate</button>
-    <div style="font-size:13px;color:var(--grey);">Or <a href="index.html" style="color:var(--orange);">browse other categories</a></div>
-    <div class="subcats">
-      <div class="subcat-pill">1️⃣ Single Digit</div>
-      <div class="subcat-pill">🔢 Double Digit</div>
-      <div class="subcat-pill">✨ VIP Plates</div>
-      <div class="subcat-pill">🏙️ Dubai</div>
-      <div class="subcat-pill">🕌 Abu Dhabi</div>
-      <div class="subcat-pill">🌆 All Emirates</div>
+  </div>
+</div>
+
+<div class="filter-bar">
+  <div class="container">
+    <select class="filter-select" id="filterEmirate" onchange="applyFilters()">
+      <option value="">All Emirates</option>
+      <option>Dubai</option><option>Abu Dhabi</option><option>Sharjah</option>
+      <option>Ajman</option><option>Ras Al Khaimah</option><option>Fujairah</option><option>Umm Al Quwain</option>
+    </select>
+    <select class="filter-select" id="filterSort" onchange="applyFilters()">
+      <option value="newest">Newest First</option>
+      <option value="price-asc">Price: Low to High</option>
+      <option value="price-desc">Price: High to Low</option>
+    </select>
+    <span class="filter-count" id="filter-count">Loading...</span>
+  </div>
+</div>
+
+<section class="results-section">
+  <div class="container">
+    <div class="results-header">
+      <div class="results-title" id="results-title">Loading...</div>
     </div>
+    <div class="plates-grid" id="results-grid"></div>
+    <div class="no-results" id="no-results" style="display:none;">
+      <div class="no-results-icon">🔢</div>
+      <div class="no-results-title">No plates found</div>
+      <p>Try adjusting your filters or <a href="place-ad.html?cat=plates" style="color:var(--orange)">sell your plate</a>.</p>
+    </div>
+    <div class="pagination" id="pagination"></div>
   </div>
 </section>
 
@@ -133,6 +123,104 @@
 <script>
   renderNavbar('plates');
   renderFooter();
+
+  const PER_PAGE = 12;
+  let allListings = [], filtered = [], currentPage = 1, activeType = '';
+
+  const platesData = [
+    { number:'1', code:'', emirate:'Dubai', type:'Single Digit', price:15000000, vip:true, transfer:true, seller:'Private Seller' },
+    { number:'5', code:'', emirate:'Dubai', type:'Single Digit', price:8500000, vip:true, transfer:true, seller:'VIP Plates UAE' },
+    { number:'7', code:'', emirate:'Abu Dhabi', type:'Single Digit', price:6200000, vip:true, transfer:true, seller:'Private Seller' },
+    { number:'11', code:'A', emirate:'Dubai', type:'Double Digit', price:2800000, vip:true, transfer:true, seller:'Plates Gallery' },
+    { number:'99', code:'B', emirate:'Dubai', type:'Double Digit', price:1950000, vip:true, transfer:true, seller:'Private Seller' },
+    { number:'77', code:'', emirate:'Sharjah', type:'Double Digit', price:1200000, vip:true, transfer:true, seller:'Sharjah Plates' },
+    { number:'100', code:'A', emirate:'Dubai', type:'Triple Digit', price:850000, vip:false, transfer:true, seller:'Private Seller' },
+    { number:'786', code:'', emirate:'Dubai', type:'Triple Digit', price:1500000, vip:true, transfer:true, seller:'VIP Numbers LLC' },
+    { number:'555', code:'B', emirate:'Abu Dhabi', type:'Triple Digit', price:680000, vip:false, transfer:true, seller:'Private Seller' },
+    { number:'1234', code:'', emirate:'Dubai', type:'Standard', price:320000, vip:false, transfer:true, seller:'Plates Market' },
+    { number:'9999', code:'A', emirate:'Dubai', type:'VIP', price:2200000, vip:true, transfer:true, seller:'Private Seller' },
+    { number:'8888', code:'', emirate:'Abu Dhabi', type:'VIP', price:1800000, vip:true, transfer:true, seller:'Abu Dhabi Plates' },
+    { number:'33', code:'', emirate:'Ajman', type:'Double Digit', price:450000, vip:false, transfer:true, seller:'Private Seller' },
+    { number:'22', code:'C', emirate:'Dubai', type:'Double Digit', price:3100000, vip:true, transfer:true, seller:'VIP Plates UAE' },
+    { number:'111', code:'', emirate:'Ras Al Khaimah', type:'Triple Digit', price:280000, vip:false, transfer:false, seller:'Private Seller' },
+    { number:'2024', code:'', emirate:'Dubai', type:'Standard', price:95000, vip:false, transfer:true, seller:'Private Seller' },
+  ];
+
+  allListings = platesData.map((d, i) => ({ ...d, id: 'pl' + i }));
+
+  function filterType(btn, type) {
+    document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    activeType = type;
+    applyFilters();
+  }
+
+  function applyFilters() {
+    const emirate = document.getElementById('filterEmirate').value;
+    const sort = document.getElementById('filterSort').value;
+    filtered = allListings.filter(l => {
+      if (emirate && l.emirate !== emirate) return false;
+      if (activeType && l.type !== activeType) return false;
+      return true;
+    });
+    if (sort === 'price-asc') filtered.sort((a,b) => a.price - b.price);
+    else if (sort === 'price-desc') filtered.sort((a,b) => b.price - a.price);
+    currentPage = 1;
+    renderPage();
+  }
+
+  function renderPage() {
+    const grid = document.getElementById('results-grid');
+    const noRes = document.getElementById('no-results');
+    const start = (currentPage - 1) * PER_PAGE;
+    const page = filtered.slice(start, start + PER_PAGE);
+    const count = filtered.length;
+    document.getElementById('filter-count').textContent = count + ' plate' + (count !== 1 ? 's' : '');
+    document.getElementById('results-title').textContent = count + ' plate' + (count !== 1 ? 's' : '') + ' found';
+    document.getElementById('hero-count').textContent = count + ' number plates listed across the UAE';
+    if (count === 0) { grid.innerHTML = ''; noRes.style.display = 'block'; }
+    else {
+      noRes.style.display = 'none';
+      grid.innerHTML = page.map(l => `
+        <div class="plate-card" onclick="window.location.href='listing.html?id=${l.id}'">
+          <div class="plate-img-wrap">
+            <div class="plate-display">
+              <div class="plate-flag-row">
+                <div class="flag-red-bar"></div>
+                <div class="flag-block"><span></span><span></span><span></span></div>
+                <span class="plate-uae-text">UAE</span>
+              </div>
+              <div class="plate-number">${l.code ? '<span class="plate-code-text">' + l.code + '</span> ' : ''}${l.number}</div>
+              <div class="plate-emirate-text">${l.emirate}</div>
+            </div>
+            ${l.vip ? '<div class="plate-badge-vip">⭐ VIP</div>' : ''}
+          </div>
+          <div class="plate-card-body">
+            <div class="plate-card-price">${DM.formatPrice(l.price)}</div>
+            <div class="plate-card-title">${l.emirate} Plate ${l.code ? l.code + ' ' : ''}${l.number}</div>
+            <div class="plate-card-pills">
+              <span class="pill">${l.type}</span>
+              <span class="pill">${l.emirate}</span>
+              ${l.transfer ? '<span class="pill" style="background:#e8f5e9;color:#2e7d32;">Transfer Incl.</span>' : ''}
+            </div>
+          </div>
+          <div class="plate-card-footer">
+            <div class="plate-card-seller">${l.seller}</div>
+            <button class="btn-sm-orange" onclick="event.stopPropagation();window.location.href='listing.html?id=${l.id}'">Details</button>
+          </div>
+        </div>`).join('');
+    }
+    const totalPages = Math.ceil(count / PER_PAGE);
+    const pag = document.getElementById('pagination');
+    pag.innerHTML = '';
+    if (totalPages > 1) {
+      for (let i = 1; i <= totalPages; i++) {
+        pag.innerHTML += `<button class="page-btn${i === currentPage ? ' active' : ''}" onclick="goPage(${i})">${i}</button>`;
+      }
+    }
+  }
+  function goPage(p) { currentPage = p; renderPage(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+  applyFilters();
 </script>
 </body>
 </html>
