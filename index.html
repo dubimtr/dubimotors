@@ -1065,9 +1065,11 @@
   document.getElementById('stat-boats').textContent = counts.boats;
   document.getElementById('stat-bikes').textContent = counts.bikes;
   document.getElementById('count-cars').textContent = counts.cars + ' listings';
-  const marineCount = (counts.boats || 0) + (counts.jetski || 0);
+  const marineCount = counts.boats || 0;
+  const heavyCount = counts.heavy || 0;
   document.getElementById('count-marine').textContent = marineCount + ' listings';
   document.getElementById('count-bikes').textContent = counts.bikes + ' listings';
+  if (document.getElementById('count-heavy')) document.getElementById('count-heavy').textContent = heavyCount + ' listings';
   document.getElementById('sc-cars').textContent = counts.cars + ' listings';
   document.getElementById('sc-marine').textContent = marineCount + ' listings';
   document.getElementById('sc-bikes').textContent = counts.bikes + ' listings';
@@ -1127,7 +1129,7 @@
   const mc = DM.getCounts();
   const mCounts = {
     'mcount-cars': mc.cars + ' listings',
-    'mcount-marine': ((mc.boats || 0) + (mc.jetski || 0)) + ' listings',
+    'mcount-marine': (mc.boats || 0) + ' listings',
     'mcount-bikes': mc.bikes + ' listings',
   };
   Object.entries(mCounts).forEach(([id, val]) => {
