@@ -605,14 +605,21 @@
     badge.className = 'gallery-badge ' + (listing.condition === 'Brand New' ? 'badge-new' : 'badge-used');
     if (listing.verified) document.getElementById('gallery-verified').style.display = 'block';
 
-    // Build gallery images array (use listing.images if available, else repeat main img)
-    window._galleryImages = listing.images && listing.images.length > 1 ? listing.images : [listing.img, listing.img, listing.img, listing.img];
+    // Build gallery images array (use listing.images if available, else show only the single image - no duplicates)
+    window._galleryImages = listing.images && listing.images.length > 1 ? listing.images : [listing.img];
     window._galleryIdx = 0;
-
+    const singleImg = window._galleryImages.length <= 1;
+    // Hide carousel controls and thumbs when only 1 image
+    document.querySelectorAll('.gallery-nav').forEach(el => el.style.display = singleImg ? 'none' : '');
+    document.getElementById('gallery-counter').style.display = singleImg ? 'none' : '';
     const thumbs = document.getElementById('gallery-thumbs');
-    window._galleryImages.forEach((src, i) => {
-      thumbs.innerHTML += `<div class="gallery-thumb${i===0?' active':''}" onclick="switchImgIdx(${i})"><img src="${src}" alt="" /></div>`;
-    });
+    if (!singleImg) {
+      window._galleryImages.forEach((src, i) => {
+        thumbs.innerHTML += `<div class="gallery-thumb${i===0?' active':''}" onclick="switchImgIdx(${i})"><img src="${src}" alt="" /></div>`;
+      });
+    } else {
+      thumbs.style.display = 'none';
+    }
     updateGalleryCounter();
 
     // ── INFO ──
