@@ -99,9 +99,8 @@ function renderNavbar(activePage = '') {
     <div class="mobile-nav-menu" id="mobile-nav-menu">
       <a href="index.html">🏠 Home</a>
       <a href="cars.html">🚗 Cars</a>
-      <a href="boats.html">⛵ Boats &amp; Yachts</a>
+      <a href="marine.html">⛵ Boats &amp; Jet Skis</a>
       <a href="bikes.html">🏍 Motorcycles</a>
-      <a href="jetski.html">🛥 Jet Skis</a>
       <a href="heavy.html">🚛 Heavy Vehicles</a>
       <a href="plates.html">🔢 Number Plates</a>
       <a href="accessories.html">🔧 Auto Accessories</a>
@@ -224,9 +223,8 @@ function renderFooter() {
           <div>
             <div class="footer-col-title">Browse</div>
             <a class="footer-link" href="cars.html">Cars for Sale</a>
-            <a class="footer-link" href="boats.html">Boats &amp; Yachts</a>
+            <a class="footer-link" href="marine.html">Boats &amp; Jet Skis</a>
             <a class="footer-link" href="bikes.html">Motorcycles</a>
-            <a class="footer-link" href="jetski.html">Jet Skis</a>
             <a class="footer-link" href="heavy.html">Heavy Vehicles</a>
             <a class="footer-link" href="plates.html">Number Plates</a>
             <a class="footer-link" href="accessories.html">Auto Accessories</a>

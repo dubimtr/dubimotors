@@ -707,11 +707,11 @@
       </div>
       <div class="mobile-cat-arrow">›</div>
     </a>
-    <a class="mobile-cat-card" href="boats.html">
-      <div class="mobile-cat-icon" id="mci-boats"></div>
+    <a class="mobile-cat-card" href="marine.html">
+      <div class="mobile-cat-icon" id="mci-marine"></div>
       <div class="mobile-cat-info">
-        <div class="mobile-cat-name">Boats &amp; Yachts</div>
-        <div class="mobile-cat-count" id="mcount-boats">Loading...</div>
+        <div class="mobile-cat-name">Boats &amp; Jet Skis</div>
+        <div class="mobile-cat-count" id="mcount-marine">Loading...</div>
       </div>
       <div class="mobile-cat-arrow">›</div>
     </a>
@@ -720,14 +720,6 @@
       <div class="mobile-cat-info">
         <div class="mobile-cat-name">Motorcycles</div>
         <div class="mobile-cat-count" id="mcount-bikes">Loading...</div>
-      </div>
-      <div class="mobile-cat-arrow">›</div>
-    </a>
-    <a class="mobile-cat-card" href="jetski.html">
-      <div class="mobile-cat-icon" id="mci-jetski"></div>
-      <div class="mobile-cat-info">
-        <div class="mobile-cat-name">Jet Skis</div>
-        <div class="mobile-cat-count" id="mcount-jetski">Loading...</div>
       </div>
       <div class="mobile-cat-arrow">›</div>
     </a>
@@ -771,11 +763,11 @@
         <div class="cat-item-count" id="count-cars">Loading...</div>
       </div>
     </a>
-    <a class="cat-item" href="boats.html">
-      <div class="cat-icon-box" id="ci-boats"></div>
+    <a class="cat-item" href="marine.html">
+      <div class="cat-icon-box" id="ci-marine"></div>
       <div class="cat-item-text">
-        <div class="cat-item-label">Boats &amp; Yachts</div>
-        <div class="cat-item-count" id="count-boats">Loading...</div>
+        <div class="cat-item-label">Boats &amp; Jet Skis</div>
+        <div class="cat-item-count" id="count-marine">Loading...</div>
       </div>
     </a>
     <a class="cat-item" href="bikes.html">
@@ -783,13 +775,6 @@
       <div class="cat-item-text">
         <div class="cat-item-label">Motorcycles</div>
         <div class="cat-item-count" id="count-bikes">Loading...</div>
-      </div>
-    </a>
-    <a class="cat-item" href="jetski.html">
-      <div class="cat-icon-box" id="ci-jetski"></div>
-      <div class="cat-item-text">
-        <div class="cat-item-label">Jet Skis</div>
-        <div class="cat-item-count" id="count-jetski">Loading...</div>
       </div>
     </a>
     <a class="cat-item" href="heavy.html">
@@ -871,13 +856,13 @@
           <div class="showcase-count" id="sc-cars">Loading...</div>
         </div>
       </a>
-      <a class="showcase-card" href="boats.html">
-        <img src="https://static.wixstatic.com/media/3789f2_9add890e49654c8e80825bde87d1b891~mv2.jpeg/v1/fill/w_600,h_400,al_c,q_80,enc_avif,quality_auto/selling_luxury_yachts_generate_nice_luxury_yachts%20(3).jpeg" alt="Boats" loading="lazy" />
+      <a class="showcase-card" href="marine.html">
+        <img src="editorial-yacht-gen.jpg" alt="Boats &amp; Jet Skis" loading="lazy" />
         <div class="showcase-overlay"></div>
         <div class="showcase-arrow">→</div>
         <div class="showcase-label">
-          <div class="showcase-cat">Boats &amp; Yachts</div>
-          <div class="showcase-count" id="sc-boats">Loading...</div>
+          <div class="showcase-cat">Boats &amp; Jet Skis</div>
+          <div class="showcase-count" id="sc-marine">Loading...</div>
         </div>
       </a>
       <a class="showcase-card" href="bikes.html">
@@ -887,15 +872,6 @@
         <div class="showcase-label">
           <div class="showcase-cat">Motorcycles</div>
           <div class="showcase-count" id="sc-bikes">Loading...</div>
-        </div>
-      </a>
-      <a class="showcase-card" href="jetski.html">
-        <img src="cat-jetski-gen.jpg" alt="Jet Skis" loading="lazy" />
-        <div class="showcase-overlay"></div>
-        <div class="showcase-arrow">→</div>
-        <div class="showcase-label">
-          <div class="showcase-cat">Jet Skis</div>
-          <div class="showcase-count" id="sc-jetski">Loading...</div>
         </div>
       </a>
       <a class="showcase-card" href="heavy.html">
@@ -908,7 +884,7 @@
         </div>
       </a>
       <a class="showcase-card" href="plates.html">
-        <img src="cat-plates-gen.jpg" alt="Number Plates" loading="lazy" />
+        <img src="cat-plates.jpg" alt="Number Plates" loading="lazy" />
         <div class="showcase-overlay"></div>
         <div class="showcase-arrow">→</div>
         <div class="showcase-label">
@@ -1089,13 +1065,12 @@
   document.getElementById('stat-boats').textContent = counts.boats;
   document.getElementById('stat-bikes').textContent = counts.bikes;
   document.getElementById('count-cars').textContent = counts.cars + ' listings';
-  document.getElementById('count-boats').textContent = counts.boats + ' listings';
+  const marineCount = (counts.boats || 0) + (counts.jetski || 0);
+  document.getElementById('count-marine').textContent = marineCount + ' listings';
   document.getElementById('count-bikes').textContent = counts.bikes + ' listings';
-  document.getElementById('count-jetski').textContent = counts.jetski + ' listings';
   document.getElementById('sc-cars').textContent = counts.cars + ' listings';
-  document.getElementById('sc-boats').textContent = counts.boats + ' listings';
+  document.getElementById('sc-marine').textContent = marineCount + ' listings';
   document.getElementById('sc-bikes').textContent = counts.bikes + ' listings';
-  document.getElementById('sc-jetski').textContent = counts.jetski + ' listings';
 
   // Render hot deals (first 4 listings)
   const hotGrid = document.getElementById('hot-deals-grid');
@@ -1117,7 +1092,7 @@
     const params = new URLSearchParams({ cat: activeTab });
     if (q) params.set('q', q);
     if (loc) params.set('location', loc);
-    const pages = { cars: 'cars.html', boats: 'boats.html', bikes: 'bikes.html', jetski: 'jetski.html', heavy: 'heavy.html', plates: 'plates.html', accessories: 'accessories.html' };
+    const pages = { cars: 'cars.html', marine: 'marine.html', boats: 'marine.html', bikes: 'bikes.html', jetski: 'marine.html', heavy: 'heavy.html', plates: 'plates.html', accessories: 'accessories.html' };
     window.location.href = (pages[activeTab] || 'cars.html') + '?' + params.toString();
   }
 
@@ -1129,17 +1104,15 @@
   if (typeof DM_ICONS !== 'undefined') {
     const iconMap = {
       'mci-cars': DM_ICONS.cars,
-      'mci-boats': DM_ICONS.boats,
+      'mci-marine': DM_ICONS.boats,
       'mci-bikes': DM_ICONS.bikes,
-      'mci-jetski': DM_ICONS.jetski,
       'mci-heavy': DM_ICONS.heavy,
       'mci-plates': DM_ICONS.plates,
       'mci-accessories': DM_ICONS.accessories,
       // Desktop cat-strip icons
       'ci-cars': DM_ICONS.cars,
-      'ci-boats': DM_ICONS.boats,
+      'ci-marine': DM_ICONS.boats,
       'ci-bikes': DM_ICONS.bikes,
-      'ci-jetski': DM_ICONS.jetski,
       'ci-heavy': DM_ICONS.heavy,
       'ci-plates': DM_ICONS.plates,
       'ci-accessories': DM_ICONS.accessories,
@@ -1154,9 +1127,8 @@
   const mc = DM.getCounts();
   const mCounts = {
     'mcount-cars': mc.cars + ' listings',
-    'mcount-boats': mc.boats + ' listings',
+    'mcount-marine': ((mc.boats || 0) + (mc.jetski || 0)) + ' listings',
     'mcount-bikes': mc.bikes + ' listings',
-    'mcount-jetski': mc.jetski + ' listings',
   };
   Object.entries(mCounts).forEach(([id, val]) => {
     const el = document.getElementById(id);

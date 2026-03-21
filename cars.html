@@ -386,6 +386,18 @@
         </div>
       </div>
 
+      <!-- Fuel Type -->
+      <div class="sidebar-card">
+        <div class="sidebar-title">Fuel Type</div>
+        <div class="checkbox-list">
+          <div class="checkbox-item"><input type="checkbox" class="cb-fuel" value="Gasoline" onchange="applyFilters()" /><label>Gasoline</label></div>
+          <div class="checkbox-item"><input type="checkbox" class="cb-fuel" value="Diesel" onchange="applyFilters()" /><label>Diesel</label></div>
+          <div class="checkbox-item"><input type="checkbox" class="cb-fuel" value="Electric" onchange="applyFilters()" /><label>Electric</label></div>
+          <div class="checkbox-item"><input type="checkbox" class="cb-fuel" value="Hybrid" onchange="applyFilters()" /><label>Hybrid</label></div>
+          <div class="checkbox-item"><input type="checkbox" class="cb-fuel" value="Other" onchange="applyFilters()" /><label>Other</label></div>
+        </div>
+      </div>
+
       <button class="sidebar-reset" onclick="resetFilters()">Reset All Filters</button>
     </aside>
 
@@ -610,6 +622,7 @@
     const trans   = [...document.querySelectorAll('.cb-trans:checked')].map(x => x.value);
     const doors   = [...document.querySelectorAll('.cb-doors:checked')].map(x => x.value);
     const cyls    = [...document.querySelectorAll('.cb-cyl:checked')].map(x => x.value);
+    const fuels   = [...document.querySelectorAll('.cb-fuel:checked')].map(x => x.value);
     const sort    = document.getElementById('sortSelect').value;
     const colors  = activeColors.size ? [...activeColors] : [];
 
@@ -628,6 +641,7 @@
       if (!cbOwn && cbDlr && !l.verified) return false; // dealer = verified
       if (bodies.length && l.bodyType && !bodies.includes(l.bodyType)) return false;
       if (trans.length && l.transmission && !trans.some(t => l.transmission.toLowerCase().includes(t.toLowerCase()))) return false;
+      if (fuels.length && l.fuelType && !fuels.includes(l.fuelType)) return false;
       if (colors.length) {
         const extC = (l.extColor || '').toLowerCase();
         const intC = (l.intColor || '').toLowerCase();

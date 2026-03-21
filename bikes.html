@@ -54,6 +54,11 @@
     .no-results{text-align:center;padding:60px 20px;color:var(--grey)}
     .no-results-icon{font-size:48px;margin-bottom:16px}
     .no-results-title{font-size:20px;font-weight:700;color:var(--dark);margin-bottom:8px}
+    .color-swatch{width:26px;height:26px;border-radius:50%;border:2px solid transparent;cursor:pointer;transition:transform .15s,border-color .15s;flex-shrink:0}
+    .color-swatch:hover{transform:scale(1.15)}
+    .color-swatch.active{border-color:var(--orange)}
+    .color-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+    .color-label{font-size:11px;color:var(--grey);margin-top:6px;min-height:14px}
     @media(max-width:900px){
       .listing-layout{grid-template-columns:1fr;gap:0;padding:0 0 48px}
       .sidebar{position:static;max-height:none;overflow:visible;display:none}
@@ -159,6 +164,31 @@
           <div class="checkbox-item"><input type="checkbox" class="cb-trans" value="Semi-Auto" onchange="applyFilters()" /><label>Semi-Automatic</label></div>
         </div>
       </div>
+      <div class="sidebar-card">
+        <div class="sidebar-title">Fuel Type</div>
+        <div class="checkbox-list">
+          <div class="checkbox-item"><input type="checkbox" class="cb-fuel" value="Gasoline" onchange="applyFilters()" /><label>Gasoline</label></div>
+          <div class="checkbox-item"><input type="checkbox" class="cb-fuel" value="Electric" onchange="applyFilters()" /><label>Electric</label></div>
+          <div class="checkbox-item"><input type="checkbox" class="cb-fuel" value="Hybrid" onchange="applyFilters()" /><label>Hybrid</label></div>
+          <div class="checkbox-item"><input type="checkbox" class="cb-fuel" value="Other" onchange="applyFilters()" /><label>Other</label></div>
+        </div>
+      </div>
+      <div class="sidebar-card">
+        <div class="sidebar-title">Color</div>
+        <div class="color-row">
+          <div class="color-swatch" style="background:#1A1A1A;" title="Black" data-color="Black" onclick="toggleColor(this)"></div>
+          <div class="color-swatch" style="background:#FFFFFF;border-color:#DDD;" title="White" data-color="White" onclick="toggleColor(this)"></div>
+          <div class="color-swatch" style="background:#C0C0C0;" title="Silver" data-color="Silver" onclick="toggleColor(this)"></div>
+          <div class="color-swatch" style="background:#808080;" title="Grey" data-color="Grey" onclick="toggleColor(this)"></div>
+          <div class="color-swatch" style="background:#8B0000;" title="Red" data-color="Red" onclick="toggleColor(this)"></div>
+          <div class="color-swatch" style="background:#00008B;" title="Blue" data-color="Blue" onclick="toggleColor(this)"></div>
+          <div class="color-swatch" style="background:#006400;" title="Green" data-color="Green" onclick="toggleColor(this)"></div>
+          <div class="color-swatch" style="background:#F5F5DC;" title="Beige" data-color="Beige" onclick="toggleColor(this)"></div>
+          <div class="color-swatch" style="background:#FFD700;" title="Gold/Yellow" data-color="Gold" onclick="toggleColor(this)"></div>
+          <div class="color-swatch" style="background:#FF8C00;" title="Orange" data-color="Orange" onclick="toggleColor(this)"></div>
+        </div>
+        <div class="color-label" id="color-label"></div>
+      </div>
       <button class="sidebar-reset" onclick="resetFilters()">Reset All Filters</button>
     </aside>
 
@@ -197,10 +227,10 @@
     { name: 'Suzuki', logo: 'logos/suzuki.png' },
     { name: 'Ducati', logo: 'logos/ducati.png' },
     { name: 'BMW', logo: 'logos/bmw.png' },
-    { name: 'Harley-Davidson', logo: '' },
-    { name: 'KTM', logo: '' },
-    { name: 'Triumph', logo: '' },
-    { name: 'Aprilia', logo: '' }
+    { name: 'Harley-Davidson', logo: 'logos/harley-davidson.png' },
+    { name: 'KTM', logo: 'logos/ktm.png' },
+    { name: 'Triumph', logo: 'logos/triumph.png' },
+    { name: 'Aprilia', logo: 'logos/aprilia.png' }
   ];
   const strip = document.getElementById('brand-strip');
   if (strip) {
@@ -213,11 +243,6 @@
         img.src = b.logo; img.alt = b.name;
         img.onerror = () => { img.style.display='none'; };
         btn.appendChild(img);
-      } else {
-        const abbr = document.createElement('div');
-        abbr.style.cssText = 'width:40px;height:28px;display:flex;align-items:center;justify-content:center;background:#1A1A1A;border-radius:4px;font-size:9px;font-weight:900;color:white';
-        abbr.textContent = b.name.substring(0,3).toUpperCase();
-        btn.appendChild(abbr);
       }
       const s = document.createElement('span'); s.textContent = b.name;
       btn.appendChild(s);
@@ -257,6 +282,16 @@
   function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }
 
   let allListings = DM.getByCategory('bikes'), filtered = [...allListings], PER_PAGE = 9, currentPage = 1;
+  let activeColors = new Set();
+
+  function toggleColor(el) {
+    const c = el.dataset.color;
+    if (activeColors.has(c)) { activeColors.delete(c); el.classList.remove('active'); }
+    else { activeColors.add(c); el.classList.add('active'); }
+    const label = document.getElementById('color-label');
+    label.textContent = activeColors.size ? [...activeColors].join(', ') : '';
+    applyFilters();
+  }
 
   function applyFilters() {
     const city = document.getElementById('filterCity').value;
@@ -272,6 +307,8 @@
     const cbO = document.getElementById('cb-owner') ? document.getElementById('cb-owner').checked : false;
     const cbD = document.getElementById('cb-dealer') ? document.getElementById('cb-dealer').checked : false;
     const bodies = [...document.querySelectorAll('.cb-body:checked')].map(e => e.value);
+    const fuels  = [...document.querySelectorAll('.cb-fuel:checked')].map(e => e.value);
+    const colors = activeColors.size ? [...activeColors] : [];
 
     filtered = allListings.filter(l => {
       if (city && l.location && !l.location.includes(city)) return false;
@@ -284,6 +321,11 @@
       if (cbO && !cbD && l.sellerType === 'dealer') return false;
       if (!cbO && cbD && l.sellerType !== 'dealer') return false;
       if (bodies.length && l.bodyType && !bodies.includes(l.bodyType)) return false;
+      if (fuels.length && l.fuelType && !fuels.includes(l.fuelType)) return false;
+      if (colors.length) {
+        const extC = (l.extColor || l.color || '').toLowerCase();
+        if (!colors.some(c => extC.includes(c.toLowerCase()))) return false;
+      }
       return true;
     });
 
@@ -327,6 +369,9 @@
     ['priceMin','priceMax','yearMin','yearMax'].forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
     document.querySelectorAll('input[type="checkbox"]').forEach(el => el.checked = false);
     document.querySelectorAll('.brand-logo-btn').forEach(b => b.classList.remove('active'));
+    activeColors.clear();
+    document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('active'));
+    document.getElementById('color-label').textContent = '';
     applyFilters();
   }
 
