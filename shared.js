@@ -335,6 +335,14 @@ const DM = (() => {
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/682c9c37dabd0256125411.png',
       regionalSpec: 'GCC Specs',
+      images: [
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/product/main_cover_desktops/67d9e3d710620209705399.jpg',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/682c9c37dabd0256125411.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/682c9c3c56eec458260323.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/682c9c436ae26403875235.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/682c9c487e3ee144989909.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/682c9c4cf3786866649064.png'
+      ],
       sharmax_url: 'https://sharmax.com/ae_en/product/sharmax-travel-1000-rr-limited/',
     },
     {
@@ -365,6 +373,14 @@ const DM = (() => {
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/6827442d38d25426040151.png',
       regionalSpec: 'GCC Specs',
+      images: [
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/product/main_cover_desktops/69788a811a30b090286928.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/6827442d38d25426040151.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/682744320f85a218387300.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/68274427a36bc843838765.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/6827443a3ce3b478685506.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/6827443fc190f781447556.png'
+      ],
       sharmax_url: 'https://sharmax.com/ae_en/product/sharmax-custom-1000-rst-roadster/',
     },
     {
@@ -395,6 +411,14 @@ const DM = (() => {
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/682c963b97bd3597653500.png',
       regionalSpec: 'GCC Specs',
+      images: [
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/product/main_cover_desktops/67d9ec8740f6e804969788.jpg',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/682c963b97bd3597653500.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/682c9642dd0e2424967778.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/682c96482cc7c202471317.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/682c964c8fad1202597789.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/682c96512fc56700430853.png'
+      ],
       sharmax_url: 'https://sharmax.com/ae_en/product/sharmax-super-sport-gp-250-competition/',
     },
     {
@@ -425,6 +449,14 @@ const DM = (() => {
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/682c968248c55301185273.png',
       regionalSpec: 'GCC Specs',
+      images: [
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/product/main_cover_desktops/67d9e861d667e305705529.jpg',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/682c968248c55301185273.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/682c9686a5648107361594.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/682c968b5da8c439150697.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/682c96903a0b0832659642.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/682c969483c4f348243223.png'
+      ],
       sharmax_url: 'https://sharmax.com/ae_en/product/sharmax-super-sport-gp-401-ultra/',
     },
     {
@@ -455,6 +487,14 @@ const DM = (() => {
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/68274646321db634949785.png',
       regionalSpec: 'GCC Specs',
+      images: [
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/product/main_cover_desktops/67d9e4e3a9ff3729267716.jpg',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/68274646321db634949785.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/6827464bc4f99109717102.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/6827465158eb9725200888.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/682746568621e925612116.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/6827465b8cce5236911583.png'
+      ],
       sharmax_url: 'https://sharmax.com/ae_en/product/sharmax-touring-bike-gl-250/',
     },
     {
@@ -485,6 +525,14 @@ const DM = (() => {
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/682746d3bedae931439314.png',
       regionalSpec: 'GCC Specs',
+      images: [
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/product/main_cover_desktops/680b402a18317329450762.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/682746d3bedae931439314.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/682746d982daa331588916.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/682746df42bc4398222970.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/682746e52936b608349096.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/682746ea43b0a993908072.png'
+      ],
       sharmax_url: 'https://sharmax.com/ae_en/product/sharmax-touring-bike-gl-400/',
     },
     {
@@ -515,6 +563,14 @@ const DM = (() => {
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/6827446e7e4bf842911729.png',
       regionalSpec: 'GCC Specs',
+      images: [
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/product/main_cover_desktops/67d800a5dccdf213198621.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/6827446e7e4bf842911729.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/682744731f760956996268.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/68274477e5186566823586.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/6827447cc3dd4856567473.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/68274481e001e657107207.png'
+      ],
       sharmax_url: 'https://sharmax.com/ae_en/product/sharmax-enduro-travel-250/',
     },
     {
@@ -545,6 +601,14 @@ const DM = (() => {
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/682744a4590fd214190431.png',
       regionalSpec: 'GCC Specs',
+      images: [
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/product/main_cover_desktops/68f237d83b641977016990.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/682744a4590fd214190431.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/682744a97faa2239302304.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/682744aebfa41182283973.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/682744b3e877d331792109.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/682744b89eb8c295401966.png'
+      ],
       sharmax_url: 'https://sharmax.com/ae_en/product/sharmax-enduro-travel-300/',
     },
     {
@@ -575,6 +639,11 @@ const DM = (() => {
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/6827474de54e7335433898.png',
       regionalSpec: 'GCC Specs',
+      images: [
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/product/main_cover_desktops/67d9e6f941442939035348.jpg',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/6827474de54e7335433898.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/68274753520c7234208642.png'
+      ],
       sharmax_url: 'https://sharmax.com/ae_en/product/sharmax-touring-bike-gl-770-ultra/',
     },
     {
@@ -605,6 +674,14 @@ const DM = (() => {
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/682745dec509b916008682.png',
       regionalSpec: 'GCC Specs',
+      images: [
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/product/main_cover_desktops/67d803c4c672c900159941.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/682745dec509b916008682.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/682745e433506464248902.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/682745e9668c0892413744.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/682745ee96b3f221124877.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/682745f3611de923162138.png'
+      ],
       sharmax_url: 'https://sharmax.com/ae_en/product/maxi-scooter-sharmax-fx-200/',
     },
     {
@@ -635,6 +712,14 @@ const DM = (() => {
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/682c98ad9fa59143257323.png',
       regionalSpec: 'GCC Specs',
+      images: [
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/product/main_cover_desktops/67d9ea6b969a5599317907.jpg',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/682c98ad9fa59143257323.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/682c98b22ebb7415972645.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/682c98b64244e180517345.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/682c98ba4a130468990732.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/682c98be91ea7583422445.png'
+      ],
       sharmax_url: 'https://sharmax.com/ae_en/product/sharmax-road-bike-rr-250/',
     },
     {
@@ -665,6 +750,14 @@ const DM = (() => {
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/6827459f50a4e306319712.png',
       regionalSpec: 'GCC Specs',
+      images: [
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/product/main_cover_desktops/67d802c952f1c724490112.jpg',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/6827459f50a4e306319712.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/682745a5dd893546044566.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/682745ab6472f692230063.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/682745b0bcea9361069858.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/682745b6079ff702516245.png'
+      ],
       sharmax_url: 'https://sharmax.com/ae_en/product/sharmax-maxi-scooter-fx-150-ultra/',
     },
     {
@@ -695,6 +788,14 @@ const DM = (() => {
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/682c99835421f353936724.png',
       regionalSpec: 'GCC Specs',
+      images: [
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/product/main_cover_desktops/67d9eb7d112b8220787603.jpg',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/682c99835421f353936724.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/682c9988531f5467657220.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/682c998c37c5a481272646.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/682c99902da5f370943198.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/682c99952e2e8119886108.png'
+      ],
       sharmax_url: 'https://sharmax.com/ae_en/product/sharmax-road-bike-rr-551-ultra/',
     },
     {
@@ -725,6 +826,14 @@ const DM = (() => {
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/682c9b1430cf9837319837.png',
       regionalSpec: 'GCC Specs',
+      images: [
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/product/main_cover_desktops/67d844fb940f1667891057.jpg',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/682c9b1430cf9837319837.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/682c9b18c9169543179526.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/682c9b1cf3136701104490.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/682c9b2103e1c296457192.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/682c9b256620f985416823.png'
+      ],
       sharmax_url: 'https://sharmax.com/ae_en/product/sharmax-naked-bike-rst-322-ultra/',
     },
     {
@@ -755,6 +864,14 @@ const DM = (() => {
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/682c99f1a0e25661548800.png',
       regionalSpec: 'GCC Specs',
+      images: [
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/product/main_cover_desktops/67d845dd600ff565502037.jpg',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/682c99f1a0e25661548800.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/682c99f69964d957548050.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/682c99fb92a66615609549.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/682c99ffcb1a8646530108.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/682c9a042897b084064357.png'
+      ],
       sharmax_url: 'https://sharmax.com/ae_en/product/sharmax-naked-bike-rst-150-ultra/',
     },
     {
@@ -785,6 +902,14 @@ const DM = (() => {
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/682c9b73ec327178111119.png',
       regionalSpec: 'GCC Specs',
+      images: [
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/product/main_cover_desktops/680b4090cfcb0710009204.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/682c9b73ec327178111119.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/682c9b7840937074217123.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/682c9b7cbb035939909236.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/682c9b813e5e7388689462.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/682c9b8581dd7211691607.png'
+      ],
       sharmax_url: 'https://sharmax.com/ae_en/product/sharmax-naked-bike-rst-750-ultra/',
     },
     {
@@ -815,6 +940,14 @@ const DM = (() => {
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/682c9b4201fb3511376300.png',
       regionalSpec: 'GCC Specs',
+      images: [
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/product/main_cover_desktops/67d844249b8f5307391694.jpg',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/682c9b4201fb3511376300.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/682c9b467c248573745652.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/682c9b4b26be5607644843.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/682c9b4f8fe4b754299409.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/682c9b53eb2de342770780.png'
+      ],
       sharmax_url: 'https://sharmax.com/ae_en/product/sharmax-naked-bike-rst-422-ultra/',
     },
     {
@@ -845,6 +978,11 @@ const DM = (() => {
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/68274614c514f805216113.png',
       regionalSpec: 'GCC Specs',
+      images: [
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/product/main_cover_desktops/67d804be5df3b193949743.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/68274614c514f805216113.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/6827461965f0f336333281.png'
+      ],
       sharmax_url: 'https://sharmax.com/ae_en/product/sharmax-maxi-scooter-fx-350-ultra/',
     },
     {
@@ -875,6 +1013,14 @@ const DM = (() => {
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/68cd615c9dc3c057720403.png',
       regionalSpec: 'GCC Specs',
+      images: [
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/product/main_cover_desktops/68cd61a26c3ad152152500.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/68cd615c9dc3c057720403.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/68cd6160d3f69689038445.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/68cd617179371355041712.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/68cd6164a19de292703956.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/68cd616df1467244482645.png'
+      ],
       sharmax_url: 'https://sharmax.com/ae_en/product/sharmax-sport-250/',
     },
     {
@@ -905,6 +1051,14 @@ const DM = (() => {
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/682c9816b29d1244489132.png',
       regionalSpec: 'GCC Specs',
+      images: [
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/product/main_cover_desktops/67d845b3717c5731291470.jpg',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/682c9816b29d1244489132.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/682c981b2fd9b080089279.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/682c981f70b81672586376.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/682c982412f8c567997774.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/682c9828dc032187550976.png'
+      ],
       sharmax_url: 'https://sharmax.com/ae_en/product/sharmax-power-max-250/',
     },
     {
@@ -935,6 +1089,14 @@ const DM = (() => {
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/682c987a357dc259225792.png',
       regionalSpec: 'GCC Specs',
+      images: [
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/product/main_cover_desktops/67d8447cea2cd493546700.jpg',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/682c987a357dc259225792.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/682c987ee218c724143704.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/682c9883b829e777826614.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/682c988859172551379365.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/682c988ceb611410802186.png'
+      ],
       sharmax_url: 'https://sharmax.com/ae_en/product/sharmax-power-max-320/',
     },
     {
@@ -965,6 +1127,14 @@ const DM = (() => {
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/6827453c1c7c7749683107.png',
       regionalSpec: 'GCC Specs',
+      images: [
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/product/main_cover_desktops/67d80200daff2107756744.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/6827453c1c7c7749683107.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/68274540d0718444590415.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/6827454581e51667059249.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/6827454a4cf85424310105.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/6827454f1e40d878926191.png'
+      ],
       sharmax_url: 'https://sharmax.com/ae_en/product/sharmax-expert-pro-rxp-450/',
     },
     {
@@ -995,6 +1165,9 @@ const DM = (() => {
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/68dabb0f077d6850832562.png',
       regionalSpec: 'GCC Specs',
+      images: [
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/68dabb0f077d6850832562.png'
+      ],
       sharmax_url: 'https://sharmax.com/ae_en/product/sharmax-power-max-190/',
     },
     {
@@ -1025,6 +1198,14 @@ const DM = (() => {
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/68fb6e2930f48656202776.png',
       regionalSpec: 'GCC Specs',
+      images: [
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/product/main_cover_desktops/67d8062b360ac522314662.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/68fb6e2930f48656202776.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/68fb6e2905b1d745777021.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/68fb6e2cbc3af106293065.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/68fb6e3a323a1816436317.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/68fb6e31dba67854654137.png'
+      ],
       sharmax_url: 'https://sharmax.com/ae_en/product/sharmax-power-max-145-1/',
     },
     {
@@ -1055,6 +1236,14 @@ const DM = (() => {
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/68cd848836304440123027.png',
       regionalSpec: 'GCC Specs',
+      images: [
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/product/main_cover_desktops/68cd814d63c0a940369124.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/68cd848836304440123027.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/68cd848dc197f752734082.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/68cd8497e8aab084936770.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/68cd849a59d84241597089.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/68cd849d8475e634336261.png'
+      ],
       sharmax_url: 'https://sharmax.com/ae_en/product/expert-pro-320/',
     },
     {
@@ -1085,6 +1274,14 @@ const DM = (() => {
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/68d6a5c977fd0386994184.png',
       regionalSpec: 'GCC Specs',
+      images: [
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/product/main_cover_desktops/68d6a5e631ce9146527621.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/68d6a5c977fd0386994184.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/68d6a5d1112bd011155163.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/68d6a5d652f1f733496098.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/68d6a5d881334619693352.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/68d6a5db40821836508195.png'
+      ],
       sharmax_url: 'https://sharmax.com/ae_en/product/expert-pro-300-2t/',
     },
     {
@@ -1115,6 +1312,14 @@ const DM = (() => {
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/6967908c73113806499884.png',
       regionalSpec: 'GCC Specs',
+      images: [
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/product/main_cover_desktops/696790aeb0e6c639424564.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/6967908c73113806499884.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/69679091aae23913167509.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/6967909920788529557687.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/6967909dce3ac257030645.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/696790a23cd71256086654.png'
+      ],
       sharmax_url: 'https://sharmax.com/ae_en/product/sport-130-mini/',
     },
     {
@@ -1145,6 +1350,13 @@ const DM = (() => {
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/6825ef08146ea335049195.png',
       regionalSpec: 'GCC Specs',
+      images: [
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/product/main_cover_desktops/67d426f07b9b3548135655.jpg',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/6825ef08146ea335049195.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/6825ef0d4718d256879991.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/6825ef11b9b2b212067110.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/6825ef16c529a911949184.png'
+      ],
       sharmax_url: 'https://sharmax.com/ae_en/product/sharmax-350-gx-cruiser/',
     },
     {
@@ -1175,6 +1387,14 @@ const DM = (() => {
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/68d163157ef7f128620887.png',
       regionalSpec: 'GCC Specs',
+      images: [
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/product/main_cover_desktops/68cc0b89de098825450926.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/68d163157ef7f128620887.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/68d163220e066785365544.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/68d1632c5a06d148157153.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/68d163359bf1e145208620.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/68d415862fcc3303935706.png'
+      ],
       sharmax_url: 'https://sharmax.com/ae_en/product/sharmax-650-force/',
     },
     {
@@ -1205,6 +1425,14 @@ const DM = (() => {
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/68d1639f006dc786028992.png',
       regionalSpec: 'GCC Specs',
+      images: [
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/product/main_cover_desktops/67f7d4ec8d25d570558994.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/68d1639f006dc786028992.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/68d164175dea9594557408.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/68d1641c38850100910858.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/68d1641e98480621619297.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/68d1642100b6f973249664.png'
+      ],
       sharmax_url: 'https://sharmax.com/ae_en/product/sharmax-hummer-320-rx/',
     },
     {
@@ -1235,6 +1463,13 @@ const DM = (() => {
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/6825efde5c4d1620449154.png',
       regionalSpec: 'GCC Specs',
+      images: [
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/product/main_cover_desktops/67d426f07b9b3548135655.jpg',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/6825ef08146ea335049195.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/6825ef0d4718d256879991.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/6825ef11b9b2b212067110.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/6825ef16c529a911949184.png'
+      ],
       sharmax_url: 'https://sharmax.com/ae_en/product/sharmax-300-fj-cruiser/',
     },
     {
@@ -1265,6 +1500,14 @@ const DM = (() => {
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/68f76dd9681a6202957510.png',
       regionalSpec: 'GCC Specs',
+      images: [
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/product/main_cover_desktops/68f76e0182b42731719583.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/68f76dd9681a6202957510.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/68f76dc2a64ae100433257.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/68f76dd209fbd535636654.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/68f76dcd28669478413529.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/68f76dd5d3872877194464.png'
+      ],
       sharmax_url: 'https://sharmax.com/ae_en/product/sharmax-1100-force/',
     },
     {
@@ -1295,6 +1538,14 @@ const DM = (() => {
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/6825ef3629508319286321.png',
       regionalSpec: 'GCC Specs',
+      images: [
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/product/main_cover_desktops/67e56dff33ef6533231651.jpg',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/6825ef3629508319286321.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/6825ef3b53fdd104080913.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/6825ef4195c09275529272.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/6825ef46920f8576961158.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/6825ef4b309b7771808558.png'
+      ],
       sharmax_url: 'https://sharmax.com/ae_en/product/sharmax-550-gx-cruiser/',
     },
     {
@@ -1325,6 +1576,14 @@ const DM = (() => {
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/69429b2adefe7777508420.png',
       regionalSpec: 'GCC Specs',
+      images: [
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/product/main_cover_desktops/68ffb4aab9aeb769998825.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/69429b2adefe7777508420.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/69429b2d97424265578651.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/69429b2f93c0e508104245.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/69429b31844ce417065915.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/69429b33bacf1007605647.png'
+      ],
       sharmax_url: 'https://sharmax.com/ae_en/product/cross-180-rx/',
     },
     {
@@ -1355,6 +1614,14 @@ const DM = (() => {
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/68cd490a8eb96462679183.png',
       regionalSpec: 'GCC Specs',
+      images: [
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/product/main_cover_desktops/6875298b6567e296923917.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/68cd490a8eb96462679183.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/68cd49102f700833276115.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/68cd49176ecb8550961837.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/692da0ce8df56801343574.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/692da0d5425d8459560525.png'
+      ],
       sharmax_url: 'https://sharmax.com/ae_en/product/activator-280-rx/',
     },
     {
@@ -1385,6 +1652,14 @@ const DM = (() => {
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/68db8cdb62096198208444.png',
       regionalSpec: 'GCC Specs',
+      images: [
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/product/main_cover_desktops/68cd4da23fea9239406285.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/68db8cdb62096198208444.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/68db8cdfbcc16583326413.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/68db8ceaa5542525777835.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/68db8ce4a6b4a375944735.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/68db8ce7d4070574796374.png'
+      ],
       sharmax_url: 'https://sharmax.com/ae_en/product/raizer-250-race-cup/',
     },
     {
@@ -1415,6 +1690,14 @@ const DM = (() => {
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/68d51d4d3eb65555330215.png',
       regionalSpec: 'GCC Specs',
+      images: [
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/product/main_cover_desktops/68e390c635c85155336681.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/68d51d4d3eb65555330215.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/68d51d50523ec257402058.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/68d51d58263ff650451167.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/68d51d53669b9996342017.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/68d51d55c5e48066603391.png'
+      ],
       sharmax_url: 'https://sharmax.com/ae_en/product/cross-130/',
     },
     {
@@ -1445,6 +1728,11 @@ const DM = (() => {
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/6825f12ae1d3d215686224.png',
       regionalSpec: 'GCC Specs',
+      images: [
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/product/main_cover_desktops/67d489e431898874424225.jpg',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/6825f12ae1d3d215686224.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/6825f12f7adef811326746.png'
+      ],
       sharmax_url: 'https://sharmax.com/ae_en/product/sharmax-1100-rx-jump-2-seater/',
     },
     {
@@ -1475,6 +1763,12 @@ const DM = (() => {
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/6826ecd3dab14060588463.png',
       regionalSpec: 'GCC Specs',
+      images: [
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/product/main_cover_desktops/67d46d2879939637986886.jpg',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/6826ecd3dab14060588463.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/6826ecd993a84321608102.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/6826ecde97a49859341644.png'
+      ],
       sharmax_url: 'https://sharmax.com/ae_en/product/sharmax-junior-250/',
     },
     {
@@ -1505,6 +1799,13 @@ const DM = (() => {
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/6826ed0270e51050497107.png',
       regionalSpec: 'GCC Specs',
+      images: [
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/product/main_cover_desktops/67d48a08479db255794063.jpg',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/6826ed0270e51050497107.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/6826ed089e652818119056.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/6826ed0db1d50911262521.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/6826ed12ebef6333579638.png'
+      ],
       sharmax_url: 'https://sharmax.com/ae_en/product/sharmax-predator-420-2-seater/',
     },
     {
@@ -1535,6 +1836,12 @@ const DM = (() => {
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/6825f101b5b22334618424.png',
       regionalSpec: 'GCC Specs',
+      images: [
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/product/main_cover_desktops/67d489c298839517841096.jpg',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/6825f101b5b22334618424.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/6825f1064aee4259442879.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/6825f10aa3c29062063896.png'
+      ],
       sharmax_url: 'https://sharmax.com/ae_en/product/sharmax-580-race/',
     },
     {
@@ -1565,6 +1872,14 @@ const DM = (() => {
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/6825f07376346495775582.png',
       regionalSpec: 'GCC Specs',
+      images: [
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/product/main_cover_desktops/67eac18678d14596355105.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/6825f07376346495775582.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/6825f0785a51a982386971.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/6825f07d71bd4687751149.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/6825f0826a8b5858666871.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/6825f086e257a501931252.png'
+      ],
       sharmax_url: 'https://sharmax.com/ae_en/product/junior-200-pro/',
     },
     {
@@ -1595,6 +1910,14 @@ const DM = (() => {
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/6952e3f83170f668619180.png',
       regionalSpec: 'GCC Specs',
+      images: [
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/product/main_cover_desktops/69a95a777924f459066208.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/6952e3f83170f668619180.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/6952e41f1257e573841291.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/6952e42b07fbc073872219.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/6952e430ac1b0842697378.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/6952e3f069326845137896.png'
+      ],
       sharmax_url: 'https://sharmax.com/ae_en/product/xforce-1100/',
     },
     {
@@ -1625,6 +1948,13 @@ const DM = (() => {
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/6826ed31be73e096857416.png',
       regionalSpec: 'GCC Specs',
+      images: [
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/product/main_cover_desktops/67d4859125105806057764.jpg',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/6826ed31be73e096857416.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/6826ed374eeef666599232.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/6826ed3c2ba5b684727707.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/69bac2d10e255894882349.png'
+      ],
       sharmax_url: 'https://sharmax.com/ae_en/product/sharmax-golf-cart-5000-4-seater/',
     },
     {
@@ -1655,6 +1985,14 @@ const DM = (() => {
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/6826ed599a522433479767.png',
       regionalSpec: 'GCC Specs',
+      images: [
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/product/main_cover_desktops/67d485d6e654c291298938.jpg',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/6826ed599a522433479767.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/6826ed5f31c90016212815.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/6826ed648a60e443910150.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/6826ed69881c8630001806.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/69babef179bb0301086923.png'
+      ],
       sharmax_url: 'https://sharmax.com/ae_en/product/sharmax-golf-cart-5000-4-seater-pro/',
     },
     {
@@ -1685,6 +2023,14 @@ const DM = (() => {
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/6826ed8738853947330495.png',
       regionalSpec: 'GCC Specs',
+      images: [
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/product/main_cover_desktops/67f7c71b9c6a7809736236.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/6826ed8738853947330495.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/6826ed8c4f122117777027.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/6826ed918b70a531125703.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/6826ed9771e0e569938787.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/6826ed9d3462b513243798.png'
+      ],
       sharmax_url: 'https://sharmax.com/ae_en/product/sharmax-golf-cart-5000-4-plus-2-seater/',
     },
     {
@@ -1715,6 +2061,14 @@ const DM = (() => {
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/68cd40039f431631094062.png',
       regionalSpec: 'GCC Specs',
+      images: [
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/product/main_cover_desktops/67d44631872ed495269635.jpg',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/68cd40039f431631094062.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/68cd402f6c0e4813350418.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/68cd40d567ef8549213562.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/68cd46cb1c720981999164.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/68cd46d07e75c711599147.png'
+      ],
       sharmax_url: 'https://sharmax.com/ae_en/product/sharmax-e-200-cross/',
     },
     {
@@ -1745,6 +2099,14 @@ const DM = (() => {
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/682c924d86068429531579.png',
       regionalSpec: 'GCC Specs',
+      images: [
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/product/main_cover_desktops/67ebf6e782d7f174906047.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/682c924d86068429531579.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/682c925267788814182379.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/682c9256b90f9175829152.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/682c925a9c5ea716675488.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/682c925e85df2108369168.png'
+      ],
       sharmax_url: 'https://sharmax.com/ae_en/product/sharmax-electro-expert-pro-190-s1/',
     },
     {
@@ -1775,6 +2137,11 @@ const DM = (() => {
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/682c9c6c3527d508503406.png',
       regionalSpec: 'GCC Specs',
+      images: [
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/product/main_cover_desktops/67d84527a085e470304501.jpg',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/682c9c6c3527d508503406.png',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/682c9c70b72e3430556370.png'
+      ],
       sharmax_url: 'https://sharmax.com/ae_en/product/sharmax-x5-pro-electro/',
     },
     {
@@ -1805,6 +2172,10 @@ const DM = (() => {
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/67d47ee7eab9e597082707.png',
       regionalSpec: 'GCC Specs',
+      images: [
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/product/main_cover_desktops/67d47eeec5d8c529800055.jpg',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/67d47ee7eab9e597082707.png'
+      ],
       sharmax_url: 'https://sharmax.com/ae_en/product/sharmax-stormline-luxe-420/',
     },
     {
@@ -1835,6 +2206,10 @@ const DM = (() => {
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/67d47f3a1387d900618714.png',
       regionalSpec: 'GCC Specs',
+      images: [
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/product/main_cover_desktops/67d47f4192ed1766133710.jpg',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/67d47f3a1387d900618714.png'
+      ],
       sharmax_url: 'https://sharmax.com/ae_en/product/sharmax-stormline-luxe-500/',
     },
     {
@@ -1865,6 +2240,10 @@ const DM = (() => {
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/67d47f789c061813425211.png',
       regionalSpec: 'GCC Specs',
+      images: [
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/product/main_cover_desktops/67d47f7ed0e1b566919311.jpg',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/67d47f789c061813425211.png'
+      ],
       sharmax_url: 'https://sharmax.com/ae_en/product/sharmax-stormline-standart-400-console/',
     },
     {
@@ -1895,6 +2274,10 @@ const DM = (() => {
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/682dc3c5b624a750909861.png',
       regionalSpec: 'GCC Specs',
+      images: [
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/product/main_cover_desktops/67d85637f1c23698147629.jpg',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/682dc3c5b624a750909861.png'
+      ],
       sharmax_url: 'https://sharmax.com/ae_en/product/sharmax-4-stroke-outboard-mikatsu-mf60fel-t-efi/',
     },
     {
@@ -1925,6 +2308,10 @@ const DM = (() => {
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/682dc3f6341e5010795445.png',
       regionalSpec: 'GCC Specs',
+      images: [
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/product/main_cover_desktops/67d8565ec2bfc909102644.jpg',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/682dc3f6341e5010795445.png'
+      ],
       sharmax_url: 'https://sharmax.com/ae_en/product/sharmax-4-stroke-outboard-mikatsu-mf115fel-t-efi/',
     },
     {
@@ -1955,6 +2342,10 @@ const DM = (() => {
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/682dc3ae0b2b6745211894.png',
       regionalSpec: 'GCC Specs',
+      images: [
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/product/main_cover_desktops/67d856931a26e907255210.jpg',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/682dc3ae0b2b6745211894.png'
+      ],
       sharmax_url: 'https://sharmax.com/ae_en/product/marine-sharmax-4-stroke-outboard-mikatsu/',
     },
     {
@@ -1985,6 +2376,10 @@ const DM = (() => {
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/682dc3dfc7369182614896.png',
       regionalSpec: 'GCC Specs',
+      images: [
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/product/main_cover_desktops/67d856bf6308d099853738.jpg',
+        'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=2000,format=auto/ae/images/media/682dc3dfc7369182614896.png'
+      ],
       sharmax_url: 'https://sharmax.com/ae_en/product/sharmax-2-stroke-outboard-mikatsu/',
     },
   ];
