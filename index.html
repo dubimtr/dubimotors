@@ -468,8 +468,9 @@
 
       /* Search bar */
       .search-wrap { border-radius: 12px; }
-      .search-tabs-row { overflow-x: auto; -webkit-overflow-scrolling: touch; padding: 0 4px; }
-      .s-tab { padding: 10px 14px; font-size: 12px; white-space: nowrap; }
+      .search-tabs-row { overflow-x: auto; -webkit-overflow-scrolling: touch; padding: 0 4px; scrollbar-width: none; }
+      .search-tabs-row::-webkit-scrollbar { display: none; }
+      .s-tab { padding: 10px 12px; font-size: 11px; white-space: nowrap; flex-shrink: 0; }
       .search-input-row { flex-wrap: wrap; gap: 8px; padding: 10px; }
       .search-divider { display: none; }
       .search-location { width: 100%; padding: 8px 10px; border: 1.5px solid #E8E8E8; border-radius: 8px; font-size: 13px; }
@@ -741,7 +742,7 @@
       </div>
       <div class="mobile-cat-arrow">›</div>
     </a>
-    <a class="mobile-cat-card coming-soon full-width" href="accessories.html">
+    <a class="mobile-cat-card coming-soon" href="accessories.html">
       <span class="coming-soon-badge">SOON</span>
       <div class="mobile-cat-icon" id="mci-accessories"></div>
       <div class="mobile-cat-info">

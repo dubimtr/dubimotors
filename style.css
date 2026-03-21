@@ -698,7 +698,7 @@ select.form-input { appearance: none; background-image: url("data:image/svg+xml,
   .navbar { height: 60px; }
   .nav-logo-text { font-size: 17px; }
   .btn-login { display: inline-flex; padding: 7px 12px; font-size: 12px; }
-  .btn-place-ad { padding: 7px 12px; font-size: 12px; }
+  .btn-place-ad { display: none; }  /* Hidden on mobile — bottom nav has Place Ad */
   .nav-right { gap: 6px; }
   /* Mobile hamburger menu */
   .nav-hamburger { display: flex; flex-direction: column; gap: 4px; cursor: pointer; padding: 6px; background: none; border: none; }
@@ -728,9 +728,14 @@ select.form-input { appearance: none; background-image: url("data:image/svg+xml,
 
   /* Listing cards */
   .listings-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .listings-grid.cols-3 { grid-template-columns: repeat(2, 1fr); }  /* Override cols-3 on mobile */
   .card-img-wrap { height: 160px; }
   .card-price { font-size: 16px; }
   .card-title { font-size: 13px; }
+  .card-body { padding: 10px 12px 8px; }
+  .card-footer { padding: 8px 12px 12px; }
+  .card-seller { font-size: 10px; max-width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .pill { font-size: 9px; padding: 2px 7px; }
 }
 
 @media (max-width: 480px) {
@@ -739,6 +744,7 @@ select.form-input { appearance: none; background-image: url("data:image/svg+xml,
 
   /* Listing cards: single column on very small screens */
   .listings-grid { grid-template-columns: 1fr; }
+  .listings-grid.cols-3 { grid-template-columns: 1fr; }
   .card-img-wrap { height: 200px; }
 
   /* Footer */
