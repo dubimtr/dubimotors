@@ -1325,7 +1325,7 @@ const DM = (() => {
     {
       id: 'sharmax-cruiser-race-350-gx-28',
       title: '2025 Sharmax Cruiser Race 350 GX',
-      category: 'heavy',
+      category: 'bikes',
       make: 'Sharmax',
       model: 'Cruiser Race 350 GX',
       trim: 'Standard',
@@ -1362,7 +1362,7 @@ const DM = (() => {
     {
       id: 'sharmax-force-650-efi-eps-29',
       title: '2025 Sharmax Force 650 EFI EPS',
-      category: 'heavy',
+      category: 'bikes',
       make: 'Sharmax',
       model: 'Force 650 EFI EPS',
       trim: 'Standard',
@@ -1400,7 +1400,7 @@ const DM = (() => {
     {
       id: 'sharmax-hummer-320-rx-ltd-30',
       title: '2025 Sharmax Hummer 320 RX LTD',
-      category: 'heavy',
+      category: 'bikes',
       make: 'Sharmax',
       model: 'Hummer 320 RX LTD',
       trim: 'Standard',
@@ -1438,7 +1438,7 @@ const DM = (() => {
     {
       id: 'sharmax-cruiser-300-fj-31',
       title: '2025 Sharmax Cruiser 300 FJ',
-      category: 'heavy',
+      category: 'bikes',
       make: 'Sharmax',
       model: 'Cruiser 300 FJ',
       trim: 'Standard',
@@ -1475,7 +1475,7 @@ const DM = (() => {
     {
       id: 'sharmax-force-1100-efi-eps-32',
       title: '2025 Sharmax Force 1100 EFI EPS',
-      category: 'heavy',
+      category: 'bikes',
       make: 'Sharmax',
       model: 'Force 1100 EFI EPS',
       trim: 'Standard',
@@ -1513,7 +1513,7 @@ const DM = (() => {
     {
       id: 'sharmax-cruiser-race-550-gx-33',
       title: '2025 Sharmax Cruiser Race 550 GX',
-      category: 'heavy',
+      category: 'bikes',
       make: 'Sharmax',
       model: 'Cruiser Race 550 GX',
       trim: 'Standard',
@@ -1551,7 +1551,7 @@ const DM = (() => {
     {
       id: 'sharmax-cross-180-rx-34',
       title: '2025 Sharmax Cross 180 RX',
-      category: 'heavy',
+      category: 'bikes',
       make: 'Sharmax',
       model: 'Cross 180 RX',
       trim: 'Standard',
@@ -1589,7 +1589,7 @@ const DM = (() => {
     {
       id: 'sharmax-activator-280-rx-35',
       title: '2025 Sharmax Activator 280 RX',
-      category: 'heavy',
+      category: 'bikes',
       make: 'Sharmax',
       model: 'Activator 280 RX',
       trim: 'Standard',
@@ -1627,7 +1627,7 @@ const DM = (() => {
     {
       id: 'sharmax-raizer-250-race-cup-36',
       title: '2025 Sharmax Raizer 250 Race Cup',
-      category: 'heavy',
+      category: 'bikes',
       make: 'Sharmax',
       model: 'Raizer 250 Race Cup',
       trim: 'Standard',
@@ -1665,7 +1665,7 @@ const DM = (() => {
     {
       id: 'sharmax-cross-130-37',
       title: '2025 Sharmax Cross 130',
-      category: 'heavy',
+      category: 'bikes',
       make: 'Sharmax',
       model: 'Cross 130',
       trim: 'Standard',
@@ -1703,7 +1703,7 @@ const DM = (() => {
     {
       id: 'sharmax-jump-1100-2-seater-38',
       title: '2025 Sharmax Jump 1100 2 seater',
-      category: 'heavy',
+      category: 'bikes',
       make: 'Sharmax',
       model: 'Jump 1100 2 seater',
       trim: 'Standard',
@@ -1738,7 +1738,7 @@ const DM = (() => {
     {
       id: 'sharmax-junior-250-39',
       title: '2025 Sharmax Junior 250',
-      category: 'heavy',
+      category: 'bikes',
       make: 'Sharmax',
       model: 'Junior 250',
       trim: 'Standard',
@@ -1774,7 +1774,7 @@ const DM = (() => {
     {
       id: 'sharmax-predator-420-2-seater-40',
       title: '2025 Sharmax Predator 420 2 seater',
-      category: 'heavy',
+      category: 'bikes',
       make: 'Sharmax',
       model: 'Predator 420 2 seater',
       trim: 'Standard',
@@ -1811,7 +1811,7 @@ const DM = (() => {
     {
       id: 'sharmax-race-580-41',
       title: '2025 Sharmax Race 580',
-      category: 'heavy',
+      category: 'bikes',
       make: 'Sharmax',
       model: 'Race 580',
       trim: 'Standard',
@@ -1847,7 +1847,7 @@ const DM = (() => {
     {
       id: 'sharmax-junior-200-pro-42',
       title: '2025 Sharmax Junior 200 PRO',
-      category: 'heavy',
+      category: 'bikes',
       make: 'Sharmax',
       model: 'Junior 200 PRO',
       trim: 'Standard',
@@ -1885,7 +1885,7 @@ const DM = (() => {
     {
       id: 'sharmax-xforce-1100-sport-x2-43',
       title: '2025 Sharmax XForce 1100 Sport x2',
-      category: 'heavy',
+      category: 'bikes',
       make: 'Sharmax',
       model: 'XForce 1100 Sport x2',
       trim: 'Standard',
@@ -1923,7 +1923,7 @@ const DM = (() => {
     {
       id: 'sharmax-5000-2plus2-seater-44',
       title: '2025 Sharmax 5000 2+2 Seater',
-      category: 'heavy',
+      category: 'bikes',
       make: 'Sharmax',
       model: '5000 2+2 Seater',
       trim: 'Standard',
@@ -1960,7 +1960,7 @@ const DM = (() => {
     {
       id: 'sharmax-5000-4-seater-pro-45',
       title: '2025 Sharmax 5000 4 Seater Pro',
-      category: 'heavy',
+      category: 'bikes',
       make: 'Sharmax',
       model: '5000 4 Seater Pro',
       trim: 'Standard',
@@ -1998,7 +1998,7 @@ const DM = (() => {
     {
       id: 'sharmax-5000-6-seater-pro-46',
       title: '2025 Sharmax 5000 6 Seater Pro',
-      category: 'heavy',
+      category: 'bikes',
       make: 'Sharmax',
       model: '5000 6 Seater Pro',
       trim: 'Standard',

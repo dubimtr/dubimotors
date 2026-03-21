@@ -724,30 +724,27 @@
       </div>
       <div class="mobile-cat-arrow">›</div>
     </a>
-    <a class="mobile-cat-card coming-soon" href="heavy.html">
-      <span class="coming-soon-badge">SOON</span>
+    <a class="mobile-cat-card" href="heavy.html">
       <div class="mobile-cat-icon" id="mci-heavy"></div>
       <div class="mobile-cat-info">
         <div class="mobile-cat-name">Heavy Vehicles</div>
-        <div class="mobile-cat-count">Coming soon</div>
+        <div class="mobile-cat-count" id="mcount-heavy">Loading...</div>
       </div>
       <div class="mobile-cat-arrow">›</div>
     </a>
-    <a class="mobile-cat-card coming-soon" href="plates.html">
-      <span class="coming-soon-badge">SOON</span>
+    <a class="mobile-cat-card" href="plates.html">
       <div class="mobile-cat-icon" id="mci-plates"></div>
       <div class="mobile-cat-info">
         <div class="mobile-cat-name">Number Plates</div>
-        <div class="mobile-cat-count">Coming soon</div>
+        <div class="mobile-cat-count" id="mcount-plates">Browse</div>
       </div>
       <div class="mobile-cat-arrow">›</div>
     </a>
-    <a class="mobile-cat-card coming-soon" href="accessories.html">
-      <span class="coming-soon-badge">SOON</span>
+    <a class="mobile-cat-card" href="accessories.html">
       <div class="mobile-cat-icon" id="mci-accessories"></div>
       <div class="mobile-cat-info">
         <div class="mobile-cat-name">Auto Accessories</div>
-        <div class="mobile-cat-count">Coming soon</div>
+        <div class="mobile-cat-count" id="mcount-accessories">Browse</div>
       </div>
       <div class="mobile-cat-arrow">›</div>
     </a>
@@ -1132,6 +1129,9 @@
     'mcount-cars': mc.cars + ' listings',
     'mcount-marine': (mc.boats || 0) + ' listings',
     'mcount-bikes': mc.bikes + ' listings',
+    'mcount-heavy': (mc.heavy || 0) > 0 ? mc.heavy + ' listings' : 'Browse',
+    'mcount-plates': 'Browse',
+    'mcount-accessories': 'Browse',
   };
   Object.entries(mCounts).forEach(([id, val]) => {
     const el = document.getElementById(id);
