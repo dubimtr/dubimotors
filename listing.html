@@ -676,7 +676,8 @@
       ['Drive Type',        listing.driveType || null],
       ['Doors',             listing.doors ? listing.doors.toString() : null],
       ['Seats',             listing.seats ? listing.seats.toString() : null],
-      ['Exterior Color',    listing.extColor || null],
+      ['Fuel Type',         listing.fuelType || listing.fuel || null],
+      ['Exterior Color',    listing.extColor || listing.color || null],
       ['Interior Color',    listing.intColor || null],
       ['Warranty',          listing.warranty !== undefined ? (listing.warranty ? 'Yes' : 'No') : null],
       ['Service Contract',  listing.serviceContract !== undefined ? (listing.serviceContract ? 'Yes' : 'No') : null],
@@ -691,12 +692,13 @@
 
     // ── DESCRIPTION ──
     document.getElementById('detail-desc').innerHTML = `
-      This ${listing.title} is available for sale in ${listing.location}, UAE.
-      The vehicle is in ${listing.condition.toLowerCase()} condition with ${listing.km === 0 ? '0' : listing.km.toLocaleString()} KM on the odometer.
-      Powered by a ${listing.engine} engine with ${listing.transmission} transmission, this is an excellent opportunity for buyers looking for quality and value in the UAE market.
+      This ${listing.year} ${listing.make || ''} ${listing.model || ''} is listed for sale in ${listing.location}, UAE.
+      The vehicle is in ${listing.condition.toLowerCase()} condition${listing.km === 0 ? ' with 0 KM on the odometer (brand new)' : ` with ${listing.km.toLocaleString()} KM on the odometer`}.
+      ${listing.engine ? `Powered by a ${listing.engine}${listing.hp ? ' producing ' + listing.hp + ' hp' : ''} with ${listing.transmission} transmission.` : ''}
+      ${listing.fuelType ? `Fuel type: ${listing.fuelType}.` : ''}
       <br /><br />
-      The listing is ${listing.verified ? `from a <strong>verified dealer</strong> \u2014 ${listing.seller}, a trusted name in the UAE automotive market` : 'from a private seller'}.
-      Contact us today to arrange a viewing or test drive.`;
+      The listing is ${listing.verified ? `from <strong>${listing.seller}</strong>, a verified dealer in the UAE` : `from a private seller — ${listing.seller}`}.
+      Contact us today to arrange a viewing${listing.category === 'bikes' || listing.category === 'marine' ? '' : ' or test drive'}.`;
 
     // ── FINANCE SLIDERS ──
     const priceSlider = document.getElementById('fin-price');
