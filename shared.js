@@ -31,6 +31,7 @@ const DM = (() => {
       regionalSpec: 'GCC Specs',
       location: 'Dubai',
       seller: 'GTA Cars',
+      sellerLogo: 'logos/gta-cars.png',
       phone: '+97143388855',
       verified: true,
       featured: true,
@@ -80,6 +81,7 @@ const DM = (() => {
       regionalSpec: 'GCC Specs',
       location: 'Dubai',
       seller: 'GTA Cars',
+      sellerLogo: 'logos/gta-cars.png',
       phone: '+97143388855',
       verified: true,
       featured: true,
@@ -128,6 +130,7 @@ const DM = (() => {
       regionalSpec: 'GCC Specs',
       location: 'Dubai',
       seller: 'GTA Cars',
+      sellerLogo: 'logos/gta-cars.png',
       phone: '+97143388855',
       verified: true,
       featured: true,
@@ -176,6 +179,7 @@ const DM = (() => {
       regionalSpec: 'GCC Specs',
       location: 'Dubai',
       seller: 'GTA Cars',
+      sellerLogo: 'logos/gta-cars.png',
       phone: '+97143388855',
       verified: true,
       featured: true,
@@ -224,6 +228,7 @@ const DM = (() => {
       regionalSpec: 'GCC Specs',
       location: 'Dubai',
       seller: 'GTA Cars',
+      sellerLogo: 'logos/gta-cars.png',
       phone: '+97143388855',
       verified: true,
       featured: true,
@@ -274,6 +279,7 @@ const DM = (() => {
       serviceContract: false,
       location: 'Dubai Marina',
       seller: 'Sharmax Motors UAE',
+      sellerLogo: 'logos/sharmax.jpg',
       phone: '+97145888855',
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/682c9c37dabd0256125411.png',
@@ -313,6 +319,7 @@ const DM = (() => {
       serviceContract: false,
       location: 'Dubai',
       seller: 'Sharmax Motors UAE',
+      sellerLogo: 'logos/sharmax.jpg',
       phone: '+97145888855',
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/6827442d38d25426040151.png',
@@ -352,6 +359,7 @@ const DM = (() => {
       serviceContract: false,
       location: 'Dubai',
       seller: 'Sharmax Motors UAE',
+      sellerLogo: 'logos/sharmax.jpg',
       phone: '+97145888855',
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/682c963b97bd3597653500.png',
@@ -391,6 +399,7 @@ const DM = (() => {
       serviceContract: false,
       location: 'Abu Dhabi',
       seller: 'Sharmax Motors UAE',
+      sellerLogo: 'logos/sharmax.jpg',
       phone: '+97145888855',
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/682c968248c55301185273.png',
@@ -430,6 +439,7 @@ const DM = (() => {
       serviceContract: false,
       location: 'Dubai',
       seller: 'Sharmax Motors UAE',
+      sellerLogo: 'logos/sharmax.jpg',
       phone: '+97145888855',
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/68274646321db634949785.png',
@@ -469,6 +479,7 @@ const DM = (() => {
       serviceContract: false,
       location: 'Dubai',
       seller: 'Sharmax Motors UAE',
+      sellerLogo: 'logos/sharmax.jpg',
       phone: '+97145888855',
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/682746d3bedae931439314.png',
@@ -508,6 +519,7 @@ const DM = (() => {
       serviceContract: false,
       location: 'Dubai',
       seller: 'Sharmax Motors UAE',
+      sellerLogo: 'logos/sharmax.jpg',
       phone: '+97145888855',
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/6827446e7e4bf842911729.png',
@@ -547,6 +559,7 @@ const DM = (() => {
       serviceContract: false,
       location: 'Dubai Marina',
       seller: 'Sharmax Motors UAE',
+      sellerLogo: 'logos/sharmax.jpg',
       phone: '+97145888855',
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/682744a4590fd214190431.png',
@@ -586,6 +599,7 @@ const DM = (() => {
       serviceContract: false,
       location: 'Dubai',
       seller: 'Sharmax Motors UAE',
+      sellerLogo: 'logos/sharmax.jpg',
       phone: '+97145888855',
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/6827474de54e7335433898.png',
@@ -622,6 +636,7 @@ const DM = (() => {
       serviceContract: false,
       location: 'Dubai',
       seller: 'Sharmax Motors UAE',
+      sellerLogo: 'logos/sharmax.jpg',
       phone: '+97145888855',
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/682745dec509b916008682.png',
@@ -661,6 +676,7 @@ const DM = (() => {
       serviceContract: false,
       location: 'Abu Dhabi',
       seller: 'Sharmax Motors UAE',
+      sellerLogo: 'logos/sharmax.jpg',
       phone: '+97145888855',
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/682c98ad9fa59143257323.png',
@@ -700,6 +716,7 @@ const DM = (() => {
       serviceContract: false,
       location: 'Abu Dhabi',
       seller: 'Sharmax Motors UAE',
+      sellerLogo: 'logos/sharmax.jpg',
       phone: '+97145888855',
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/6827459f50a4e306319712.png',
@@ -739,6 +756,7 @@ const DM = (() => {
       serviceContract: false,
       location: 'Jumeirah',
       seller: 'Sharmax Motors UAE',
+      sellerLogo: 'logos/sharmax.jpg',
       phone: '+97145888855',
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/682c99835421f353936724.png',
@@ -778,6 +796,7 @@ const DM = (() => {
       serviceContract: false,
       location: 'Dubai',
       seller: 'Sharmax Motors UAE',
+      sellerLogo: 'logos/sharmax.jpg',
       phone: '+97145888855',
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/682c9b1430cf9837319837.png',
@@ -817,6 +836,7 @@ const DM = (() => {
       serviceContract: false,
       location: 'Dubai Marina',
       seller: 'Sharmax Motors UAE',
+      sellerLogo: 'logos/sharmax.jpg',
       phone: '+97145888855',
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/682c99f1a0e25661548800.png',
@@ -856,6 +876,7 @@ const DM = (() => {
       serviceContract: false,
       location: 'Dubai',
       seller: 'Sharmax Motors UAE',
+      sellerLogo: 'logos/sharmax.jpg',
       phone: '+97145888855',
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/682c9b73ec327178111119.png',
@@ -895,6 +916,7 @@ const DM = (() => {
       serviceContract: false,
       location: 'Dubai',
       seller: 'Sharmax Motors UAE',
+      sellerLogo: 'logos/sharmax.jpg',
       phone: '+97145888855',
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/682c9b4201fb3511376300.png',
@@ -934,6 +956,7 @@ const DM = (() => {
       serviceContract: false,
       location: 'Dubai Marina',
       seller: 'Sharmax Motors UAE',
+      sellerLogo: 'logos/sharmax.jpg',
       phone: '+97145888855',
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/68274614c514f805216113.png',
@@ -970,6 +993,7 @@ const DM = (() => {
       serviceContract: false,
       location: 'Dubai Marina',
       seller: 'Sharmax Motors UAE',
+      sellerLogo: 'logos/sharmax.jpg',
       phone: '+97145888855',
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/68cd615c9dc3c057720403.png',
@@ -1009,6 +1033,7 @@ const DM = (() => {
       serviceContract: false,
       location: 'Dubai',
       seller: 'Sharmax Motors UAE',
+      sellerLogo: 'logos/sharmax.jpg',
       phone: '+97145888855',
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/682c9816b29d1244489132.png',
@@ -1048,6 +1073,7 @@ const DM = (() => {
       serviceContract: false,
       location: 'Dubai',
       seller: 'Sharmax Motors UAE',
+      sellerLogo: 'logos/sharmax.jpg',
       phone: '+97145888855',
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/682c987a357dc259225792.png',
@@ -1087,6 +1113,7 @@ const DM = (() => {
       serviceContract: false,
       location: 'Dubai',
       seller: 'Sharmax Motors UAE',
+      sellerLogo: 'logos/sharmax.jpg',
       phone: '+97145888855',
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/6827453c1c7c7749683107.png',
@@ -1126,6 +1153,7 @@ const DM = (() => {
       serviceContract: false,
       location: 'Dubai',
       seller: 'Sharmax Motors UAE',
+      sellerLogo: 'logos/sharmax.jpg',
       phone: '+97145888855',
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/68dabb0f077d6850832562.png',
@@ -1160,6 +1188,7 @@ const DM = (() => {
       serviceContract: false,
       location: 'Abu Dhabi',
       seller: 'Sharmax Motors UAE',
+      sellerLogo: 'logos/sharmax.jpg',
       phone: '+97145888855',
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/68fb6e2930f48656202776.png',
@@ -1199,6 +1228,7 @@ const DM = (() => {
       serviceContract: false,
       location: 'Dubai',
       seller: 'Sharmax Motors UAE',
+      sellerLogo: 'logos/sharmax.jpg',
       phone: '+97145888855',
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/68cd848836304440123027.png',
@@ -1238,6 +1268,7 @@ const DM = (() => {
       serviceContract: false,
       location: 'Dubai',
       seller: 'Sharmax Motors UAE',
+      sellerLogo: 'logos/sharmax.jpg',
       phone: '+97145888855',
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/68d6a5c977fd0386994184.png',
@@ -1277,6 +1308,7 @@ const DM = (() => {
       serviceContract: false,
       location: 'Dubai',
       seller: 'Sharmax Motors UAE',
+      sellerLogo: 'logos/sharmax.jpg',
       phone: '+97145888855',
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/6967908c73113806499884.png',
@@ -1316,6 +1348,7 @@ const DM = (() => {
       serviceContract: false,
       location: 'Dubai',
       seller: 'Sharmax Motors UAE',
+      sellerLogo: 'logos/sharmax.jpg',
       phone: '+97145888855',
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/6825ef08146ea335049195.png',
@@ -1354,6 +1387,7 @@ const DM = (() => {
       serviceContract: false,
       location: 'Dubai',
       seller: 'Sharmax Motors UAE',
+      sellerLogo: 'logos/sharmax.jpg',
       phone: '+97145888855',
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/68d163157ef7f128620887.png',
@@ -1393,6 +1427,7 @@ const DM = (() => {
       serviceContract: false,
       location: 'Dubai',
       seller: 'Sharmax Motors UAE',
+      sellerLogo: 'logos/sharmax.jpg',
       phone: '+97145888855',
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/68d1639f006dc786028992.png',
@@ -1432,6 +1467,7 @@ const DM = (() => {
       serviceContract: false,
       location: 'Dubai',
       seller: 'Sharmax Motors UAE',
+      sellerLogo: 'logos/sharmax.jpg',
       phone: '+97145888855',
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/6825efde5c4d1620449154.png',
@@ -1470,6 +1506,7 @@ const DM = (() => {
       serviceContract: false,
       location: 'Dubai',
       seller: 'Sharmax Motors UAE',
+      sellerLogo: 'logos/sharmax.jpg',
       phone: '+97145888855',
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/68f76dd9681a6202957510.png',
@@ -1509,6 +1546,7 @@ const DM = (() => {
       serviceContract: false,
       location: 'Dubai',
       seller: 'Sharmax Motors UAE',
+      sellerLogo: 'logos/sharmax.jpg',
       phone: '+97145888855',
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/6825ef3629508319286321.png',
@@ -1548,6 +1586,7 @@ const DM = (() => {
       serviceContract: false,
       location: 'Dubai',
       seller: 'Sharmax Motors UAE',
+      sellerLogo: 'logos/sharmax.jpg',
       phone: '+97145888855',
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/69429b2adefe7777508420.png',
@@ -1587,6 +1626,7 @@ const DM = (() => {
       serviceContract: false,
       location: 'Abu Dhabi',
       seller: 'Sharmax Motors UAE',
+      sellerLogo: 'logos/sharmax.jpg',
       phone: '+97145888855',
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/68cd490a8eb96462679183.png',
@@ -1626,6 +1666,7 @@ const DM = (() => {
       serviceContract: false,
       location: 'Abu Dhabi',
       seller: 'Sharmax Motors UAE',
+      sellerLogo: 'logos/sharmax.jpg',
       phone: '+97145888855',
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/68db8cdb62096198208444.png',
@@ -1665,6 +1706,7 @@ const DM = (() => {
       serviceContract: false,
       location: 'Dubai',
       seller: 'Sharmax Motors UAE',
+      sellerLogo: 'logos/sharmax.jpg',
       phone: '+97145888855',
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/68d51d4d3eb65555330215.png',
@@ -1704,6 +1746,7 @@ const DM = (() => {
       serviceContract: false,
       location: 'Dubai Marina',
       seller: 'Sharmax Motors UAE',
+      sellerLogo: 'logos/sharmax.jpg',
       phone: '+97145888855',
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/6825f12ae1d3d215686224.png',
@@ -1740,6 +1783,7 @@ const DM = (() => {
       serviceContract: false,
       location: 'Dubai',
       seller: 'Sharmax Motors UAE',
+      sellerLogo: 'logos/sharmax.jpg',
       phone: '+97145888855',
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/6826ecd3dab14060588463.png',
@@ -1777,6 +1821,7 @@ const DM = (() => {
       serviceContract: false,
       location: 'Abu Dhabi',
       seller: 'Sharmax Motors UAE',
+      sellerLogo: 'logos/sharmax.jpg',
       phone: '+97145888855',
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/6826ed0270e51050497107.png',
@@ -1815,6 +1860,7 @@ const DM = (() => {
       serviceContract: false,
       location: 'Dubai',
       seller: 'Sharmax Motors UAE',
+      sellerLogo: 'logos/sharmax.jpg',
       phone: '+97145888855',
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/6825f101b5b22334618424.png',
@@ -1852,6 +1898,7 @@ const DM = (() => {
       serviceContract: false,
       location: 'Dubai',
       seller: 'Sharmax Motors UAE',
+      sellerLogo: 'logos/sharmax.jpg',
       phone: '+97145888855',
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/6825f07376346495775582.png',
@@ -1891,6 +1938,7 @@ const DM = (() => {
       serviceContract: false,
       location: 'Dubai',
       seller: 'Sharmax Motors UAE',
+      sellerLogo: 'logos/sharmax.jpg',
       phone: '+97145888855',
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/6952e3f83170f668619180.png',
@@ -1930,6 +1978,7 @@ const DM = (() => {
       serviceContract: false,
       location: 'Dubai',
       seller: 'Sharmax Motors UAE',
+      sellerLogo: 'logos/sharmax.jpg',
       phone: '+97145888855',
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/6826ed31be73e096857416.png',
@@ -1968,6 +2017,7 @@ const DM = (() => {
       serviceContract: false,
       location: 'Abu Dhabi',
       seller: 'Sharmax Motors UAE',
+      sellerLogo: 'logos/sharmax.jpg',
       phone: '+97145888855',
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/6826ed599a522433479767.png',
@@ -2007,6 +2057,7 @@ const DM = (() => {
       serviceContract: false,
       location: 'Dubai',
       seller: 'Sharmax Motors UAE',
+      sellerLogo: 'logos/sharmax.jpg',
       phone: '+97145888855',
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/6826ed8738853947330495.png',
@@ -2046,6 +2097,7 @@ const DM = (() => {
       serviceContract: false,
       location: 'Dubai',
       seller: 'Sharmax Motors UAE',
+      sellerLogo: 'logos/sharmax.jpg',
       phone: '+97145888855',
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/68cd40039f431631094062.png',
@@ -2085,6 +2137,7 @@ const DM = (() => {
       serviceContract: false,
       location: 'Jumeirah',
       seller: 'Sharmax Motors UAE',
+      sellerLogo: 'logos/sharmax.jpg',
       phone: '+97145888855',
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/682c924d86068429531579.png',
@@ -2124,6 +2177,7 @@ const DM = (() => {
       serviceContract: false,
       location: 'Dubai',
       seller: 'Sharmax Motors UAE',
+      sellerLogo: 'logos/sharmax.jpg',
       phone: '+97145888855',
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/682c9c6c3527d508503406.png',
@@ -2160,6 +2214,7 @@ const DM = (() => {
       serviceContract: false,
       location: 'Dubai',
       seller: 'Sharmax Motors UAE',
+      sellerLogo: 'logos/sharmax.jpg',
       phone: '+97145888855',
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/67d47ee7eab9e597082707.png',
@@ -2195,6 +2250,7 @@ const DM = (() => {
       serviceContract: false,
       location: 'Abu Dhabi',
       seller: 'Sharmax Motors UAE',
+      sellerLogo: 'logos/sharmax.jpg',
       phone: '+97145888855',
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/67d47f3a1387d900618714.png',
@@ -2230,6 +2286,7 @@ const DM = (() => {
       serviceContract: false,
       location: 'Dubai',
       seller: 'Sharmax Motors UAE',
+      sellerLogo: 'logos/sharmax.jpg',
       phone: '+97145888855',
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/67d47f789c061813425211.png',
@@ -2265,6 +2322,7 @@ const DM = (() => {
       serviceContract: false,
       location: 'Dubai',
       seller: 'Sharmax Motors UAE',
+      sellerLogo: 'logos/sharmax.jpg',
       phone: '+97145888855',
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/682dc3c5b624a750909861.png',
@@ -2300,6 +2358,7 @@ const DM = (() => {
       serviceContract: false,
       location: 'Dubai',
       seller: 'Sharmax Motors UAE',
+      sellerLogo: 'logos/sharmax.jpg',
       phone: '+97145888855',
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/682dc3f6341e5010795445.png',
@@ -2335,6 +2394,7 @@ const DM = (() => {
       serviceContract: false,
       location: 'Dubai',
       seller: 'Sharmax Motors UAE',
+      sellerLogo: 'logos/sharmax.jpg',
       phone: '+97145888855',
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/682dc3ae0b2b6745211894.png',
@@ -2370,6 +2430,7 @@ const DM = (() => {
       serviceContract: false,
       location: 'Dubai',
       seller: 'Sharmax Motors UAE',
+      sellerLogo: 'logos/sharmax.jpg',
       phone: '+97145888855',
       verified: true,
       img: 'https://cdn.sharmax.com/cdn-cgi/image/anim=false,dpr=1,fit=scale-down,quality=85,width=440,format=auto/ae/images/media/682dc3dfc7369182614896.png',
@@ -2419,28 +2480,32 @@ const DM = (() => {
 
   function renderCard(l) {
     const thumbSrc = l.mainImg || l.img || (l.images && l.images[0]) || '';
-    // Build purple feature tags
+    // Build purple feature tags (stacked vertically)
     const featureTags = [];
     if (l.warranty) featureTags.push('Warranty');
-    if (l.serviceHistory) featureTags.push('Service History');
     if (l.serviceContract) featureTags.push('Service Contract');
     const tagsHTML = featureTags.length
       ? featureTags.map(t => `<span class="tag-purple">${t}</span>`).join('')
       : '';
-    // Posted date
-    const postedHTML = l.addedDate
-      ? `<div class="card-posted">Posted: ${formatRelativeDate(l.addedDate)}</div>`
-      : '';
-    // Contact buttons - icon only
+    // Posted date + tags block (tags stacked below posted date, on the right)
+    const postedTagsHTML = `<div class="card-posted-tags">
+      ${l.addedDate ? `<div class="card-posted">Posted: ${formatRelativeDate(l.addedDate)}</div>` : ''}
+      ${tagsHTML ? `<div class="card-tags-stack">${tagsHTML}</div>` : ''}
+    </div>`;
+    // Contact buttons - icon only, sized to match Details button
     const phone = l.phone || '';
     const waMsg = encodeURIComponent('Hi, I am interested in the ' + l.title + ' listed on DubiMotors for ' + formatPrice(l.price));
     const contactHTML = phone ? `
       <div class="card-contact-btns">
-        <a class="btn-call-icon" href="tel:${phone}" onclick="event.stopPropagation()" aria-label="Call seller" title="Call seller"><svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81 19.79 19.79 0 01.0 1.18 2 2 0 012 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92z'/></svg></a>
+        <a class="btn-call-icon" href="tel:${phone}" onclick="event.stopPropagation()" aria-label="Call seller" title="Call seller"><svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'><path d='M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81 19.79 19.79 0 01.0 1.18 2 2 0 012 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92z'/></svg></a>
         <a class="btn-wa-icon" href="https://wa.me/${phone.replace(/[^0-9]/g,'')}?text=${waMsg}" target="_blank" onclick="event.stopPropagation()" aria-label="WhatsApp seller" title="WhatsApp seller"><svg viewBox='0 0 24 24' fill='currentColor'><path d='M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z'/><path d='M12 0C5.373 0 0 5.373 0 12c0 2.123.554 4.118 1.528 5.845L0 24l6.335-1.508A11.942 11.942 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.818 9.818 0 01-5.006-1.374l-.36-.213-3.76.895.952-3.653-.234-.374A9.818 9.818 0 1112 21.818z'/></svg></a>
       </div>` : '';
-    // Location + tags row
-    const locTagsHTML = `<div class="card-loc-tags-row"><span class="card-location">📍 ${l.location}</span>${tagsHTML ? '<div class="card-tags-inline">' + tagsHTML + '</div>' : ''}</div>`;
+    // Seller avatar: logo image or initials fallback
+    const sellerAvatarHTML = l.sellerLogo
+      ? `<img class="card-seller-avatar" src="${l.sellerLogo}" alt="${l.seller}" />`
+      : `<span class="card-seller-initials">${l.seller.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase()}</span>`;
+    // Location row
+    const locHTML = `<div class="card-location-row"><span class="card-location">📍 ${l.location}</span></div>`;
     return `
       <div class="listing-card" onclick="window.location.href='listing.html?id=${l.id}'">
         <div class="card-img-wrap">
@@ -2451,7 +2516,7 @@ const DM = (() => {
         <div class="card-body">
           <div class="card-price-row">
             <div class="card-price">${formatPrice(l.price)}</div>
-            ${postedHTML}
+            ${postedTagsHTML}
           </div>
           <div class="card-title">${l.title}</div>
           <div class="card-pills">
@@ -2459,10 +2524,13 @@ const DM = (() => {
             <span class="pill">${l.km === 0 ? '0 KM' : l.km.toLocaleString() + ' KM'}</span>
             <span class="pill">${l.regionalSpec || 'GCC Specs'}</span>
           </div>
-          ${locTagsHTML}
+          ${locHTML}
         </div>
         <div class="card-footer">
-          <div class="card-seller">${l.seller}</div>
+          <div class="card-seller-wrap">
+            ${sellerAvatarHTML}
+            <span class="card-seller">${l.seller}</span>
+          </div>
           <div class="card-footer-right">
             ${contactHTML}
             <button class="btn-sm-orange" onclick="event.stopPropagation();window.location.href='listing.html?id=${l.id}'">Details</button>

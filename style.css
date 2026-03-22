@@ -431,63 +431,95 @@ input, textarea, select { font-family: 'Inter', sans-serif; }
 /* ─── CARD ENHANCEMENTS ─── */
 .card-price-row {
   display: flex;
-  align-items: baseline;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 8px;
-  flex-wrap: wrap;
   margin-bottom: 4px;
+}
+/* Right column: posted date + tags stacked vertically */
+.card-posted-tags {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  flex-shrink: 0;
+  min-width: 0;
 }
 .card-posted {
   font-size: 10px;
   color: #999;
   font-weight: 500;
   white-space: nowrap;
-  flex-shrink: 0;
+}
+.card-tags-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  align-items: flex-end;
 }
 .tag-purple {
   background: #7c3aed;
   color: #fff;
   font-size: 10px;
   font-weight: 700;
-  padding: 3px 9px;
+  padding: 2px 8px;
   border-radius: 20px;
   letter-spacing: 0.2px;
   white-space: nowrap;
 }
-/* Location + tags on same row — pushed to bottom of card-body */
-.card-loc-tags-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 6px;
+/* Location row */
+.card-location-row {
   margin-top: auto;
   padding-top: 6px;
-  flex-wrap: wrap;
 }
-.card-tags-inline {
+/* Seller avatar + name in footer */
+.card-seller-wrap {
   display: flex;
-  gap: 4px;
-  flex-wrap: wrap;
-  justify-content: flex-end;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  flex: 1;
+}
+.card-seller-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  object-fit: contain;
+  background: #f5f5f5;
+  border: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.card-seller-initials {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: var(--orange);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
 }
 .card-footer-right {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
+  flex-shrink: 0;
 }
 .card-contact-btns {
   display: flex;
-  gap: 5px;
+  gap: 4px;
 }
-/* Icon-only call/whatsapp buttons */
+/* Icon-only call/whatsapp buttons — match Details button height */
 .btn-call-icon, .btn-wa-icon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 34px;
-  height: 34px;
-  border-radius: 8px;
+  width: 30px;
+  height: 30px;
+  border-radius: 7px;
   border: none;
   cursor: pointer;
   text-decoration: none;
@@ -500,8 +532,8 @@ input, textarea, select { font-family: 'Inter', sans-serif; }
   color: #fff;
 }
 .btn-call-icon svg {
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
   stroke: #fff;
 }
 .btn-wa-icon {
@@ -509,8 +541,8 @@ input, textarea, select { font-family: 'Inter', sans-serif; }
   color: #fff;
 }
 .btn-wa-icon svg {
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
   fill: #fff;
 }
 
@@ -828,12 +860,14 @@ select.form-input { appearance: none; background-image: url("data:image/svg+xml,
   .card-title { font-size: 13px; min-height: calc(1.35em * 2); }
   .card-body { padding: 10px 12px 8px; }
   .card-footer { padding: 8px 12px 12px; flex-wrap: wrap; gap: 6px; }
-  .card-seller { font-size: 10px; max-width: 90px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .card-seller { font-size: 10px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 70px; }
+  .card-seller-avatar { width: 22px; height: 22px; }
+  .card-seller-initials { width: 22px; height: 22px; font-size: 9px; }
   .pill { font-size: 9px; padding: 2px 7px; }
   .tag-purple { font-size: 9px; padding: 2px 7px; }
-  .btn-call-icon, .btn-wa-icon { width: 30px; height: 30px; border-radius: 7px; }
-  .btn-call-icon svg, .btn-wa-icon svg { width: 14px; height: 14px; }
-  .btn-sm-orange { font-size: 11px; padding: 6px 11px; }
+  .btn-call-icon, .btn-wa-icon { width: 28px; height: 28px; border-radius: 6px; }
+  .btn-call-icon svg, .btn-wa-icon svg { width: 13px; height: 13px; }
+  .btn-sm-orange { font-size: 11px; padding: 6px 10px; }
   .card-posted { font-size: 9px; }
 }
 

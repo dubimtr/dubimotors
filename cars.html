@@ -719,16 +719,20 @@
     const thumbSrc = l.mainImg || l.img || (l.images && l.images[0]) || '';
     const featureTags = [];
     if (l.warranty) featureTags.push('Warranty');
-    if (l.serviceHistory) featureTags.push('Service History');
     if (l.serviceContract) featureTags.push('Service Contract');
     const tagsHTML = featureTags.length
       ? featureTags.map(t => `<span class="tag-purple">${t}</span>`).join('')
       : '';
-    const postedHTML = l.addedDate ? `<div class="card-posted">Posted: ${formatRelDate(l.addedDate)}</div>` : '';
+    const postedTagsHTML = `<div class="card-posted-tags">
+      ${l.addedDate ? `<div class="card-posted">Posted: ${formatRelDate(l.addedDate)}</div>` : ''}
+      ${tagsHTML ? `<div class="card-tags-stack">${tagsHTML}</div>` : ''}
+    </div>`;
     const phone = l.phone || '';
     const waMsg = encodeURIComponent('Hi, I am interested in the ' + l.title + ' listed on DubiMotors for ' + DM.formatPrice(l.price));
-    const contactHTML = phone ? `<div class="card-contact-btns"><a class="btn-call-icon" href="tel:${phone}" onclick="event.stopPropagation()" aria-label="Call" title="Call seller"><svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81 19.79 19.79 0 01.0 1.18 2 2 0 012 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92z'/></svg></a><a class="btn-wa-icon" href="https://wa.me/${phone.replace(/[^0-9]/g,'')}?text=${waMsg}" target="_blank" onclick="event.stopPropagation()" aria-label="WhatsApp" title="WhatsApp seller"><svg viewBox='0 0 24 24' fill='currentColor'><path d='M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z'/><path d='M12 0C5.373 0 0 5.373 0 12c0 2.123.554 4.118 1.528 5.845L0 24l6.335-1.508A11.942 11.942 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.818 9.818 0 01-5.006-1.374l-.36-.213-3.76.895.952-3.653-.234-.374A9.818 9.818 0 1112 21.818z'/></svg></a></div>` : '';
-    const locTagsHTML = `<div class="card-loc-tags-row"><span class="card-location">&#128205; ${l.location}</span>${tagsHTML ? '<div class="card-tags-inline">' + tagsHTML + '</div>' : ''}</div>`;
+    const contactHTML = phone ? `<div class="card-contact-btns"><a class="btn-call-icon" href="tel:${phone}" onclick="event.stopPropagation()" aria-label="Call" title="Call seller"><svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'><path d='M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81 19.79 19.79 0 01.0 1.18 2 2 0 012 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92z'/></svg></a><a class="btn-wa-icon" href="https://wa.me/${phone.replace(/[^0-9]/g,'')}?text=${waMsg}" target="_blank" onclick="event.stopPropagation()" aria-label="WhatsApp" title="WhatsApp seller"><svg viewBox='0 0 24 24' fill='currentColor'><path d='M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z'/><path d='M12 0C5.373 0 0 5.373 0 12c0 2.123.554 4.118 1.528 5.845L0 24l6.335-1.508A11.942 11.942 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.818 9.818 0 01-5.006-1.374l-.36-.213-3.76.895.952-3.653-.234-.374A9.818 9.818 0 1112 21.818z'/></svg></a></div>` : '';
+    const sellerAvatarHTML = l.sellerLogo
+      ? `<img class="card-seller-avatar" src="${l.sellerLogo}" alt="${l.seller}" />`
+      : `<span class="card-seller-initials">${l.seller.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase()}</span>`;
     return `
       <div class="listing-card" onclick="window.location.href='listing.html?id=${l.id}'">
         <div class="card-img-wrap">
@@ -737,17 +741,17 @@
           ${l.verified ? '<span class="card-verified">&#10003; Verified</span>' : ''}
         </div>
         <div class="card-body">
-          <div class="card-price-row"><div class="card-price">${DM.formatPrice(l.price)}</div>${postedHTML}</div>
+          <div class="card-price-row"><div class="card-price">${DM.formatPrice(l.price)}</div>${postedTagsHTML}</div>
           <div class="card-title">${l.title}</div>
           <div class="card-pills">
             <span class="pill">${l.year}</span>
             <span class="pill">${l.km === 0 ? '0 KM' : l.km.toLocaleString() + ' KM'}</span>
             <span class="pill">${spec}</span>
           </div>
-          ${locTagsHTML}
+          <div class="card-location-row"><span class="card-location">&#128205; ${l.location}</span></div>
         </div>
         <div class="card-footer">
-          <div class="card-seller">${l.seller}</div>
+          <div class="card-seller-wrap">${sellerAvatarHTML}<span class="card-seller">${l.seller}</span></div>
           <div class="card-footer-right">${contactHTML}<button class="btn-sm-orange" onclick="event.stopPropagation();window.location.href='listing.html?id=${l.id}'">Details</button></div>
         </div>
       </div>`;
