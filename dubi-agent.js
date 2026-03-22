@@ -156,10 +156,10 @@
       align-items: flex-end;
     }
     #dubi-agent-input {
-      flex: 1; border: 1.5px solid #E8E8E8; border-radius: 12px;
-      padding: 9px 12px; font-size: 13px; font-family: 'Inter', sans-serif;
+      flex: 1; border: 1.5px solid #E8E8E8;
+      padding: 9px 12px; font-size: 16px; font-family: 'Inter', sans-serif;
       outline: none; resize: none; max-height: 80px; overflow-y: auto;
-      line-height: 1.4;
+      border-radius: 12px; line-height: 1.4;
     }
     #dubi-agent-input:focus { border-color: #E8450A; }
     #dubi-agent-send {
@@ -244,7 +244,7 @@
     if (isOpen && history.length === 0) {
       dubiAddMessage('agent', `Hi! I'm <strong>Dubi Agent</strong> — your AI-powered assistant for DUBIMOTORS.<br><br>I can help you find the right vehicle, understand how listings work, explain pricing, or answer any questions about buying and selling in the UAE. How can I help you today?`);
     }
-    if (isOpen) setTimeout(() => document.getElementById('dubi-agent-input').focus(), 120);
+    if (isOpen && window.innerWidth > 768) setTimeout(() => document.getElementById('dubi-agent-input').focus(), 120);
   };
 
   /* ── Markdown-lite renderer ── */
