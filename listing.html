@@ -3,7 +3,23 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Listing Detail — DUBIMOTORS</title>
+  <title>Vehicle Listing — DubiMotors</title>
+  <meta name="description" content="View vehicle listing details on DubiMotors — UAE's vehicle marketplace." />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://www.dubimotors.ae/listing.html" id="canonical-tag" />
+  <!-- Open Graph (updated dynamically per listing) -->
+  <meta property="og:type" content="product" />
+  <meta property="og:title" content="Vehicle Listing — DubiMotors" id="og-title" />
+  <meta property="og:description" content="View vehicle listing details on DubiMotors." id="og-description" />
+  <meta property="og:url" content="https://www.dubimotors.ae/listing.html" id="og-url" />
+  <meta property="og:image" content="https://www.dubimotors.ae/hero-porsche.jpg" id="og-image" />
+  <meta property="og:site_name" content="DubiMotors" />
+  <meta property="og:locale" content="en_AE" />
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Vehicle Listing — DubiMotors" id="tw-title" />
+  <meta name="twitter:description" content="View vehicle listing details on DubiMotors." id="tw-description" />
+  <meta name="twitter:image" content="https://www.dubimotors.ae/hero-porsche.jpg" id="tw-image" />
   <link rel="stylesheet" href="style.css" />
   <link rel="stylesheet" href="https://api.mapbox.com/mapbox-gl-js/v3.3.0/mapbox-gl.css" />
   <style>
@@ -600,7 +616,67 @@
   if (!listing) {
     document.body.innerHTML += '<div style="text-align:center;padding:100px 20px;"><h2>Listing not found</h2><a href="index.html">Back to Home</a></div>';
   } else {
-    document.title = listing.title + ' — DUBIMOTORS';
+    // ── DYNAMIC SEO META TAGS ──
+    const listingPrice = listing.price ? 'AED ' + listing.price.toLocaleString() : '';
+    const listingCity  = listing.city || listing.location || 'UAE';
+    const listingYear  = listing.year || '';
+    const listingCond  = listing.condition || '';
+    const seoTitle     = `${listing.title} — ${listingPrice} | DubiMotors`;
+    const seoDesc      = `${listingCond ? listingCond + ' ' : ''}${listingYear ? listingYear + ' ' : ''}${listing.title} for sale in ${listingCity}. ${listingPrice ? listingPrice + '. ' : ''}Verified listing on DubiMotors — UAE's vehicle marketplace.`;
+    const seoImage     = (listing.images && listing.images[0]) || listing.img || 'https://www.dubimotors.ae/hero-porsche.jpg';
+    const seoURL       = `https://www.dubimotors.ae/listing.html?id=${encodeURIComponent(id)}`;
+
+    document.title = seoTitle;
+    document.querySelector('meta[name="description"]').setAttribute('content', seoDesc);
+    document.getElementById('canonical-tag').setAttribute('href', seoURL);
+    document.getElementById('og-title').setAttribute('content', seoTitle);
+    document.getElementById('og-description').setAttribute('content', seoDesc);
+    document.getElementById('og-url').setAttribute('content', seoURL);
+    document.getElementById('og-image').setAttribute('content', seoImage);
+    document.getElementById('tw-title').setAttribute('content', seoTitle);
+    document.getElementById('tw-description').setAttribute('content', seoDesc);
+    document.getElementById('tw-image').setAttribute('content', seoImage);
+
+    // ── JSON-LD STRUCTURED DATA (Vehicle + BreadcrumbList) ──
+    const availMap = { 'Brand New': 'https://schema.org/NewCondition', 'Used': 'https://schema.org/UsedCondition', 'Excellent': 'https://schema.org/UsedCondition', 'Good': 'https://schema.org/UsedCondition' };
+    const itemCondition = availMap[listing.condition] || 'https://schema.org/UsedCondition';
+    const vehicleSchema = {
+      '@context': 'https://schema.org',
+      '@type': 'Vehicle',
+      'name': listing.title,
+      'description': seoDesc,
+      'url': seoURL,
+      'image': seoImage,
+      'brand': { '@type': 'Brand', 'name': listing.make || '' },
+      'model': listing.model || '',
+      'vehicleModelDate': String(listing.year || ''),
+      'mileageFromOdometer': { '@type': 'QuantitativeValue', 'value': listing.km || 0, 'unitCode': 'KMT' },
+      'vehicleTransmission': listing.transmission || '',
+      'fuelType': listing.fuelType || listing.fuel || '',
+      'color': listing.color || listing.exteriorColor || '',
+      'itemCondition': itemCondition,
+      'offers': {
+        '@type': 'Offer',
+        'price': listing.price || '',
+        'priceCurrency': 'AED',
+        'availability': 'https://schema.org/InStock',
+        'url': seoURL,
+        'seller': { '@type': 'Organization', 'name': listing.seller || listing.dealerName || 'DubiMotors' }
+      }
+    };
+    const breadcrumbSchema = {
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      'itemListElement': [
+        { '@type': 'ListItem', 'position': 1, 'name': 'Home', 'item': 'https://www.dubimotors.ae/' },
+        { '@type': 'ListItem', 'position': 2, 'name': listing.category === 'bikes' ? 'Motorcycles' : listing.category === 'boats' ? 'Boats' : listing.category === 'jetski' ? 'Jet Skis' : 'Cars', 'item': `https://www.dubimotors.ae/${listing.category === 'bikes' ? 'bikes' : listing.category === 'boats' || listing.category === 'jetski' ? 'marine' : 'cars'}.html` },
+        { '@type': 'ListItem', 'position': 3, 'name': listing.title, 'item': seoURL }
+      ]
+    };
+    const ldScript = document.createElement('script');
+    ldScript.type = 'application/ld+json';
+    ldScript.textContent = JSON.stringify([vehicleSchema, breadcrumbSchema]);
+    document.head.appendChild(ldScript);
 
     // ── BREADCRUMB: Home > Category > Make > Model > Trim ──
     const catLabels = { cars: 'Cars', boats: 'Boats', bikes: 'Motorcycles', jetski: 'Jet Skis' };

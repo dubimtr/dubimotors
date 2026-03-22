@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+
+# Disallow non-content pages that waste crawl budget
+Disallow: /404.html
+
+# Sitemap location
+Sitemap: https://www.dubimotors.ae/sitemap.xml
