@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Listing Detail — DUBIMOTORS</title>
   <link rel="stylesheet" href="style.css" />
-  <link href="https://api.mapbox.com/mapbox-gl-js/v3.2.0/mapbox-gl.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <style>
     .listing-detail-layout {
       display: grid;
@@ -525,7 +525,7 @@
       </div>
       <a class="section-link" id="similar-link" href="cars.html">View All →</a>
     </div>
-    <div class="listings-grid cols-2" id="similar-grid"></div>
+    <div class="listings-grid cols-4" id="similar-grid"></div>
   </div>
 </section>
 
@@ -581,7 +581,7 @@
   </div>
 </div>
 
-<script src="https://api.mapbox.com/mapbox-gl-js/v3.2.0/mapbox-gl.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="shared.js"></script>
 <script src="components.js"></script>
 <script src="lightbox.js"></script>
@@ -746,33 +746,20 @@
     if (listing.lat && listing.lng) {
       document.getElementById('location-section').style.display = '';
       document.getElementById('location-address').textContent = listing.locationAddress || listing.location + ', UAE';
-      // Init Mapbox map
-      mapboxgl.accessToken = 'pk.eyJ1IjoiZHViaW1vdG9ycyIsImEiOiJjbHlhYmNkZWYwMDAxMmpxcGFiY2RlZjAwIn0.placeholder';
-      // Use free OpenStreetMap tiles via mapbox-gl-js compatible style
-      const map = new mapboxgl.Map({
-        container: 'listing-map',
-        style: {
-          version: 8,
-          sources: {
-            osm: {
-              type: 'raster',
-              tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
-              tileSize: 256,
-              attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            }
-          },
-          layers: [{ id: 'osm', type: 'raster', source: 'osm' }]
-        },
-        center: [listing.lng, listing.lat],
-        zoom: 14,
-        attributionControl: false
+      // Leaflet.js with free OpenStreetMap tiles
+      const map = L.map('listing-map', { zoomControl: true }).setView([listing.lat, listing.lng], 15);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        maxZoom: 19
+      }).addTo(map);
+      // Custom orange marker
+      const markerIcon = L.divIcon({
+        className: '',
+        html: '<div style="width:20px;height:20px;background:#E84118;border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,0.4);"></div>',
+        iconSize: [20, 20],
+        iconAnchor: [10, 20]
       });
-      map.addControl(new mapboxgl.AttributionControl({ compact: true }));
-      map.addControl(new mapboxgl.NavigationControl({ showCompass: false }), 'bottom-right');
-      // Add marker
-      new mapboxgl.Marker({ color: '#E84118' })
-        .setLngLat([listing.lng, listing.lat])
-        .addTo(map);
+      L.marker([listing.lat, listing.lng], { icon: markerIcon }).addTo(map);
     }
   }
 
