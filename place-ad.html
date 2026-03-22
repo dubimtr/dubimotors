@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Place Your Ad — DUBIMOTORS</title>
   <link rel="stylesheet" href="style.css" />
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://api.mapbox.com/mapbox-gl-js/v3.3.0/mapbox-gl.css" />
   <script src="icons.js"></script>
   <script src="https://www.google.com/recaptcha/api.js" async defer></script>
   <style>
@@ -949,7 +949,7 @@
 <div id="footer-placeholder"></div>
 <div id="toast" class="toast"></div>
 
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://api.mapbox.com/mapbox-gl-js/v3.3.0/mapbox-gl.js"></script>
 <script src="vehicles.js"></script>
 <script src="shared.js"></script>
 <script src="components.js"></script>
@@ -1743,30 +1743,30 @@
     if (_placeAdMap) return; // already initialized
     const mapEl = document.getElementById('place-ad-map');
     if (!mapEl) return;
-    // Default center: Dubai
-    _placeAdMap = L.map('place-ad-map').setView([25.2048, 55.2708], 11);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-      maxZoom: 19
-    }).addTo(_placeAdMap);
-    // Custom orange draggable marker icon
-    const orangeIcon = L.divIcon({
-      className: '',
-      html: '<div style="width:20px;height:20px;background:#E84118;border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,0.4);"></div>',
-      iconSize: [20, 20],
-      iconAnchor: [10, 20]
+    // Mapbox GL JS
+    mapboxgl.accessToken = 'pk.eyJ1IjoiZHViaW1vdG9ycyIsImEiOiJjbW4yOG9vMTMwbWwyMm9wZHA1NnphaGhzIn0.jJP4cJ_mwKYG9_7h1ymsig';
+    _placeAdMap = new mapboxgl.Map({
+      container: 'place-ad-map',
+      style: 'mapbox://styles/mapbox/streets-v12',
+      center: [55.2708, 25.2048],
+      zoom: 11
     });
+    _placeAdMap.addControl(new mapboxgl.NavigationControl(), 'bottom-right');
     // Click to drop/move pin
     _placeAdMap.on('click', function(e) {
-      const { lat, lng } = e.latlng;
+      const { lng, lat } = e.lngLat;
       document.getElementById('inp-lat').value = lat.toFixed(6);
       document.getElementById('inp-lng').value = lng.toFixed(6);
       if (_placeAdMarker) {
-        _placeAdMarker.setLatLng([lat, lng]);
+        _placeAdMarker.setLngLat([lng, lat]);
       } else {
-        _placeAdMarker = L.marker([lat, lng], { icon: orangeIcon, draggable: true }).addTo(_placeAdMap);
+        const el = document.createElement('div');
+        el.style.cssText = 'width:20px;height:20px;background:#E84118;border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,0.4);cursor:grab;';
+        _placeAdMarker = new mapboxgl.Marker({ element: el, draggable: true })
+          .setLngLat([lng, lat])
+          .addTo(_placeAdMap);
         _placeAdMarker.on('dragend', function() {
-          const pos = _placeAdMarker.getLatLng();
+          const pos = _placeAdMarker.getLngLat();
           document.getElementById('inp-lat').value = pos.lat.toFixed(6);
           document.getElementById('inp-lng').value = pos.lng.toFixed(6);
           reverseGeocode(pos.lat, pos.lng);
@@ -1777,7 +1777,7 @@
     // Try to use browser geolocation to center map
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(function(pos) {
-        _placeAdMap.setView([pos.coords.latitude, pos.coords.longitude], 14);
+        _placeAdMap.flyTo({ center: [pos.coords.longitude, pos.coords.latitude], zoom: 14 });
       }, null, { timeout: 5000 });
     }
   }

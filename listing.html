@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Listing Detail — DUBIMOTORS</title>
   <link rel="stylesheet" href="style.css" />
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://api.mapbox.com/mapbox-gl-js/v3.3.0/mapbox-gl.css" />
   <style>
     .listing-detail-layout {
       display: grid;
@@ -581,7 +581,7 @@
   </div>
 </div>
 
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://api.mapbox.com/mapbox-gl-js/v3.3.0/mapbox-gl.js"></script>
 <script src="shared.js"></script>
 <script src="components.js"></script>
 <script src="lightbox.js"></script>
@@ -746,20 +746,21 @@
     if (listing.lat && listing.lng) {
       document.getElementById('location-section').style.display = '';
       document.getElementById('location-address').textContent = listing.locationAddress || listing.location + ', UAE';
-      // Leaflet.js with free OpenStreetMap tiles
-      const map = L.map('listing-map', { zoomControl: true }).setView([listing.lat, listing.lng], 15);
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-        maxZoom: 19
-      }).addTo(map);
-      // Custom orange marker
-      const markerIcon = L.divIcon({
-        className: '',
-        html: '<div style="width:20px;height:20px;background:#E84118;border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,0.4);"></div>',
-        iconSize: [20, 20],
-        iconAnchor: [10, 20]
+      // Mapbox GL JS
+      mapboxgl.accessToken = 'pk.eyJ1IjoiZHViaW1vdG9ycyIsImEiOiJjbW4yOG9vMTMwbWwyMm9wZHA1NnphaGhzIn0.jJP4cJ_mwKYG9_7h1ymsig';
+      const map = new mapboxgl.Map({
+        container: 'listing-map',
+        style: 'mapbox://styles/mapbox/streets-v12',
+        center: [listing.lng, listing.lat],
+        zoom: 15
       });
-      L.marker([listing.lat, listing.lng], { icon: markerIcon }).addTo(map);
+      map.addControl(new mapboxgl.NavigationControl(), 'bottom-right');
+      // Custom orange marker
+      const el = document.createElement('div');
+      el.style.cssText = 'width:20px;height:20px;background:#E84118;border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,0.4);';
+      new mapboxgl.Marker({ element: el })
+        .setLngLat([listing.lng, listing.lat])
+        .addTo(map);
     }
   }
 
