@@ -29,14 +29,7 @@
     }
     #dubi-agent-btn svg { width: 34px; height: 34px; }
     #dubi-agent-btn img { width: 100%; height: 100%; object-fit: contain; border-radius: 50%; }
-    #dubi-agent-badge {
-      position: absolute; top: -3px; right: -3px;
-      background: #0D0D0D; color: #E8450A;
-      font-size: 9px; font-weight: 900; letter-spacing: 0.3px;
-      border-radius: 10px; padding: 2px 6px;
-      border: 1.5px solid #E8450A;
-      font-family: 'Inter', sans-serif;
-    }
+    #dubi-agent-badge { display: none; }
 
     /* ── Chat window ── */
     #dubi-agent-window {
@@ -206,7 +199,7 @@
   widget.innerHTML = `
     <button id="dubi-agent-btn" onclick="dubiAgentToggle()" title="Chat with Dubi Agent" style="background:transparent;padding:0;overflow:hidden">
       <img src="dubi-agent-icon.png" alt="Dubi Agent" style="width:100%;height:100%;object-fit:cover;border-radius:50%" />
-      <span id="dubi-agent-badge">AI</span>
+
     </button>
 
     <div id="dubi-agent-window">
