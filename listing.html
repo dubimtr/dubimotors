@@ -615,7 +615,8 @@
     document.getElementById('breadcrumb-bar').innerHTML = bcHTML;
 
     // ── GALLERY ──
-    document.getElementById('main-img').src = listing.img;
+    const heroImg = listing.mainImg || listing.img || (listing.images && listing.images[0]) || '';
+    document.getElementById('main-img').src = heroImg;
     document.getElementById('main-img').alt = listing.title;
     const badge = document.getElementById('gallery-badge');
     badge.textContent = listing.condition;
@@ -623,7 +624,7 @@
     if (listing.verified) document.getElementById('gallery-verified').style.display = 'block';
 
     // Build gallery images array (use listing.images if available, else show only the single image - no duplicates)
-    window._galleryImages = listing.images && listing.images.length > 1 ? listing.images : [listing.img];
+    window._galleryImages = listing.images && listing.images.length > 0 ? listing.images : [heroImg];
     window._galleryIdx = 0;
     const singleImg = window._galleryImages.length <= 1;
     // Hide carousel controls and thumbs when only 1 image

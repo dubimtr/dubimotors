@@ -703,9 +703,31 @@
   }
 
   /* ── Custom renderCard with Year / KMs / Regional Spec ── */
+  function formatRelDate(dateStr) {
+    if (!dateStr) return '';
+    const d = new Date(dateStr), now = new Date();
+    const days = Math.floor((now - d) / 86400000);
+    if (days === 0) return 'Today';
+    if (days === 1) return 'Yesterday';
+    if (days < 7) return days + ' days ago';
+    if (days < 30) return Math.floor(days / 7) + ' weeks ago';
+    if (days < 365) return Math.floor(days / 30) + ' months ago';
+    return Math.floor(days / 365) + ' years ago';
+  }
   function renderCard(l) {
     const spec = l.regionalSpec || 'GCC Specs';
     const thumbSrc = l.mainImg || l.img || (l.images && l.images[0]) || '';
+    const featureTags = [];
+    if (l.warranty) featureTags.push('Warranty');
+    if (l.serviceHistory) featureTags.push('Service History');
+    if (l.serviceContract) featureTags.push('Service Contract');
+    const tagsHTML = featureTags.length
+      ? '<div class="card-feature-tags">' + featureTags.map(t => `<span class="tag-purple">${t}</span>`).join('') + '</div>'
+      : '';
+    const postedHTML = l.addedDate ? `<div class="card-posted">Posted: ${formatRelDate(l.addedDate)}</div>` : '';
+    const phone = l.phone || '';
+    const waMsg = encodeURIComponent('Hi, I am interested in the ' + l.title + ' listed on DubiMotors for ' + DM.formatPrice(l.price));
+    const contactHTML = phone ? `<div class="card-contact-btns"><a class="btn-call" href="tel:${phone}" onclick="event.stopPropagation()">📞 Call</a><a class="btn-whatsapp" href="https://wa.me/${phone.replace(/[^0-9]/g,'')}?text=${waMsg}" target="_blank" onclick="event.stopPropagation()">WhatsApp</a></div>` : '';
     return `
       <div class="listing-card" onclick="window.location.href='listing.html?id=${l.id}'">
         <div class="card-img-wrap">
@@ -714,18 +736,19 @@
           ${l.verified ? '<span class="card-verified">&#10003; Verified</span>' : ''}
         </div>
         <div class="card-body">
-          <div class="card-price">${DM.formatPrice(l.price)}</div>
+          <div class="card-price-row"><div class="card-price">${DM.formatPrice(l.price)}</div>${postedHTML}</div>
           <div class="card-title">${l.title}</div>
           <div class="card-pills">
             <span class="pill">${l.year}</span>
             <span class="pill">${l.km === 0 ? '0 KM' : l.km.toLocaleString() + ' KM'}</span>
             <span class="pill">${spec}</span>
           </div>
+          ${tagsHTML}
           <div class="card-location">&#128205; ${l.location}</div>
         </div>
         <div class="card-footer">
           <div class="card-seller">${l.seller}</div>
-          <button class="btn-sm-orange" onclick="event.stopPropagation();window.location.href='listing.html?id=${l.id}'">Details</button>
+          <div class="card-footer-right">${contactHTML}<button class="btn-sm-orange" onclick="event.stopPropagation();window.location.href='listing.html?id=${l.id}'">Details</button></div>
         </div>
       </div>`;
   }

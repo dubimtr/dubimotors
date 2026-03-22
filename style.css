@@ -420,6 +420,81 @@ input, textarea, select { font-family: 'Inter', sans-serif; }
 }
 .btn-sm-orange:hover { background: var(--orange-hover); }
 
+/* ─── CARD ENHANCEMENTS ─── */
+.card-price-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 4px;
+}
+.card-posted {
+  font-size: 10px;
+  color: #999;
+  font-weight: 500;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.card-feature-tags {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+  margin: 6px 0 4px;
+}
+.tag-purple {
+  background: #7c3aed;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 20px;
+  letter-spacing: 0.2px;
+}
+.card-footer-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.card-contact-btns {
+  display: flex;
+  gap: 5px;
+}
+.btn-call {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  background: #16a34a;
+  color: #fff;
+  border: none;
+  border-radius: 7px;
+  padding: 7px 11px;
+  font-size: 11px;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.2s;
+  white-space: nowrap;
+}
+.btn-call:hover { background: #15803d; }
+.btn-whatsapp {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  background: #25d366;
+  color: #fff;
+  border: none;
+  border-radius: 7px;
+  padding: 7px 11px;
+  font-size: 11px;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.2s;
+  white-space: nowrap;
+}
+.btn-whatsapp:hover { background: #128c7e; }
+
 /* ─── BUTTONS ─── */
 .btn-primary {
   background: var(--orange);
@@ -733,9 +808,13 @@ select.form-input { appearance: none; background-image: url("data:image/svg+xml,
   .card-price { font-size: 16px; }
   .card-title { font-size: 13px; }
   .card-body { padding: 10px 12px 8px; }
-  .card-footer { padding: 8px 12px 12px; }
-  .card-seller { font-size: 10px; max-width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .card-footer { padding: 8px 12px 12px; flex-wrap: wrap; gap: 6px; }
+  .card-seller { font-size: 10px; max-width: 90px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .pill { font-size: 9px; padding: 2px 7px; }
+  .tag-purple { font-size: 9px; padding: 2px 7px; }
+  .btn-call, .btn-whatsapp { font-size: 10px; padding: 6px 9px; }
+  .btn-sm-orange { font-size: 11px; padding: 6px 11px; }
+  .card-posted { font-size: 9px; }
 }
 
 @media (max-width: 480px) {
