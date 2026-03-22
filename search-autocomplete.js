@@ -158,9 +158,10 @@
   }
 
   /* ── Position dropdown below the input ── */
+  // Uses viewport-relative coords only (no scrollY) because dropdown is position:fixed
   function positionDropdown(input, dd) {
     const rect = input.getBoundingClientRect();
-    dd.style.top = (rect.bottom + window.scrollY + 6) + 'px';
+    dd.style.top = (rect.bottom + 6) + 'px';
     dd.style.left = rect.left + 'px';
     dd.style.width = Math.max(rect.width + 200, 360) + 'px';
     // Clamp to viewport right edge
@@ -282,10 +283,7 @@
       setTimeout(() => dd.classList.remove('open'), 200);
     });
 
-    // Reposition on scroll/resize
-    window.addEventListener('scroll', () => {
-      if (dd.classList.contains('open')) positionDropdown(input, dd);
-    }, { passive: true });
+    // Reposition on resize only (scroll is handled automatically by position:fixed)
     window.addEventListener('resize', () => {
       if (dd.classList.contains('open')) positionDropdown(input, dd);
     });
