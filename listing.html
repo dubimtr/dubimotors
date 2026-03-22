@@ -24,6 +24,22 @@
       width: 100%;
       height: 100%;
       object-fit: cover;
+      cursor: zoom-in;
+    }
+    .gallery-main:hover::after {
+      content: '🔍 Click to expand';
+      position: absolute;
+      bottom: 50px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.65);
+      color: #fff;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 5px 14px;
+      border-radius: 20px;
+      pointer-events: none;
+      white-space: nowrap;
     }
     .gallery-badge {
       position: absolute;
@@ -392,7 +408,7 @@
   <div class="listing-detail-layout">
     <!-- LEFT: GALLERY + INFO -->
     <div>
-      <div class="gallery-main" id="gallery-main">
+      <div class="gallery-main" id="gallery-main" onclick="openGalleryLightbox(event)">
         <img id="main-img" src="" alt="" />
         <span id="gallery-badge" class="gallery-badge badge-new"></span>
         <span id="gallery-verified" class="gallery-verified" style="display:none;">✓ Verified Dealer</span>
@@ -560,6 +576,7 @@
 
 <script src="shared.js"></script>
 <script src="components.js"></script>
+<script src="lightbox.js"></script>
 <script>
   renderNavbar('');
   renderFooter();
@@ -738,6 +755,17 @@
     const imgs = window._galleryImages || [];
     const el = document.getElementById('gallery-counter');
     if (el) el.textContent = (window._galleryIdx + 1) + ' / ' + imgs.length;
+  }
+
+  // Open lightbox when user clicks the main gallery image
+  function openGalleryLightbox(e) {
+    // Don't trigger if clicking a nav button
+    if (e.target.classList.contains('gallery-nav') || e.target.closest('.gallery-nav')) return;
+    const imgs = window._galleryImages || [];
+    if (imgs.length === 0) return;
+    if (typeof DMLightbox !== 'undefined') {
+      DMLightbox.open(imgs, window._galleryIdx || 0);
+    }
   }
 
   // Touch swipe support for gallery

@@ -705,7 +705,7 @@
   /* ── Custom renderCard with Year / KMs / Regional Spec ── */
   function renderCard(l) {
     const spec = l.regionalSpec || 'GCC Specs';
-    const thumbSrc = l.img || (l.images && l.images[0]) || '';
+    const thumbSrc = l.mainImg || l.img || (l.images && l.images[0]) || '';
     return `
       <div class="listing-card" onclick="window.location.href='listing.html?id=${l.id}'">
         <div class="card-img-wrap">

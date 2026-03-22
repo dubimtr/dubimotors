@@ -1,4 +1,6 @@
 // ── DubiMotors Lightbox / Photo Carousel with Zoom ────────────────────────────
+// Used ONLY on the listing detail page (listing.html).
+// Listing cards on browse pages navigate to the detail page on click.
 (function() {
   'use strict';
 
@@ -81,13 +83,11 @@
     const img = document.getElementById('dm-lightbox-img');
     const wrap = document.getElementById('dm-lightbox-img-wrap');
     if (lbZoomed) {
-      // Unzoom
       img.style.transform = 'scale(1)';
       img.style.transformOrigin = 'center center';
       wrap.classList.remove('zoomed');
       lbZoomed = false;
     } else {
-      // Zoom toward click point
       const rect = wrap.getBoundingClientRect();
       const xPct = ((e.clientX - rect.left) / rect.width * 100).toFixed(1);
       const yPct = ((e.clientY - rect.top) / rect.height * 100).toFixed(1);
@@ -115,16 +115,13 @@
     const thumbs = document.getElementById('dm-lightbox-thumbs');
     if (img) { img.src = lbImages[lbIndex]; img.alt = 'Photo ' + (lbIndex + 1); }
     if (counter) counter.textContent = (lbIndex + 1) + ' / ' + lbImages.length;
-    // Update thumb highlights
     if (thumbs) {
       Array.from(thumbs.children).forEach(function(t, i) {
         t.classList.toggle('active', i === lbIndex);
       });
-      // Scroll active thumb into view
       const activeThumb = thumbs.children[lbIndex];
       if (activeThumb) activeThumb.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
     }
-    // Show/hide prev/next
     const prev = document.getElementById('dm-lightbox-prev');
     const next = document.getElementById('dm-lightbox-next');
     if (prev) prev.style.display = lbImages.length > 1 ? 'flex' : 'none';
@@ -135,7 +132,6 @@
     buildLightbox();
     lbImages = images || [];
     lbIndex = startIndex || 0;
-    // Build thumbnails
     const thumbs = document.getElementById('dm-lightbox-thumbs');
     if (thumbs) {
       thumbs.innerHTML = '';
@@ -165,54 +161,7 @@
     resetZoom();
   }
 
-  // Attach click handlers to all listing card images
-  function attachCardLightboxes() {
-    document.querySelectorAll('.card-img-wrap').forEach(function(wrap) {
-      // Avoid double-binding
-      if (wrap.dataset.lbBound) return;
-      wrap.dataset.lbBound = '1';
-      wrap.addEventListener('click', function(e) {
-        e.stopPropagation();
-        // Find the listing id from the parent card
-        const card = wrap.closest('.listing-card');
-        if (!card) return;
-        const onclick = card.getAttribute('onclick') || '';
-        const match = onclick.match(/id=([^'\"&]+)/);
-        if (!match) return;
-        const id = match[1];
-        // Look up listing in DM
-        if (typeof DM === 'undefined') return;
-        const listing = DM.getById(id);
-        if (!listing) return;
-        const images = listing.images && listing.images.length > 0
-          ? listing.images
-          : (listing.img ? [listing.img] : []);
-        if (images.length === 0) return;
-        openLightbox(images, 0);
-      });
-    });
-  }
+  // Expose globally — call DMLightbox.open(images, index) from listing detail page
+  window.DMLightbox = { open: openLightbox, close: closeLightbox };
 
-  // Expose globally
-  window.DMLightbox = { open: openLightbox, close: closeLightbox, attachCards: attachCardLightboxes };
-
-  // Auto-attach after DOM is ready
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', attachCardLightboxes);
-  } else {
-    // Also run after a short delay to catch dynamically rendered cards
-    setTimeout(attachCardLightboxes, 500);
-  }
-
-  // Re-attach when cards are re-rendered (observe DOM mutations)
-  const observer = new MutationObserver(function() {
-    attachCardLightboxes();
-  });
-  if (document.body) {
-    observer.observe(document.body, { childList: true, subtree: true });
-  } else {
-    document.addEventListener('DOMContentLoaded', function() {
-      observer.observe(document.body, { childList: true, subtree: true });
-    });
-  }
 })();

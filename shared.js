@@ -35,14 +35,15 @@ const DM = (() => {
       featured: true,
       addedDate: '2026-03-19',
       sourceUrl: 'https://gtacars.ae/gta-showrooms/2024-jetour-t2-traveler-jetour-warrantyfull-service-history-gcc/',
+      mainImg: 'gta-images/gta-001-img04.jpeg',
       images: [
-        'gta-images/gta-001-img01.jpeg',
-        'gta-images/gta-001-img02.jpeg',
-        'gta-images/gta-001-img03.jpeg',
         'gta-images/gta-001-img04.jpeg',
         'gta-images/gta-001-img05.jpeg',
-        'gta-images/gta-001-img06.jpeg',
+        'gta-images/gta-001-img03.jpeg',
         'gta-images/gta-001-img07.jpeg',
+        'gta-images/gta-001-img01.jpeg',
+        'gta-images/gta-001-img02.jpeg',
+        'gta-images/gta-001-img06.jpeg',
         'gta-images/gta-001-img08.jpeg',
         'gta-images/gta-001-img09.jpeg',
         'gta-images/gta-001-img10.jpeg',
@@ -78,12 +79,13 @@ const DM = (() => {
       featured: true,
       addedDate: '2026-03-19',
       sourceUrl: 'https://gtacars.ae/gta-showrooms/2021-bmw-x5-xdrive40i-m-sport-hamann-kit-bmw-warranty-bmw-service-history-gcc/',
+      mainImg: 'gta-images/gta-002-img04.jpeg',
       images: [
-        'gta-images/gta-002-img01.jpeg',
-        'gta-images/gta-002-img02.jpeg',
-        'gta-images/gta-002-img03.jpeg',
         'gta-images/gta-002-img04.jpeg',
         'gta-images/gta-002-img05.jpeg',
+        'gta-images/gta-002-img03.jpeg',
+        'gta-images/gta-002-img01.jpeg',
+        'gta-images/gta-002-img02.jpeg',
         'gta-images/gta-002-img06.jpeg',
         'gta-images/gta-002-img07.jpeg',
         'gta-images/gta-002-img08.jpeg',
@@ -120,12 +122,13 @@ const DM = (() => {
       featured: true,
       addedDate: '2026-03-19',
       sourceUrl: 'https://gtacars.ae/gta-showrooms/2025-bmw-x6m-competition-2031-bmw-warranty-and-service-pack-bmw-service-history-gcc/',
+      mainImg: 'gta-images/gta-003-img04.jpeg',
       images: [
-        'gta-images/gta-003-img01.jpeg',
-        'gta-images/gta-003-img02.jpeg',
-        'gta-images/gta-003-img03.jpeg',
         'gta-images/gta-003-img04.jpeg',
         'gta-images/gta-003-img05.jpeg',
+        'gta-images/gta-003-img03.jpeg',
+        'gta-images/gta-003-img01.jpeg',
+        'gta-images/gta-003-img02.jpeg',
         'gta-images/gta-003-img06.jpeg',
         'gta-images/gta-003-img07.jpeg',
         'gta-images/gta-003-img08.jpeg',
@@ -162,12 +165,13 @@ const DM = (() => {
       featured: true,
       addedDate: '2026-03-19',
       sourceUrl: 'https://gtacars.ae/gta-showrooms/2022-bentley-bentayga-v8-service-history-1-year-warranty-excellent-condition/',
+      mainImg: 'gta-images/gta-004-img04.jpeg',
       images: [
-        'gta-images/gta-004-img01.jpeg',
-        'gta-images/gta-004-img02.jpeg',
-        'gta-images/gta-004-img03.jpeg',
         'gta-images/gta-004-img04.jpeg',
         'gta-images/gta-004-img05.jpeg',
+        'gta-images/gta-004-img03.jpeg',
+        'gta-images/gta-004-img01.jpeg',
+        'gta-images/gta-004-img02.jpeg',
         'gta-images/gta-004-img06.jpeg',
         'gta-images/gta-004-img07.jpeg',
         'gta-images/gta-004-img08.jpeg',
@@ -204,12 +208,13 @@ const DM = (() => {
       featured: true,
       addedDate: '2026-03-18',
       sourceUrl: 'https://gtacars.ae/gta-showrooms/2022-lamborghini-urus-28-10-2026-lamborghini-warranty-lamborghini-service-history-gcc/',
+      mainImg: 'gta-images/gta-005-img04.jpeg',
       images: [
-        'gta-images/gta-005-img01.jpeg',
-        'gta-images/gta-005-img02.jpeg',
-        'gta-images/gta-005-img03.jpeg',
         'gta-images/gta-005-img04.jpeg',
         'gta-images/gta-005-img05.jpeg',
+        'gta-images/gta-005-img03.jpeg',
+        'gta-images/gta-005-img01.jpeg',
+        'gta-images/gta-005-img02.jpeg',
         'gta-images/gta-005-img06.jpeg',
         'gta-images/gta-005-img07.jpeg',
         'gta-images/gta-005-img08.jpeg',
@@ -2319,7 +2324,7 @@ const DM = (() => {
   }
 
   function renderCard(l) {
-    const thumbSrc = l.img || (l.images && l.images[0]) || '';
+    const thumbSrc = l.mainImg || l.img || (l.images && l.images[0]) || '';
     return `
       <div class="listing-card" onclick="window.location.href='listing.html?id=${l.id}'">
         <div class="card-img-wrap">
