@@ -69,13 +69,17 @@
       max-width: 820px;
       background: var(--white);
       border-radius: 16px;
-      overflow: hidden;
+      /* overflow: visible so autocomplete dropdown is not clipped */
+      overflow: visible;
       box-shadow: 0 24px 64px rgba(0,0,0,0.45);
     }
+    /* Apply border-radius to inner rows to preserve rounded corners without overflow:hidden on parent */
     .search-tabs-row {
       display: flex;
       border-bottom: 1px solid var(--border);
       padding: 0 6px;
+      border-radius: 16px 16px 0 0;
+      overflow: hidden;
     }
     .s-tab {
       padding: 12px 18px;
@@ -96,6 +100,7 @@
       align-items: center;
       padding: 10px 10px 10px 20px;
       gap: 10px;
+      border-radius: 0 0 16px 16px;
     }
     .search-icon { color: #AAAAAA; font-size: 18px; flex-shrink: 0; }
     .search-main-input {

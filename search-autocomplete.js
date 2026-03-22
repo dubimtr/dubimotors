@@ -1,27 +1,25 @@
 /* ═══════════════════════════════════════════════════════════════════════════
    DUBIMOTORS — Smart Search Autocomplete
-   Shows suggestions with category labels and ad counts, like Dubizzle.
+   Dropdown appended to <body> and positioned via getBoundingClientRect so it
+   escapes any overflow:hidden parent containers.
    ═══════════════════════════════════════════════════════════════════════════ */
 (function () {
 
   /* ── CSS ── */
   const style = document.createElement('style');
   style.textContent = `
-    .search-ac-wrap { position: relative; flex: 1; display: flex; align-items: center; min-width: 0; }
     #search-ac-dropdown {
       display: none;
-      position: absolute;
-      top: calc(100% + 8px);
-      left: -52px;
-      right: -210px;
+      position: fixed;
       background: #fff;
       border: 1px solid #E8E8E8;
       border-radius: 14px;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.14);
-      z-index: 10000;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.16);
+      z-index: 99999;
       overflow: hidden;
       max-height: 400px;
       overflow-y: auto;
+      min-width: 320px;
     }
     #search-ac-dropdown.open { display: block; }
     .ac-item {
@@ -36,7 +34,7 @@
     }
     .ac-item:last-child { border-bottom: none; }
     .ac-item:hover, .ac-item.active { background: #FFF5F0; }
-    .ac-item-left { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+    .ac-item-left { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; }
     .ac-item-query { font-size: 14px; font-weight: 500; color: #1A1A1A; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .ac-item-query strong { color: #E8450A; font-weight: 700; }
     .ac-item-cat { font-size: 11px; color: #999; font-weight: 400; }
@@ -64,12 +62,6 @@
     }
     .ac-item-all:hover { background: #FFF5F0; }
     .ac-item-all-text { font-size: 13px; color: #E8450A; font-weight: 600; }
-    @media (max-width: 768px) {
-      #search-ac-dropdown { left: -44px; right: -4px; }
-    }
-    @media (max-width: 480px) {
-      #search-ac-dropdown { left: -36px; right: 0px; border-radius: 10px; }
-    }
   `;
   document.head.appendChild(style);
 
@@ -94,7 +86,6 @@
         : [];
       if (!listings || !listings.length) return;
 
-      // Collect matching terms: make, model, title words
       // termListings maps term -> Set of listing IDs (for accurate unique counts)
       const termListings = {};
       listings.forEach(l => {
@@ -127,6 +118,7 @@
           }
         }
       });
+
       const termCounts = {};
       Object.entries(termListings).forEach(([key, ids]) => { termCounts[key] = ids.size; });
 
@@ -165,8 +157,21 @@
     return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   }
 
+  /* ── Position dropdown below the input ── */
+  function positionDropdown(input, dd) {
+    const rect = input.getBoundingClientRect();
+    dd.style.top = (rect.bottom + window.scrollY + 6) + 'px';
+    dd.style.left = rect.left + 'px';
+    dd.style.width = Math.max(rect.width + 200, 360) + 'px';
+    // Clamp to viewport right edge
+    const ddRight = rect.left + parseFloat(dd.style.width);
+    if (ddRight > window.innerWidth - 8) {
+      dd.style.left = Math.max(8, window.innerWidth - parseFloat(dd.style.width) - 8) + 'px';
+    }
+  }
+
   /* ── Render dropdown ── */
-  function renderDropdown(query, suggestions) {
+  function renderDropdown(query, suggestions, input) {
     const dd = document.getElementById('search-ac-dropdown');
     if (!dd) return;
     if (!suggestions.length) { dd.classList.remove('open'); return; }
@@ -219,6 +224,7 @@
     });
     dd.appendChild(allItem);
 
+    positionDropdown(input, dd);
     dd.classList.add('open');
   }
 
@@ -228,12 +234,11 @@
     window.location.href = cat.page + '?' + params.toString();
   }
 
-  /* ── Navigate to cars page (default) with query for "search all" ── */
+  /* ── Navigate to default page with query for "search all" ── */
   function navigateAll(query) {
-    // Use the currently active tab if available
     const activeTabEl = document.querySelector('.s-tab.active');
     const tab = activeTabEl ? activeTabEl.textContent.trim().toLowerCase() : 'cars';
-    const pages = { cars: 'cars.html', marine: 'marine.html', boats: 'marine.html', bikes: 'bikes.html', jetski: 'marine.html', heavy: 'heavy.html' };
+    const pages = { cars: 'cars.html', marine: 'marine.html', boats: 'marine.html', bikes: 'bikes.html', motorcycles: 'bikes.html', jetski: 'marine.html', heavy: 'heavy.html' };
     const page = pages[tab] || 'cars.html';
     window.location.href = page + '?q=' + encodeURIComponent(query);
   }
@@ -243,39 +248,46 @@
     const input = document.getElementById('searchInput');
     if (!input) return;
 
-    // Wrap input in ac-wrap div for dropdown positioning
-    const parent = input.parentElement;
-    const wrap = document.createElement('div');
-    wrap.className = 'search-ac-wrap';
-    parent.insertBefore(wrap, input);
-    wrap.appendChild(input);
-
-    // Create dropdown
-    const dd = document.createElement('div');
-    dd.id = 'search-ac-dropdown';
-    wrap.appendChild(dd);
+    // Create dropdown appended to body (escapes all overflow:hidden parents)
+    let dd = document.getElementById('search-ac-dropdown');
+    if (!dd) {
+      dd = document.createElement('div');
+      dd.id = 'search-ac-dropdown';
+      document.body.appendChild(dd);
+    }
 
     let debounceTimer;
-    input.addEventListener('input', () => {
+
+    function updateDropdown() {
       clearTimeout(debounceTimer);
       debounceTimer = setTimeout(() => {
         const q = input.value.trim();
         if (q.length < 2) { dd.classList.remove('open'); return; }
         const suggestions = buildSuggestions(q);
-        renderDropdown(q, suggestions);
+        renderDropdown(q, suggestions, input);
       }, 180);
-    });
+    }
+
+    input.addEventListener('input', updateDropdown);
 
     input.addEventListener('focus', () => {
       const q = input.value.trim();
       if (q.length >= 2) {
         const suggestions = buildSuggestions(q);
-        renderDropdown(q, suggestions);
+        renderDropdown(q, suggestions, input);
       }
     });
 
     input.addEventListener('blur', () => {
       setTimeout(() => dd.classList.remove('open'), 200);
+    });
+
+    // Reposition on scroll/resize
+    window.addEventListener('scroll', () => {
+      if (dd.classList.contains('open')) positionDropdown(input, dd);
+    }, { passive: true });
+    window.addEventListener('resize', () => {
+      if (dd.classList.contains('open')) positionDropdown(input, dd);
     });
 
     // Keyboard navigation
@@ -305,20 +317,18 @@
           e.preventDefault();
           active.dispatchEvent(new MouseEvent('mousedown'));
         }
-        // else let the default doSearch() handle it
       }
     });
 
     // Close on outside click
     document.addEventListener('click', (e) => {
-      if (!wrap.contains(e.target)) dd.classList.remove('open');
+      if (e.target !== input && !dd.contains(e.target)) dd.classList.remove('open');
     });
   }
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
   } else {
-    // Wait for shared.js / DM to load
     setTimeout(init, 150);
   }
 
