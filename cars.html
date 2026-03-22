@@ -94,6 +94,7 @@
     .listing-layout { display: grid; grid-template-columns: 270px 1fr; gap: 24px; padding: 28px 0 72px; align-items: start; }
 
     /* ── Sidebar ── */
+    .sidebar-mobile-header { display: none; justify-content: space-between; align-items: center; padding-bottom: 12px; margin-bottom: 8px; border-bottom: 1px solid var(--border); }
     .sidebar { position: relative; height: fit-content; }
     .sidebar::-webkit-scrollbar { width: 4px; }
     .sidebar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
@@ -169,8 +170,9 @@
     /* ── Mobile ── */
     @media (max-width: 900px) {
       .listing-layout { grid-template-columns: 1fr; gap: 0; padding: 0 0 48px; }
-      .sidebar { position: static; max-height: none; overflow: visible; display: none; }
-      .sidebar.open { display: block; padding: 16px 0; border-bottom: 1px solid var(--border); margin-bottom: 16px; }
+      .sidebar { position: fixed; top: 60px; left: 0; right: 0; bottom: 0; z-index: 900; background: var(--white); overflow-y: auto; display: none; padding: 16px; box-shadow: 0 4px 24px rgba(0,0,0,0.12); }
+      .sidebar.open { display: block; }
+      .sidebar-mobile-header { display: flex; }
       .btn-mobile-filter { display: inline-flex; align-items: center; gap: 6px; }
       .filter-bar .container { flex-wrap: wrap; }
       .filter-select-wide { min-width: 110px; }
@@ -244,6 +246,11 @@
 
     <!-- ── SIDEBAR ── -->
     <aside class="sidebar" id="sidebar">
+      <!-- Mobile close header -->
+      <div class="sidebar-mobile-header">
+        <span style="font-size:15px;font-weight:800;color:var(--dark);">Filters</span>
+        <button onclick="toggleSidebar()" style="background:none;border:none;font-size:22px;cursor:pointer;color:var(--dark);line-height:1;padding:0;">&times;</button>
+      </div>
 
       <!-- Price Range -->
       <div class="sidebar-card">
@@ -429,6 +436,7 @@
 
 <script src="vehicles.js"></script>
 <script src="shared.js"></script>
+<script src="lightbox.js"></script>
 <script src="components.js"></script>
 <script>
   /* ── Category detection ── */
@@ -586,7 +594,12 @@
 
   /* ── Mobile sidebar toggle ── */
   function toggleSidebar() {
-    document.getElementById('sidebar').classList.toggle('open');
+    const sb = document.getElementById('sidebar');
+    const isOpen = sb.classList.toggle('open');
+    // Lock background scroll on mobile when sidebar is open
+    if (window.innerWidth <= 768) {
+      document.body.style.overflow = isOpen ? 'hidden' : '';
+    }
   }
 
   /* ── Listings ── */
@@ -692,10 +705,11 @@
   /* ── Custom renderCard with Year / KMs / Regional Spec ── */
   function renderCard(l) {
     const spec = l.regionalSpec || 'GCC Specs';
+    const thumbSrc = l.img || (l.images && l.images[0]) || '';
     return `
       <div class="listing-card" onclick="window.location.href='listing.html?id=${l.id}'">
         <div class="card-img-wrap">
-          <img src="${l.img}" alt="${l.title}" loading="lazy" />
+          <img src="${thumbSrc}" alt="${l.title}" loading="lazy" />
           <span class="card-badge ${l.condition === 'Brand New' ? 'badge-new' : 'badge-used'}">${l.condition}</span>
           ${l.verified ? '<span class="card-verified">&#10003; Verified</span>' : ''}
         </div>

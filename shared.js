@@ -2319,10 +2319,11 @@ const DM = (() => {
   }
 
   function renderCard(l) {
+    const thumbSrc = l.img || (l.images && l.images[0]) || '';
     return `
       <div class="listing-card" onclick="window.location.href='listing.html?id=${l.id}'">
         <div class="card-img-wrap">
-          <img src="${l.img}" alt="${l.title}" loading="lazy" />
+          <img src="${thumbSrc}" alt="${l.title}" loading="lazy" />
           <span class="card-badge ${l.condition === 'Brand New' ? 'badge-new' : 'badge-used'}">${l.condition}</span>
           ${l.verified ? '<span class="card-verified">✓ Verified</span>' : ''}
         </div>

@@ -121,7 +121,10 @@ function renderNavbar(activePage = '') {
     hamburger.addEventListener('click', function(e) {
       e.stopPropagation();
       const menu = document.getElementById('mobile-nav-menu');
-      if (menu) menu.classList.toggle('open');
+      if (menu) {
+        const isOpen = menu.classList.toggle('open');
+        document.body.style.overflow = isOpen ? 'hidden' : '';
+      }
     });
   }
 
@@ -164,6 +167,7 @@ function renderNavbar(activePage = '') {
     const btn = document.getElementById('nav-hamburger-btn');
     if (menu && btn && !menu.contains(e.target) && !btn.contains(e.target)) {
       menu.classList.remove('open');
+      document.body.style.overflow = '';
     }
   });
 }

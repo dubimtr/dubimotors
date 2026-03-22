@@ -61,8 +61,9 @@
     .color-label{font-size:11px;color:var(--grey);margin-top:6px;min-height:14px}
     @media(max-width:900px){
       .listing-layout{grid-template-columns:1fr;gap:0;padding:0 0 48px}
-      .sidebar{position:static;max-height:none;overflow:visible;display:none}
-      .sidebar.open{display:block;padding:16px 0;border-bottom:1px solid var(--border);margin-bottom:16px}
+      .sidebar{position:fixed;top:60px;left:0;right:0;bottom:0;z-index:900;background:var(--white);overflow-y:auto;display:none;padding:16px;box-shadow:0 4px 24px rgba(0,0,0,0.12)}
+      .sidebar.open{display:block}
+      .sidebar-mobile-header{display:flex!important}
       .btn-mobile-filter{display:inline-flex;align-items:center;gap:6px}
       .page-hero .container{flex-direction:column;align-items:flex-start;gap:12px}
       .page-hero-title{font-size:22px}
@@ -111,6 +112,10 @@
 <div class="container">
   <div class="listing-layout">
     <aside class="sidebar" id="sidebar">
+      <div class="sidebar-mobile-header" style="display:none;justify-content:space-between;align-items:center;padding-bottom:12px;margin-bottom:8px;border-bottom:1px solid var(--border);">
+        <span style="font-size:15px;font-weight:800;">Filters</span>
+        <button onclick="toggleSidebar()" style="background:none;border:none;font-size:22px;cursor:pointer;line-height:1;padding:0;">&times;</button>
+      </div>
       <div class="sidebar-card">
         <div class="sidebar-title">Price Range (AED)</div>
         <div class="range-row">
@@ -214,6 +219,7 @@
 <div id="toast" class="toast"></div>
 <script src="vehicles.js"></script>
 <script src="shared.js"></script>
+<script src="lightbox.js"></script>
 <script src="components.js"></script>
 <script>
   renderNavbar('bikes');
@@ -280,7 +286,11 @@
     applyFilters();
   }
 
-  function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }
+  function toggleSidebar() {
+    const sb = document.getElementById('sidebar');
+    const isOpen = sb.classList.toggle('open');
+    if (window.innerWidth <= 768) { document.body.style.overflow = isOpen ? 'hidden' : ''; }
+  }
 
   let allListings = DM.getByCategory('bikes'), filtered = [...allListings], PER_PAGE = 9, currentPage = 1;
   let activeColors = new Set();
