@@ -616,6 +616,7 @@
   let currentPage = 1;
 
   // Pre-fill from URL
+  const urlSearchQ = (urlParams.get('q') || '').toLowerCase().trim();
   if (urlParams.get('city')) document.getElementById('filterCity').value = urlParams.get('city');
   if (urlParams.get('make')) {
     document.getElementById('filterMake').value = urlParams.get('make');
@@ -629,6 +630,7 @@
     const trim    = document.getElementById('filterTrim').value.toLowerCase();
     const condEl  = document.getElementById('filterCondition');
     const cond    = condEl ? condEl.value : '';
+    const searchQ = urlSearchQ;
     const minP    = parseFloat(document.getElementById('priceMin').value) || 0;
     const maxP    = parseFloat(document.getElementById('priceMax').value) || Infinity;
     const minYr   = parseInt(document.getElementById('yearMin').value) || 0;
@@ -649,6 +651,10 @@
     const colors  = activeColors.size ? [...activeColors] : [];
 
     filtered = allListings.filter(l => {
+      if (searchQ) {
+        const haystack = [l.title, l.make, l.model, l.trim, l.description].filter(Boolean).join(' ').toLowerCase();
+        if (!haystack.includes(searchQ)) return false;
+      }
       if (city && l.location !== city) return false;
       if (cond && l.condition !== cond) return false;
       if (make && !l.title.toLowerCase().includes(make)) return false;

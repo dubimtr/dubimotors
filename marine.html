@@ -300,6 +300,8 @@
   ];
   let filtered = [...allListings], PER_PAGE = 9, currentPage = 1;
   let activeColors = new Set();
+  const urlParamsMarine = new URLSearchParams(window.location.search);
+  const urlSearchQMarine = (urlParamsMarine.get('q') || '').toLowerCase().trim();
 
   /* ── Populate Makes dropdown ── */
   const allMakes = [...new Set(allListings.map(l => l.make || (l.title || '').split(' ')[0]).filter(Boolean))].sort();
@@ -360,6 +362,10 @@
     const lenMax = parseFloat(document.getElementById('lenMax').value) || Infinity;
 
     filtered = allListings.filter(l => {
+      if (urlSearchQMarine) {
+        const haystack = [l.title, l.make, l.model, l.description].filter(Boolean).join(' ').toLowerCase();
+        if (!haystack.includes(urlSearchQMarine)) return false;
+      }
       if (type && l.category !== type) return false;
       if (city && l.location && !l.location.includes(city)) return false;
       if (make && !(l.make || l.title || '').toLowerCase().includes(make)) return false;

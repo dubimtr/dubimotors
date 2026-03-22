@@ -303,6 +303,8 @@
 
   let allListings = DM.getByCategory('heavy'), filtered = [...allListings], PER_PAGE = 9, currentPage = 1;
   let activeColors = new Set();
+  const urlParamsHeavy = new URLSearchParams(window.location.search);
+  const urlSearchQHeavy = (urlParamsHeavy.get('q') || '').toLowerCase().trim();
 
   function toggleColor(el) {
     const c = el.dataset.color;
@@ -331,6 +333,10 @@
     const colors = activeColors.size ? [...activeColors] : [];
 
     filtered = allListings.filter(l => {
+      if (urlSearchQHeavy) {
+        const haystack = [l.title, l.make, l.model, l.description].filter(Boolean).join(' ').toLowerCase();
+        if (!haystack.includes(urlSearchQHeavy)) return false;
+      }
       if (city && l.location && !l.location.includes(city)) return false;
       if (make && !(l.make || l.title || '').toLowerCase().includes(make)) return false;
       if (model && !(l.model || l.title || '').toLowerCase().includes(model)) return false;
