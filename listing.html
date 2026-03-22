@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Listing Detail — DUBIMOTORS</title>
   <link rel="stylesheet" href="style.css" />
+  <link href="https://api.mapbox.com/mapbox-gl-js/v3.2.0/mapbox-gl.css" rel="stylesheet" />
   <style>
     .listing-detail-layout {
       display: grid;
@@ -150,6 +151,7 @@
     .specs-table td:last-child { font-weight: 600; color: var(--dark); }
 
     .description-text { font-size: 14px; color: #555; line-height: 1.8; }
+    .location-address { font-size: 13px; color: var(--grey); line-height: 1.5; }
 
     /* SIDEBAR */
     .detail-sidebar {}
@@ -164,7 +166,7 @@
     .price-card-sub { font-size: 13px; color: var(--grey); margin-bottom: 20px; }
     .price-card-actions { display: flex; flex-direction: column; gap: 10px; }
     .btn-call {
-      background: var(--orange);
+      background: #16a34a;
       color: var(--white);
       border: none;
       border-radius: 10px;
@@ -179,7 +181,7 @@
       transition: background 0.2s;
       text-decoration: none;
     }
-    .btn-call:hover { background: var(--orange-hover); }
+    .btn-call:hover { background: #15803d; }
     .btn-whatsapp {
       background: #25D366;
       color: var(--white);
@@ -433,13 +435,18 @@
           <table class="specs-table" id="specs-table"></table>
         </div>
 
-        <div class="detail-section">
+         <div class="detail-section">
           <div class="detail-section-title">Description</div>
           <div class="description-text" id="detail-desc"></div>
         </div>
+        <!-- LOCATION MAP SECTION -->
+        <div class="detail-section" id="location-section" style="display:none">
+          <div class="detail-section-title">Location</div>
+          <div class="location-address" id="location-address"></div>
+          <div id="listing-map" style="width:100%;height:320px;border-radius:12px;overflow:hidden;margin-top:12px;border:1px solid var(--border);"></div>
+        </div>
       </div>
     </div>
-
     <!-- RIGHT: SIDEBAR -->
     <div class="detail-sidebar">
       <div class="price-card">
@@ -518,7 +525,7 @@
       </div>
       <a class="section-link" id="similar-link" href="cars.html">View All →</a>
     </div>
-    <div class="listings-grid" id="similar-grid"></div>
+    <div class="listings-grid cols-2" id="similar-grid"></div>
   </div>
 </section>
 
@@ -574,6 +581,7 @@
   </div>
 </div>
 
+<script src="https://api.mapbox.com/mapbox-gl-js/v3.2.0/mapbox-gl.js"></script>
 <script src="shared.js"></script>
 <script src="components.js"></script>
 <script src="lightbox.js"></script>
@@ -733,6 +741,39 @@
     // ── MODAL CAR INFO ──
     document.getElementById('modal-car-text').textContent =
       `${listing.title} · ${DM.formatPrice(listing.price)} · ${listing.year} · ${listing.location}`;
+
+    // ── LOCATION MAP ──
+    if (listing.lat && listing.lng) {
+      document.getElementById('location-section').style.display = '';
+      document.getElementById('location-address').textContent = listing.locationAddress || listing.location + ', UAE';
+      // Init Mapbox map
+      mapboxgl.accessToken = 'pk.eyJ1IjoiZHViaW1vdG9ycyIsImEiOiJjbHlhYmNkZWYwMDAxMmpxcGFiY2RlZjAwIn0.placeholder';
+      // Use free OpenStreetMap tiles via mapbox-gl-js compatible style
+      const map = new mapboxgl.Map({
+        container: 'listing-map',
+        style: {
+          version: 8,
+          sources: {
+            osm: {
+              type: 'raster',
+              tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
+              tileSize: 256,
+              attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }
+          },
+          layers: [{ id: 'osm', type: 'raster', source: 'osm' }]
+        },
+        center: [listing.lng, listing.lat],
+        zoom: 14,
+        attributionControl: false
+      });
+      map.addControl(new mapboxgl.AttributionControl({ compact: true }));
+      map.addControl(new mapboxgl.NavigationControl({ showCompass: false }), 'bottom-right');
+      // Add marker
+      new mapboxgl.Marker({ color: '#E84118' })
+        .setLngLat([listing.lng, listing.lat])
+        .addTo(map);
+    }
   }
 
   function switchImgIdx(idx) {

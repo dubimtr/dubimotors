@@ -38,6 +38,8 @@ const DM = (() => {
       serviceHistory: true,
       addedDate: '2026-03-19',
       sourceUrl: 'https://gtacars.ae/gta-showrooms/2024-jetour-t2-traveler-jetour-warrantyfull-service-history-gcc/',
+      lat: 25.1442, lng: 55.2248,
+      locationAddress: 'Al Quoz Industrial Area 1, Al Quoz, Dubai, UAE',
       mainImg: 'gta-images/gta-001-img04.jpeg',
       images: [
         'gta-images/gta-001-img04.jpeg',
@@ -85,6 +87,8 @@ const DM = (() => {
       serviceHistory: true,
       addedDate: '2026-03-19',
       sourceUrl: 'https://gtacars.ae/gta-showrooms/2021-bmw-x5-xdrive40i-m-sport-hamann-kit-bmw-warranty-bmw-service-history-gcc/',
+      lat: 25.1442, lng: 55.2248,
+      locationAddress: 'Al Quoz Industrial Area 1, Al Quoz, Dubai, UAE',
       mainImg: 'gta-images/gta-002-img04.jpeg',
       images: [
         'gta-images/gta-002-img04.jpeg',
@@ -131,6 +135,8 @@ const DM = (() => {
       serviceHistory: true,
       addedDate: '2026-03-19',
       sourceUrl: 'https://gtacars.ae/gta-showrooms/2025-bmw-x6m-competition-2031-bmw-warranty-and-service-pack-bmw-service-history-gcc/',
+      lat: 25.1442, lng: 55.2248,
+      locationAddress: 'Al Quoz Industrial Area 1, Al Quoz, Dubai, UAE',
       mainImg: 'gta-images/gta-003-img04.jpeg',
       images: [
         'gta-images/gta-003-img04.jpeg',
@@ -177,6 +183,8 @@ const DM = (() => {
       serviceHistory: true,
       addedDate: '2026-03-19',
       sourceUrl: 'https://gtacars.ae/gta-showrooms/2022-bentley-bentayga-v8-service-history-1-year-warranty-excellent-condition/',
+      lat: 25.1442, lng: 55.2248,
+      locationAddress: 'Al Quoz Industrial Area 1, Al Quoz, Dubai, UAE',
       mainImg: 'gta-images/gta-004-img04.jpeg',
       images: [
         'gta-images/gta-004-img04.jpeg',
@@ -223,6 +231,8 @@ const DM = (() => {
       serviceHistory: true,
       addedDate: '2026-03-18',
       sourceUrl: 'https://gtacars.ae/gta-showrooms/2022-lamborghini-urus-28-10-2026-lamborghini-warranty-lamborghini-service-history-gcc/',
+      lat: 25.1442, lng: 55.2248,
+      locationAddress: 'Al Quoz Industrial Area 1, Al Quoz, Dubai, UAE',
       mainImg: 'gta-images/gta-005-img04.jpeg',
       images: [
         'gta-images/gta-005-img04.jpeg',
@@ -2414,22 +2424,23 @@ const DM = (() => {
     if (l.warranty) featureTags.push('Warranty');
     if (l.serviceHistory) featureTags.push('Service History');
     if (l.serviceContract) featureTags.push('Service Contract');
-    if (l.condition === 'Brand New') featureTags.push('Brand New');
     const tagsHTML = featureTags.length
-      ? '<div class="card-feature-tags">' + featureTags.map(t => `<span class="tag-purple">${t}</span>`).join('') + '</div>'
+      ? featureTags.map(t => `<span class="tag-purple">${t}</span>`).join('')
       : '';
     // Posted date
     const postedHTML = l.addedDate
       ? `<div class="card-posted">Posted: ${formatRelativeDate(l.addedDate)}</div>`
       : '';
-    // Contact buttons
+    // Contact buttons - icon only
     const phone = l.phone || '';
     const waMsg = encodeURIComponent('Hi, I am interested in the ' + l.title + ' listed on DubiMotors for ' + formatPrice(l.price));
     const contactHTML = phone ? `
       <div class="card-contact-btns">
-        <a class="btn-call" href="tel:${phone}" onclick="event.stopPropagation()" aria-label="Call seller">📞 Call</a>
-        <a class="btn-whatsapp" href="https://wa.me/${phone.replace(/[^0-9]/g,'')}?text=${waMsg}" target="_blank" onclick="event.stopPropagation()" aria-label="WhatsApp seller">WhatsApp</a>
+        <a class="btn-call-icon" href="tel:${phone}" onclick="event.stopPropagation()" aria-label="Call seller" title="Call seller"><svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81 19.79 19.79 0 01.0 1.18 2 2 0 012 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92z'/></svg></a>
+        <a class="btn-wa-icon" href="https://wa.me/${phone.replace(/[^0-9]/g,'')}?text=${waMsg}" target="_blank" onclick="event.stopPropagation()" aria-label="WhatsApp seller" title="WhatsApp seller"><svg viewBox='0 0 24 24' fill='currentColor'><path d='M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z'/><path d='M12 0C5.373 0 0 5.373 0 12c0 2.123.554 4.118 1.528 5.845L0 24l6.335-1.508A11.942 11.942 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.818 9.818 0 01-5.006-1.374l-.36-.213-3.76.895.952-3.653-.234-.374A9.818 9.818 0 1112 21.818z'/></svg></a>
       </div>` : '';
+    // Location + tags row
+    const locTagsHTML = `<div class="card-loc-tags-row"><span class="card-location">📍 ${l.location}</span>${tagsHTML ? '<div class="card-tags-inline">' + tagsHTML + '</div>' : ''}</div>`;
     return `
       <div class="listing-card" onclick="window.location.href='listing.html?id=${l.id}'">
         <div class="card-img-wrap">
@@ -2448,8 +2459,7 @@ const DM = (() => {
             <span class="pill">${l.km === 0 ? '0 KM' : l.km.toLocaleString() + ' KM'}</span>
             <span class="pill">${l.regionalSpec || 'GCC Specs'}</span>
           </div>
-          ${tagsHTML}
-          <div class="card-location">📍 ${l.location}</div>
+          ${locTagsHTML}
         </div>
         <div class="card-footer">
           <div class="card-seller">${l.seller}</div>

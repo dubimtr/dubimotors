@@ -324,6 +324,8 @@ input, textarea, select { font-family: 'Inter', sans-serif; }
   border: 1px solid var(--border);
   transition: box-shadow 0.2s, transform 0.2s;
   cursor: pointer;
+  display: flex;
+  flex-direction: column;
 }
 .listing-card:hover {
   box-shadow: var(--shadow-hover);
@@ -364,7 +366,7 @@ input, textarea, select { font-family: 'Inter', sans-serif; }
   padding: 3px 10px;
   border-radius: 20px;
 }
-.card-body { padding: 14px 16px 10px; }
+.card-body { padding: 14px 16px 10px; flex: 1; display: flex; flex-direction: column; }
 .card-price {
   font-size: 20px;
   font-weight: 900;
@@ -377,6 +379,12 @@ input, textarea, select { font-family: 'Inter', sans-serif; }
   color: var(--dark);
   margin-bottom: 10px;
   line-height: 1.35;
+  /* Clamp to 2 lines, ellipsis on overflow */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  min-height: calc(1.35em * 2); /* always reserve 2 lines of space */
 }
 .card-pills {
   display: flex;
@@ -436,12 +444,6 @@ input, textarea, select { font-family: 'Inter', sans-serif; }
   white-space: nowrap;
   flex-shrink: 0;
 }
-.card-feature-tags {
-  display: flex;
-  gap: 5px;
-  flex-wrap: wrap;
-  margin: 6px 0 4px;
-}
 .tag-purple {
   background: #7c3aed;
   color: #fff;
@@ -450,6 +452,24 @@ input, textarea, select { font-family: 'Inter', sans-serif; }
   padding: 3px 9px;
   border-radius: 20px;
   letter-spacing: 0.2px;
+  white-space: nowrap;
+}
+/* Location + tags on same row — pushed to bottom of card-body */
+.card-loc-tags-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  margin-top: auto;
+  padding-top: 6px;
+  flex-wrap: wrap;
+}
+.card-tags-inline {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  flex-shrink: 0;
 }
 .card-footer-right {
   display: flex;
@@ -460,40 +480,39 @@ input, textarea, select { font-family: 'Inter', sans-serif; }
   display: flex;
   gap: 5px;
 }
-.btn-call {
+/* Icon-only call/whatsapp buttons */
+.btn-call-icon, .btn-wa-icon {
   display: inline-flex;
   align-items: center;
-  gap: 3px;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  transition: opacity 0.2s, transform 0.1s;
+  flex-shrink: 0;
+}
+.btn-call-icon:hover, .btn-wa-icon:hover { opacity: 0.85; transform: scale(1.05); }
+.btn-call-icon {
   background: #16a34a;
   color: #fff;
-  border: none;
-  border-radius: 7px;
-  padding: 7px 11px;
-  font-size: 11px;
-  font-weight: 700;
-  text-decoration: none;
-  cursor: pointer;
-  transition: background 0.2s;
-  white-space: nowrap;
 }
-.btn-call:hover { background: #15803d; }
-.btn-whatsapp {
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
+.btn-call-icon svg {
+  width: 16px;
+  height: 16px;
+  stroke: #fff;
+}
+.btn-wa-icon {
   background: #25d366;
   color: #fff;
-  border: none;
-  border-radius: 7px;
-  padding: 7px 11px;
-  font-size: 11px;
-  font-weight: 700;
-  text-decoration: none;
-  cursor: pointer;
-  transition: background 0.2s;
-  white-space: nowrap;
 }
-.btn-whatsapp:hover { background: #128c7e; }
+.btn-wa-icon svg {
+  width: 16px;
+  height: 16px;
+  fill: #fff;
+}
 
 /* ─── BUTTONS ─── */
 .btn-primary {
@@ -806,13 +825,14 @@ select.form-input { appearance: none; background-image: url("data:image/svg+xml,
   .listings-grid.cols-3 { grid-template-columns: repeat(2, 1fr); }  /* Override cols-3 on mobile */
   .card-img-wrap { height: 160px; }
   .card-price { font-size: 16px; }
-  .card-title { font-size: 13px; }
+  .card-title { font-size: 13px; min-height: calc(1.35em * 2); }
   .card-body { padding: 10px 12px 8px; }
   .card-footer { padding: 8px 12px 12px; flex-wrap: wrap; gap: 6px; }
   .card-seller { font-size: 10px; max-width: 90px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .pill { font-size: 9px; padding: 2px 7px; }
   .tag-purple { font-size: 9px; padding: 2px 7px; }
-  .btn-call, .btn-whatsapp { font-size: 10px; padding: 6px 9px; }
+  .btn-call-icon, .btn-wa-icon { width: 30px; height: 30px; border-radius: 7px; }
+  .btn-call-icon svg, .btn-wa-icon svg { width: 14px; height: 14px; }
   .btn-sm-orange { font-size: 11px; padding: 6px 11px; }
   .card-posted { font-size: 9px; }
 }
