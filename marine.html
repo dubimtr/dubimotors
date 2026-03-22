@@ -19,7 +19,9 @@
     .brand-strip-inner::-webkit-scrollbar{display:none}
     .brand-logo-btn{display:flex;flex-direction:column;align-items:center;gap:5px;padding:8px 12px;border:1.5px solid var(--border);border-radius:10px;cursor:pointer;background:var(--white);flex-shrink:0;transition:border-color .2s,background .2s;min-width:68px}
     .brand-logo-btn:hover,.brand-logo-btn.active{border-color:var(--orange);background:#FFF8F6}
-    .brand-logo-btn img{width:40px;height:28px;object-fit:contain;filter:grayscale(30%)}
+    .brand-logo-btn{width:80px}
+    .brand-logo-btn .logo-wrap{width:56px;height:36px;display:flex;align-items:center;justify-content:center;overflow:hidden}
+    .brand-logo-btn img{max-width:56px;max-height:36px;width:auto;height:auto;object-fit:contain;filter:grayscale(30%);display:block}
     .brand-logo-btn:hover img,.brand-logo-btn.active img{filter:grayscale(0%)}
     .brand-logo-btn span{font-size:10px;font-weight:700;color:#555;white-space:nowrap}
     .brand-logo-btn.active span{color:var(--orange)}
@@ -271,10 +273,13 @@
       const btn = document.createElement('button');
       btn.className = 'brand-logo-btn';
       btn.dataset.brand = b.name;
+      const wrap = document.createElement('div');
+      wrap.className = 'logo-wrap';
       const img = document.createElement('img');
       img.src = b.logo; img.alt = b.name;
       img.onerror = () => { img.style.display='none'; };
-      btn.appendChild(img);
+      wrap.appendChild(img);
+      btn.appendChild(wrap);
       const s = document.createElement('span'); s.textContent = b.name;
       btn.appendChild(s);
       btn.onclick = () => {

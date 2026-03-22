@@ -45,7 +45,9 @@
       min-width: 68px;
     }
     .brand-logo-btn:hover, .brand-logo-btn.active { border-color: var(--orange); background: #FFF8F6; }
-    .brand-logo-btn img { width: 40px; height: 28px; object-fit: contain; filter: grayscale(30%); }
+    .brand-logo-btn { width: 80px; }
+    .brand-logo-btn .logo-wrap { width: 56px; height: 36px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+    .brand-logo-btn img { max-width: 56px; max-height: 36px; width: auto; height: auto; object-fit: contain; filter: grayscale(30%); display: block; }
     .brand-logo-btn:hover img, .brand-logo-btn.active img { filter: grayscale(0%); }
     .brand-logo-btn span { font-size: 10px; font-weight: 700; color: #555; white-space: nowrap; }
     .brand-logo-btn.active span { color: var(--orange); }
@@ -231,11 +233,14 @@
     </select>
     <select class="filter-select filter-select-wide" id="filterModel" onchange="onTopModelChange()" disabled>
       <option value="">All Models</option>
-    </select>
-    <select class="filter-select filter-select-wide" id="filterTrim" onchange="applyFilters()" disabled>
+    </select>    <select class="filter-select filter-select-wide" id="filterTrim" onchange="onTopTrimChange()" disabled>
       <option value="">All Trims</option>
     </select>
-    <div class="filter-count" id="filter-count"></div>
+    <select class="filter-select" id="filterCondition" onchange="applyFilters()">
+      <option value="">New &amp; Used</option>
+      <option value="Brand New">Brand New</option>
+      <option value="Used">Used</option>
+    </select>   <div class="filter-count" id="filter-count"></div>
     <button class="btn-filter-reset" onclick="resetFilters()">Clear</button>
   </div>
 </div>
@@ -493,20 +498,22 @@
       const btn = document.createElement('button');
       btn.className = 'brand-logo-btn';
       btn.dataset.brand = b.name;
-      // Use actual logo image
+      // Use actual logo image inside fixed-size wrapper
+      const wrap = document.createElement('div');
+      wrap.className = 'logo-wrap';
       const img = document.createElement('img');
       img.src = b.logo;
       img.alt = b.name;
-      img.style.cssText = 'width:44px;height:30px;object-fit:contain;';
       // Fallback: if image fails, show text badge
       img.onerror = function() {
         const abbr = b.name.length > 6 ? b.name.substring(0,3).toUpperCase() : b.name.toUpperCase();
         const div = document.createElement('div');
-        div.style.cssText = 'width:44px;height:30px;display:flex;align-items:center;justify-content:center;background:#1A1A1A;border-radius:6px;font-size:9px;font-weight:900;color:white;';
+        div.style.cssText = 'width:56px;height:36px;display:flex;align-items:center;justify-content:center;background:#1A1A1A;border-radius:6px;font-size:9px;font-weight:900;color:white;';
         div.textContent = abbr;
-        this.parentNode.replaceChild(div, this);
+        wrap.replaceChild(div, this);
       };
-      btn.appendChild(img);
+      wrap.appendChild(img);
+      btn.appendChild(wrap);
       const span = document.createElement('span');
       span.textContent = b.name;
       btn.appendChild(span);
@@ -620,6 +627,8 @@
     const make    = document.getElementById('filterMake').value.toLowerCase();
     const model   = document.getElementById('filterModel').value.toLowerCase();
     const trim    = document.getElementById('filterTrim').value.toLowerCase();
+    const condEl  = document.getElementById('filterCondition');
+    const cond    = condEl ? condEl.value : '';
     const minP    = parseFloat(document.getElementById('priceMin').value) || 0;
     const maxP    = parseFloat(document.getElementById('priceMax').value) || Infinity;
     const minYr   = parseInt(document.getElementById('yearMin').value) || 0;
@@ -641,6 +650,7 @@
 
     filtered = allListings.filter(l => {
       if (city && l.location !== city) return false;
+      if (cond && l.condition !== cond) return false;
       if (make && !l.title.toLowerCase().includes(make)) return false;
       if (model && !l.title.toLowerCase().includes(model)) return false;
       if (trim && !l.title.toLowerCase().includes(trim)) return false;
@@ -770,6 +780,8 @@
     document.getElementById('filterModel').disabled = true;
     document.getElementById('filterTrim').innerHTML = '<option value="">All Trims</option>';
     document.getElementById('filterTrim').disabled = true;
+    const condEl2 = document.getElementById('filterCondition');
+    if (condEl2) condEl2.value = '';
     document.getElementById('priceMin').value = '';
     document.getElementById('priceMax').value = '';
     document.getElementById('yearMin').value = '';
