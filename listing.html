@@ -18,14 +18,15 @@
       border-radius: 16px;
       overflow: hidden;
       height: 460px;
-      background: #EEE;
+      background: #f8f8f8;
       position: relative;
     }
     .gallery-main img {
       width: 100%;
       height: 100%;
-      object-fit: cover;
+      object-fit: contain;
       cursor: zoom-in;
+      background: #f8f8f8;
     }
     .gallery-main:hover::after {
       content: '🔍 Click to expand';
@@ -77,7 +78,7 @@
       transition: border-color 0.2s;
     }
     .gallery-thumb.active { border-color: var(--orange); }
-    .gallery-thumb img { width: 100%; height: 100%; object-fit: cover; }
+    .gallery-thumb img { width: 100%; height: 100%; object-fit: contain; background: #f8f8f8; }
     /* Carousel nav arrows */
     .gallery-nav { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.55); color: #fff; border: none; border-radius: 50%; width: 40px; height: 40px; font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 5; transition: background 0.2s; }
     .gallery-nav:hover { background: rgba(0,0,0,0.8); }
@@ -623,7 +624,8 @@
     document.getElementById('breadcrumb-bar').innerHTML = bcHTML;
 
     // ── GALLERY ──
-    const heroImg = listing.mainImg || listing.img || (listing.images && listing.images[0]) || '';
+    // Prefer images[0] (full-res) over listing.img (which may be a low-res CDN thumbnail)
+    const heroImg = listing.mainImg || (listing.images && listing.images[0]) || listing.img || '';
     document.getElementById('main-img').src = heroImg;
     document.getElementById('main-img').alt = listing.title;
     const badge = document.getElementById('gallery-badge');
