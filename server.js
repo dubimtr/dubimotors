@@ -10,13 +10,37 @@ const path = require('path');
 const nodemailer = require('nodemailer');
 
 const OpenAI = require('openai');
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-  baseURL: process.env.OPENAI_BASE_URL || undefined,
+
+// ── Lazy OpenAI client ──
+// Initialize only when first needed. This prevents the server from crashing
+// on startup if OPENAI_API_KEY is missing — instead, individual AI endpoints
+// return a clean 503 and the rest of the static site keeps working.
+let _openai = null;
+function getOpenAI() {
+  if (_openai) return _openai;
+  if (!process.env.OPENAI_API_KEY) {
+    const err = new Error('OPENAI_API_KEY is not configured');
+    err.code = 'OPENAI_KEY_MISSING';
+    throw err;
+  }
+  _openai = new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY,
+    baseURL: process.env.OPENAI_BASE_URL || undefined,
+  });
+  return _openai;
+}
+
+// Backwards-compat shim so existing handlers using `openai.chat.completions.create(...)` still work.
+const openai = new Proxy({}, {
+  get(_, prop) {
+    const client = getOpenAI();
+    return client[prop];
+  }
 });
 
 const PORT = process.env.PORT || 8080;
 const STATIC_DIR = __dirname;
+const NODE_ENV = process.env.NODE_ENV || 'development';
 
 // ── MIME types ──
 const MIME = {
@@ -76,12 +100,27 @@ function jsonRes(res, data, status = 200) {
   res.end(JSON.stringify(data));
 }
 
+// ── AI availability guard ──
+// Call at the top of each AI handler. Returns true (and writes 503) if AI is unavailable,
+// so the caller can simply: `if (!aiAvailable(res)) return;`
+function aiAvailable(res) {
+  if (!process.env.OPENAI_API_KEY) {
+    jsonRes(res, {
+      error: 'AI service unavailable',
+      reply: 'The AI assistant is temporarily offline. Please try again later or contact support.',
+    }, 503);
+    return false;
+  }
+  return true;
+}
+
 // ══════════════════════════════════════════════════════════════════════════
 // API HANDLERS
 // ══════════════════════════════════════════════════════════════════════════
 
 /* ── /api/agent — Dubi Agent chat ── */
 async function handleAgent(req, res) {
+  if (!aiAvailable(res)) return;
   const { message, history = [] } = await parseBody(req);
   if (!message) return jsonRes(res, { reply: 'Please send a message.' }, 400);
 
@@ -122,6 +161,7 @@ Your role is to:
 
 /* ── /api/analyze-photos — AI photo vehicle detection ── */
 async function handleAnalyzePhotos(req, res) {
+  if (!aiAvailable(res)) return;
   const { files } = await parseMultipart(req);
   if (!files.length) return jsonRes(res, { error: 'No photos received.' }, 400);
 
@@ -359,6 +399,7 @@ Return ONLY the raw JSON object.`;
 
 /* ── /api/mulkiya-scan — Scan UAE Mulkiya (registration card) for VIN ── */
 async function handleMulkiyaScan(req, res) {
+  if (!aiAvailable(res)) return;
   const { files } = await parseMultipart(req);
   if (!files.length) return jsonRes(res, { error: 'No image received.' }, 400);
 
@@ -509,6 +550,7 @@ async function scrapeDubicarsPrice(brand, model, year) {
 }
 
 async function handlePriceEstimate(req, res) {
+  if (!aiAvailable(res)) return;
   const { brand, model, trim, year, km, condition } = await parseBody(req);
   if (!brand || !model || !year) return jsonRes(res, { error: 'Brand, model and year are required.' }, 400);
 
@@ -653,6 +695,7 @@ async function sendVerificationEmail(to, listingData) {
 }
 
 async function handleVerifyListing(req, res) {
+  if (!aiAvailable(res)) return;
   const body = await parseBody(req);
   const { brand, model, trim, year, price, km, condition, desc, location, name, phone, email } = body;
 
@@ -763,26 +806,77 @@ const server = http.createServer(async (req, res) => {
     if (url === '/api/verify-listing') return handleVerifyListing(req, res);
   }
 
-  // Static file serving
-  let filePath = path.join(STATIC_DIR, url === '/' ? 'index.html' : url);
-  if (!path.extname(filePath)) filePath += '.html';
+  // Security headers (apply to all non-API responses too)
+  const securityHeaders = {
+    'X-Content-Type-Options': 'nosniff',
+    'X-Frame-Options': 'SAMEORIGIN',
+    'Referrer-Policy': 'strict-origin-when-cross-origin',
+    'Permissions-Policy': 'geolocation=(self), camera=(), microphone=()',
+  };
 
-  fs.readFile(filePath, (err, data) => {
+  // Static file serving
+  let requestedPath = url === '/' ? '/index.html' : url;
+  if (!path.extname(requestedPath)) requestedPath += '.html';
+
+  // Path traversal protection: resolve and ensure result stays inside STATIC_DIR
+  const filePath = path.join(STATIC_DIR, requestedPath);
+  const resolved = path.resolve(filePath);
+  if (!resolved.startsWith(path.resolve(STATIC_DIR))) {
+    res.writeHead(403, { 'Content-Type': 'text/plain', ...securityHeaders });
+    return res.end('Forbidden');
+  }
+
+  fs.readFile(resolved, (err, data) => {
+    const ext = path.extname(resolved).toLowerCase();
+
     if (err) {
-      // Try index.html fallback
-      fs.readFile(path.join(STATIC_DIR, 'index.html'), (e2, d2) => {
-        if (e2) { res.writeHead(404); return res.end('Not found'); }
-        res.writeHead(200, { 'Content-Type': 'text/html' });
+      // Real 404 — do NOT fall back to index.html (that would break SEO and mask broken links).
+      // Serve a friendly 404 page if it exists, otherwise a plain text 404.
+      const notFoundPath = path.join(STATIC_DIR, '404.html');
+      fs.readFile(notFoundPath, (e2, d2) => {
+        if (e2) {
+          res.writeHead(404, { 'Content-Type': 'text/plain', ...securityHeaders });
+          return res.end('404 Not Found');
+        }
+        res.writeHead(404, { 'Content-Type': 'text/html; charset=utf-8', ...securityHeaders });
         res.end(d2);
       });
       return;
     }
-    const ext = path.extname(filePath);
-    res.writeHead(200, { 'Content-Type': MIME[ext] || 'application/octet-stream' });
+
+    // Cache strategy:
+    //   - HTML: no-cache (always check for updates, but allow conditional GET)
+    //   - Images / fonts: 30 days, immutable hint
+    //   - CSS / JS: 1 day (no fingerprinting yet, so don't cache too long)
+    let cacheControl;
+    if (ext === '.html') {
+      cacheControl = 'no-cache, must-revalidate';
+    } else if (['.png', '.jpg', '.jpeg', '.webp', '.svg', '.ico', '.woff', '.woff2'].includes(ext)) {
+      cacheControl = 'public, max-age=2592000, immutable'; // 30 days
+    } else if (['.css', '.js'].includes(ext)) {
+      cacheControl = 'public, max-age=86400'; // 1 day
+    } else {
+      cacheControl = 'public, max-age=3600';
+    }
+
+    res.writeHead(200, {
+      'Content-Type': MIME[ext] || 'application/octet-stream',
+      'Cache-Control': cacheControl,
+      ...securityHeaders,
+    });
     res.end(data);
   });
 });
 
 server.listen(PORT, () => {
-  console.log(`DUBIMOTORS server running on http://localhost:${PORT}`);
+  console.log(`DUBIMOTORS server running on http://localhost:${PORT} (${NODE_ENV})`);
+  // Surface missing env config at boot so it doesn't bite us in production.
+  const warnings = [];
+  if (!process.env.OPENAI_API_KEY) warnings.push('OPENAI_API_KEY not set — AI endpoints will return 503');
+  if (!process.env.SMTP_HOST && !process.env.SMTP_USER) warnings.push('SMTP not configured — listing verification emails will be skipped');
+  if (warnings.length) {
+    console.warn('\n⚠  Configuration warnings:');
+    warnings.forEach(w => console.warn(`   • ${w}`));
+    console.warn('');
+  }
 });

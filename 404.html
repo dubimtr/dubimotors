@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Page Not Found — DubiMotors</title>
+  <meta name="robots" content="noindex, follow" />
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .err-wrap {
+      min-height: calc(100vh - 200px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 60px 20px;
+      text-align: center;
+    }
+    .err-card {
+      max-width: 520px;
+    }
+    .err-code {
+      font-size: clamp(72px, 14vw, 140px);
+      font-weight: 900;
+      line-height: 1;
+      color: var(--orange);
+      letter-spacing: -3px;
+      margin-bottom: 12px;
+    }
+    .err-title {
+      font-size: clamp(22px, 3.5vw, 32px);
+      font-weight: 800;
+      color: var(--dark);
+      margin-bottom: 12px;
+    }
+    .err-msg {
+      font-size: 16px;
+      color: var(--grey);
+      line-height: 1.6;
+      margin-bottom: 28px;
+    }
+    .err-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .err-actions a {
+      display: inline-block;
+      padding: 12px 24px;
+      border-radius: var(--radius);
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.18s ease;
+    }
+    .err-btn-primary {
+      background: var(--orange);
+      color: var(--white);
+    }
+    .err-btn-primary:hover { background: var(--orange-hover); }
+    .err-btn-secondary {
+      background: var(--light-grey);
+      color: var(--dark);
+    }
+    .err-btn-secondary:hover { background: var(--border); }
+  </style>
+</head>
+<body>
+  <div id="header-mount"></div>
+  <main class="err-wrap">
+    <div class="err-card">
+      <div class="err-code">404</div>
+      <h1 class="err-title">This page took a wrong turn</h1>
+      <p class="err-msg">The page you're looking for doesn't exist or may have been moved. Let's get you back on the road.</p>
+      <div class="err-actions">
+        <a href="/" class="err-btn-primary">← Back to Home</a>
+        <a href="/cars.html" class="err-btn-secondary">Browse Cars</a>
+      </div>
+    </div>
+  </main>
+  <div id="footer-mount"></div>
+  <script src="components.js" defer></script>
+</body>
+</html>
