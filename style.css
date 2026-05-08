@@ -1,5 +1,5 @@
 /* ─── DUBIMOTORS GLOBAL STYLES ──────────────────────────────────────────────── */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+/* Note: Inter font is loaded via <link rel="preconnect"> + <link rel="stylesheet"> in HTML <head> for faster delivery */
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -10,7 +10,7 @@
   --dark2: #161616;
   --dark3: #1E1E1E;
   --mid: #2A2A2A;
-  --grey: #888;
+  --grey: #666;
   --light-grey: #F5F5F5;
   --border: #E8E8E8;
   --white: #FFFFFF;
@@ -597,7 +597,7 @@ input, textarea, select { font-family: 'Inter', sans-serif; }
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
-.form-label-white { color: #888; }
+.form-label-white { color: var(--grey); }
 .form-input {
   background: var(--white);
   border: 1.5px solid var(--border);
@@ -661,7 +661,7 @@ select.form-input { appearance: none; background-image: url("data:image/svg+xml,
   border: 1px solid #2A2A2A;
   transition: background 0.2s, border-color 0.2s;
   cursor: pointer;
-  color: #888;
+  color: var(--grey);
 }
 .social-btn:hover { background: var(--orange); border-color: var(--orange); color: var(--white); }
 .social-btn svg { width: 16px; height: 16px; fill: currentColor; }
@@ -691,7 +691,7 @@ select.form-input { appearance: none; background-image: url("data:image/svg+xml,
 .footer-copy { font-size: 12px; color: #444; }
 .footer-legal { display: flex; gap: 20px; }
 .footer-legal a { font-size: 12px; color: #444; }
-.footer-legal a:hover { color: #888; }
+.footer-legal a:hover { color: var(--grey); }
 
 /* ─── PAGE HERO ─── */
 .page-hero {

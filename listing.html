@@ -20,6 +20,10 @@
   <meta name="twitter:title" content="Vehicle Listing — DubiMotors" id="tw-title" />
   <meta name="twitter:description" content="View vehicle listing details on DubiMotors." id="tw-description" />
   <meta name="twitter:image" content="https://www.dubimotors.ae/hero-porsche.jpg" id="tw-image" />
+    <!-- Font preconnect + stylesheet (loaded in parallel with style.css) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" />
   <link rel="stylesheet" href="style.css" />
   <link rel="stylesheet" href="https://api.mapbox.com/mapbox-gl-js/v3.3.0/mapbox-gl.css" />
   <style>
@@ -252,14 +256,14 @@
       padding: 22px;
     }
     .finance-title { font-size: 15px; font-weight: 800; color: var(--white); margin-bottom: 4px; }
-    .finance-sub { font-size: 12px; color: #888; margin-bottom: 18px; }
+    .finance-sub { font-size: 12px; color: #666; margin-bottom: 18px; }
     .finance-monthly { font-size: 30px; font-weight: 900; color: var(--orange); margin-bottom: 2px; }
     .finance-note { font-size: 11px; color: #666; margin-bottom: 18px; }
 
     .finance-sliders { display: flex; flex-direction: column; gap: 14px; margin-bottom: 18px; }
     .slider-row { display: flex; flex-direction: column; gap: 5px; }
     .slider-label-row { display: flex; justify-content: space-between; align-items: center; }
-    .slider-label { font-size: 11px; color: #aaa; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+    .slider-label { font-size: 11px; color: #666; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
     .slider-value { font-size: 12px; color: var(--orange); font-weight: 700; }
     input[type=range].fin-slider {
       width: 100%;
@@ -420,7 +424,9 @@
 </head>
 <body>
 
-<div id="navbar-placeholder"></div>
+<header id="navbar-placeholder"></header>
+
+<main>
 
 <div class="container">
   <div id="breadcrumb-bar" class="breadcrumb-bar"></div>
@@ -960,5 +966,7 @@
     if (e.target === this) closeFinanceModal();
   });
 </script>
+</main>
+
 </body>
 </html>

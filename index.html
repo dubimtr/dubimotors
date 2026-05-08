@@ -21,6 +21,11 @@
   <meta name="twitter:title" content="DubiMotors — Buy &amp; Sell Vehicles in the UAE" />
   <meta name="twitter:description" content="UAE's #1 vehicle marketplace. Buy and sell cars, motorcycles, boats, jet skis, and heavy vehicles." />
   <meta name="twitter:image" content="https://www.dubimotors.ae/hero-porsche.jpg" />
+    <link rel="preload" as="image" href="hero-porsche-mobile.webp" imagesrcset="hero-porsche-mobile.webp 768w, hero-porsche-tablet.webp 1280w, hero-porsche.webp 1920w" imagesizes="100vw" fetchpriority="high" />
+  <!-- Font preconnect + stylesheet (loaded in parallel with style.css) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" />
   <link rel="stylesheet" href="style.css" />
   <style>
     /* ─── HERO ─── */
@@ -37,7 +42,21 @@
       inset: 0;
       background:
         linear-gradient(to bottom, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.75) 100%),
-        url('hero-porsche.webp') center/cover no-repeat;
+        url('hero-porsche-mobile.webp') center/cover no-repeat;
+    }
+    @media (min-width: 769px) {
+      .hero-bg {
+        background:
+          linear-gradient(to bottom, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.75) 100%),
+          url('hero-porsche-tablet.webp') center/cover no-repeat;
+      }
+    }
+    @media (min-width: 1281px) {
+      .hero-bg {
+        background:
+          linear-gradient(to bottom, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.75) 100%),
+          url('hero-porsche.webp') center/cover no-repeat;
+      }
     }
     .hero-content {
       position: relative;
@@ -102,7 +121,7 @@
       padding: 12px 18px;
       font-size: 13px;
       font-weight: 700;
-      color: #999;
+      color: #666;
       background: transparent;
       border: none;
       border-bottom: 3px solid transparent;
@@ -586,7 +605,7 @@
     .mobile-cat-info { flex: 1; min-width: 0; }
     .mobile-cat-name { font-size: 14px; font-weight: 800; color: var(--dark); line-height: 1.2; }
     .mobile-cat-count { font-size: 11px; color: var(--grey); margin-top: 2px; }
-    .mobile-cat-arrow { color: #bbb; flex-shrink: 0; font-size: 20px; font-weight: 300; line-height: 1; }
+    .mobile-cat-arrow { color: #666; flex-shrink: 0; font-size: 20px; font-weight: 300; line-height: 1; }
     .mobile-cat-card.coming-soon { opacity: 0.75; }
     .coming-soon-badge {
       position: absolute; top: 8px; right: 8px;
@@ -648,7 +667,9 @@
 </head>
 <body>
 
-<div id="navbar-placeholder"></div>
+<header id="navbar-placeholder"></header>
+
+<main>
 
 <!-- ── HERO ── -->
 <section class="hero">
@@ -674,7 +695,7 @@
           <span class="search-icon">🔍</span>
           <input class="search-main-input" id="searchInput" type="text" placeholder="Search make, model, year, price..." />
           <div class="search-divider"></div>
-          <select class="search-location" id="searchLocation" style="border:none;outline:none;font-size:14px;font-family:inherit;color:var(--dark);background:transparent;width:140px;padding:0 10px;cursor:pointer;">
+          <select class="search-location" id="searchLocation" style="border:none;outline:none;font-size:14px;font-family:inherit;color:var(--dark);background:transparent;width:140px;padding:0 10px;cursor:pointer;" aria-label="Select Search location">
             <option value="">All Emirates</option>
             <option>Dubai</option>
             <option>Abu Dhabi</option>
@@ -1043,6 +1064,8 @@
 </div>
 
 <!-- ── BOTTOM NAVIGATION BAR (mobile only) ── -->
+</main>
+
 <nav class="bottom-nav" id="bottom-nav">
   <a class="bn-item active" href="index.html">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>

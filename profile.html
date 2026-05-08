@@ -4,6 +4,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>My Profile — DUBIMOTORS</title>
+    <!-- Font preconnect + stylesheet (loaded in parallel with style.css) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" />
   <link rel="stylesheet" href="style.css" />
   <script src="user-common.js"></script>
   <style>
@@ -164,14 +168,14 @@
             </div>
             <div class="form-group">
               <label class="form-label">Emirate / Location</label>
-              <select class="form-input" id="sel-location">
+              <select class="form-input" id="sel-location" aria-label="Select Sel-location">
                 <option>Dubai</option><option>Abu Dhabi</option><option>Sharjah</option>
                 <option>Ajman</option><option>Ras Al Khaimah</option><option>Fujairah</option><option>Umm Al Quwain</option>
               </select>
             </div>
             <div class="form-group">
               <label class="form-label">Account Type</label>
-              <select class="form-input" id="sel-account-type">
+              <select class="form-input" id="sel-account-type" aria-label="Select Sel-account-type">
                 <option>Private Seller</option>
                 <option>Dealer / Showroom</option>
                 <option>Broker</option>

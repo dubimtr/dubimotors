@@ -4,13 +4,17 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>About Us — DUBIMOTORS</title>
+    <!-- Font preconnect + stylesheet (loaded in parallel with style.css) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" />
   <link rel="stylesheet" href="style.css" />
   <style>
     .about-hero { background: var(--dark); padding: 72px 0 56px; text-align: center; }
     .about-hero-tag { display: inline-block; background: var(--orange); color: #fff; font-size: 11px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; padding: 5px 16px; border-radius: 20px; margin-bottom: 20px; }
     .about-hero-title { font-size: 48px; font-weight: 900; color: var(--white); margin-bottom: 16px; }
     .about-hero-title span { color: var(--orange); }
-    .about-hero-sub { font-size: 18px; color: #888; max-width: 600px; margin: 0 auto; line-height: 1.7; }
+    .about-hero-sub { font-size: 18px; color: #666; max-width: 600px; margin: 0 auto; line-height: 1.7; }
 
     .about-stats { background: #111; padding: 40px 0; border-top: 1px solid #1A1A1A; border-bottom: 1px solid #1A1A1A; }
     .about-stats .container { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; text-align: center; }
@@ -53,7 +57,9 @@
   </style>
 </head>
 <body>
-<div id="navbar-placeholder"></div>
+<header id="navbar-placeholder"></header>
+
+<main>
 
 <!-- HERO -->
 <div class="about-hero">
@@ -154,5 +160,7 @@
 <script src="shared.js"></script>
 <script src="components.js"></script>
 <script>renderNavbar(); renderFooter();</script>
+</main>
+
 </body>
 </html>

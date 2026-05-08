@@ -4,6 +4,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Place Your Ad — DUBIMOTORS</title>
+    <!-- Font preconnect + stylesheet (loaded in parallel with style.css) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" />
   <link rel="stylesheet" href="style.css" />
   <link rel="stylesheet" href="https://api.mapbox.com/mapbox-gl-js/v3.3.0/mapbox-gl.css" />
   <script src="icons.js"></script>
@@ -13,7 +17,7 @@
     .place-ad-hero { background: var(--dark); padding: 48px 0; text-align: center; }
     .place-ad-hero-title { font-size: 38px; font-weight: 900; color: var(--white); margin-bottom: 10px; }
     .place-ad-hero-title span { color: var(--orange); }
-    .place-ad-hero-sub { font-size: 15px; color: #888; max-width: 480px; margin: 0 auto; }
+    .place-ad-hero-sub { font-size: 15px; color: #666; max-width: 480px; margin: 0 auto; }
 
     /* ── Mode selector landing ── */
     #mode-select-screen { padding: 60px 0 80px; }
@@ -140,7 +144,7 @@
     .ai-result-banner.show { display: flex; }
     .ai-result-icon { font-size: 28px; flex-shrink: 0; }
     .ai-result-text { font-size: 13px; color: #fff; font-weight: 600; }
-    .ai-result-sub { font-size: 11px; color: #888; margin-top: 2px; }
+    .ai-result-sub { font-size: 11px; color: #666; margin-top: 2px; }
 
     /* ── VIN lookup ── */
     .vin-row { display: flex; gap: 10px; }
@@ -171,11 +175,11 @@
     .pe-estimate-btn:disabled { opacity: 0.6; cursor: not-allowed; }
     .pe-result { display: none; margin-top: 14px; }
     .pe-result.show { display: block; }
-    .pe-range-label { font-size: 11px; color: #888; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .pe-range-label { font-size: 11px; color: #666; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
     .pe-range { font-size: 22px; font-weight: 900; color: var(--orange); margin-bottom: 10px; }
     .pe-bar { height: 6px; background: #2A2A2A; border-radius: 3px; margin-bottom: 14px; overflow: hidden; }
     .pe-bar-fill { height: 100%; background: linear-gradient(90deg, #E8450A, #FF6B35); border-radius: 3px; width: 60%; }
-    .pe-insight { font-size: 11px; color: #888; line-height: 1.6; }
+    .pe-insight { font-size: 11px; color: #666; line-height: 1.6; }
     .pe-insight strong { color: #CCC; }
 
     /* ── Sidebar ── */
@@ -187,7 +191,7 @@
     .preview-price { font-size: 20px; font-weight: 900; color: var(--orange); margin-bottom: 3px; }
     .preview-name { font-size: 13px; font-weight: 700; color: #fff; margin-bottom: 7px; }
     .preview-pills { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 8px; }
-    .preview-pill { background: #2A2A2A; color: #888; font-size: 10px; font-weight: 600; padding: 3px 9px; border-radius: 20px; }
+    .preview-pill { background: #2A2A2A; color: #666; font-size: 10px; font-weight: 600; padding: 3px 9px; border-radius: 20px; }
     .preview-loc { font-size: 11px; color: #555; }
     .pricing-card { background: #fff; border: 1px solid var(--border); border-radius: 16px; padding: 22px; }
     .pricing-title { font-size: 14px; font-weight: 800; color: var(--dark); margin-bottom: 14px; }
@@ -223,7 +227,9 @@
   </style>
 </head>
 <body>
-<div id="navbar-placeholder"></div>
+<header id="navbar-placeholder"></header>
+
+<main>
 
 <!-- HERO -->
 <div class="place-ad-hero">
@@ -466,7 +472,7 @@
           <div class="form-grid-2">
             <div class="form-group">
               <label class="form-label">Emirate <span style="color:var(--orange)">*</span></label>
-              <select class="form-input" id="sel-plate-emirate" onchange="updatePreview()">
+              <select class="form-input" id="sel-plate-emirate" onchange="updatePreview()" aria-label="Select Sel-plate-emirate">
                 <option value="">Select Emirate</option>
                 <option>Dubai</option><option>Abu Dhabi</option><option>Sharjah</option>
                 <option>Ajman</option><option>Fujairah</option><option>Ras Al Khaimah</option><option>Umm Al Quwain</option>
@@ -484,7 +490,7 @@
             </div>
             <div class="form-group">
               <label class="form-label">Plate Type</label>
-              <select class="form-input" id="sel-plate-type">
+              <select class="form-input" id="sel-plate-type" aria-label="Select Sel-plate-type">
                 <option value="">Select Type</option>
                 <option>Standard White</option>
                 <option>VIP / Fancy</option>
@@ -498,7 +504,7 @@
           <div class="form-full">
             <div class="form-group">
               <label class="form-label">Transfer Included</label>
-              <select class="form-input" id="sel-plate-transfer">
+              <select class="form-input" id="sel-plate-transfer" aria-label="Select Sel-plate-transfer">
                 <option value="">Select</option>
                 <option>Yes — transfer included in price</option>
                 <option>No — buyer arranges transfer</option>
@@ -525,7 +531,7 @@
             </div>
             <div class="form-group">
               <label class="form-label">Category</label>
-              <select class="form-input" id="sel-acc-category">
+              <select class="form-input" id="sel-acc-category" aria-label="Select Sel-acc-category">
                 <option value="">Select Category</option>
                 <option>Wheels &amp; Tyres</option>
                 <option>Spare Parts</option>
@@ -547,7 +553,7 @@
             </div>
             <div class="form-group">
               <label class="form-label">Condition <span style="color:var(--orange)">*</span></label>
-              <select class="form-input" id="sel-acc-condition" onchange="updatePreview()">
+              <select class="form-input" id="sel-acc-condition" onchange="updatePreview()" aria-label="Select Sel-acc-condition">
                 <option value="">Select</option>
                 <option>Brand New</option>
                 <option>Like New</option>
@@ -564,7 +570,7 @@
             </div>
             <div class="form-group">
               <label class="form-label">Location <span style="color:var(--orange)">*</span></label>
-              <select class="form-input" id="sel-acc-location" onchange="updatePreview()">
+              <select class="form-input" id="sel-acc-location" onchange="updatePreview()" aria-label="Select Sel-acc-location">
                 <option value="">Select Emirate</option>
                 <option>Dubai</option><option>Abu Dhabi</option><option>Sharjah</option>
                 <option>Ajman</option><option>Fujairah</option><option>Ras Al Khaimah</option><option>Umm Al Quwain</option>
@@ -589,7 +595,7 @@
             <div class="form-grid-2" style="margin-bottom:14px;">
               <div class="form-group">
                 <label class="form-label">Vehicle Type <span style="color:var(--orange)">*</span></label>
-                <select class="form-input" id="sel-heavy-type">
+                <select class="form-input" id="sel-heavy-type" aria-label="Select Sel-heavy-type">
                   <option value="">Select Type</option>
                   <option>Truck / Lorry</option>
                   <option>Semi-Trailer / Tractor Head</option>
@@ -617,7 +623,7 @@
             <div class="form-grid-2" style="margin-bottom:14px;">
               <div class="form-group">
                 <label class="form-label">Axles</label>
-                <select class="form-input" id="sel-heavy-axles">
+                <select class="form-input" id="sel-heavy-axles" aria-label="Select Sel-heavy-axles">
                   <option value="">Select</option>
                   <option>2 Axles</option><option>3 Axles</option><option>4 Axles</option>
                   <option>5 Axles</option><option>6 Axles</option><option>Other</option>
@@ -625,7 +631,7 @@
               </div>
               <div class="form-group">
                 <label class="form-label">Drive Configuration</label>
-                <select class="form-input" id="sel-heavy-drive">
+                <select class="form-input" id="sel-heavy-drive" aria-label="Select Sel-heavy-drive">
                   <option value="">Select</option>
                   <option>4x2</option><option>4x4</option><option>6x2</option>
                   <option>6x4</option><option>6x6</option><option>8x4</option><option>Other</option>
@@ -636,28 +642,28 @@
           <div class="form-grid-3">
             <div class="form-group">
               <label class="form-label">Brand <span style="color:var(--orange)">*</span></label>
-              <select class="form-input" id="sel-brand" onchange="onBrandChange()"><option value="">Select Brand</option></select>
+              <select class="form-input" id="sel-brand" onchange="onBrandChange()" aria-label="Select Sel-brand"><option value="">Select Brand</option></select>
             </div>
             <div class="form-group">
               <label class="form-label">Model <span style="color:var(--orange)">*</span></label>
-              <select class="form-input" id="sel-model" onchange="onModelChange()" disabled><option value="">Select Model</option></select>
+              <select class="form-input" id="sel-model" onchange="onModelChange()" disabled aria-label="Select Sel-model"><option value="">Select Model</option></select>
             </div>
             <div class="form-group">
               <label class="form-label">Trim <span style="color:var(--orange)">*</span></label>
-              <select class="form-input" id="sel-trim" onchange="updatePreview()" disabled><option value="">Select Trim</option></select>
+              <select class="form-input" id="sel-trim" onchange="updatePreview()" disabled aria-label="Select Sel-trim"><option value="">Select Trim</option></select>
             </div>
           </div>
           <div class="form-grid-3">
             <div class="form-group">
               <label class="form-label">Year <span style="color:var(--orange)">*</span></label>
-              <select class="form-input" id="sel-year" onchange="updatePreview()">
+              <select class="form-input" id="sel-year" onchange="updatePreview()" aria-label="Select Sel-year">
                 <option value="">Year</option>
                 <script>for(let y=2026;y>=1940;y--) document.write(`<option>${y}</option>`);</script>
               </select>
             </div>
             <div class="form-group">
               <label class="form-label">Condition <span style="color:var(--orange)">*</span></label>
-              <select class="form-input" id="sel-condition" onchange="updatePreview()">
+              <select class="form-input" id="sel-condition" onchange="updatePreview()" aria-label="Select Sel-condition">
                 <option value="">Select</option>
                 <option>Brand New</option>
                 <option>Used</option>
@@ -671,7 +677,7 @@
           <div class="form-grid-2">
             <div class="form-group">
               <label class="form-label">Exterior Color</label>
-              <select class="form-input" id="sel-ext-color">
+              <select class="form-input" id="sel-ext-color" aria-label="Select Sel-ext-color">
                 <option value="">Select Exterior Color</option>
                 <option>Black</option><option>White</option><option>Silver</option><option>Grey</option>
                 <option>Red</option><option>Blue</option><option>Green</option><option>Beige</option>
@@ -681,7 +687,7 @@
             </div>
             <div class="form-group">
               <label class="form-label">Interior Color</label>
-              <select class="form-input" id="sel-int-color">
+              <select class="form-input" id="sel-int-color" aria-label="Select Sel-int-color">
                 <option value="">Select Interior Color</option>
                 <option>Black</option><option>Beige</option><option>Brown</option><option>Grey</option>
                 <option>Red</option><option>Cream</option><option>White</option><option>Tan</option>
@@ -690,7 +696,7 @@
             </div>
             <div class="form-group">
               <label class="form-label">Regional Spec <span style="color:var(--orange)">*</span></label>
-              <select class="form-input" id="sel-spec">
+              <select class="form-input" id="sel-spec" aria-label="Select Sel-spec">
                 <option value="">Select Regional Spec</option>
                 <option>GCC Specs</option>
                 <option>American Specs</option>
@@ -703,21 +709,21 @@
           <div class="form-grid-3">
             <div class="form-group">
               <label class="form-label">Transmission</label>
-              <select class="form-input" id="sel-trans">
+              <select class="form-input" id="sel-trans" aria-label="Select Sel-trans">
                 <option value="">Select</option>
                 <option>Automatic</option><option>Manual</option><option>CVT</option><option>Dual-Clutch (DCT)</option>
               </select>
             </div>
             <div class="form-group">
               <label class="form-label">Fuel Type</label>
-              <select class="form-input" id="sel-fuel">
+              <select class="form-input" id="sel-fuel" aria-label="Select Sel-fuel">
                 <option value="">Select</option>
                 <option>Gasoline</option><option>Diesel</option><option>Electric</option><option>Hybrid</option><option>Other</option>
               </select>
             </div>
             <div class="form-group">
               <label class="form-label">Body Type</label>
-              <select class="form-input" id="sel-body">
+              <select class="form-input" id="sel-body" aria-label="Select Sel-body">
                 <option value="">Select</option>
                 <option>SUV</option><option>Sedan</option><option>Coupe</option><option>Hatchback</option>
                 <option>Convertible</option><option>Pickup</option><option>Van</option><option>Wagon</option>
@@ -735,7 +741,7 @@
             </div>
             <div class="form-group">
               <label class="form-label">Cylinders</label>
-              <select class="form-input" id="sel-cyl">
+              <select class="form-input" id="sel-cyl" aria-label="Select Sel-cyl">
                 <option value="">Select</option>
                 <option>3</option><option>4</option><option>6</option><option>8</option><option>10</option><option>12</option>
               </select>
@@ -744,14 +750,14 @@
           <div class="form-grid-2">
             <div class="form-group">
               <label class="form-label">Doors</label>
-              <select class="form-input" id="sel-doors">
+              <select class="form-input" id="sel-doors" aria-label="Select Sel-doors">
                 <option value="">Select</option>
                 <option>2</option><option>3</option><option>4</option><option>5</option>
               </select>
             </div>
             <div class="form-group">
               <label class="form-label">Seats</label>
-              <select class="form-input" id="sel-seats">
+              <select class="form-input" id="sel-seats" aria-label="Select Sel-seats">
                 <option value="">Select</option>
                 <option>2</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option>
               </select>
@@ -760,7 +766,7 @@
           <div class="form-full">
             <div class="form-group">
               <label class="form-label">Location <span style="color:var(--orange)">*</span></label>
-              <select class="form-input" id="sel-location" onchange="updatePreview()">
+              <select class="form-input" id="sel-location" onchange="updatePreview()" aria-label="Select Sel-location">
                 <option value="">Select Emirate</option>
                 <option>Dubai</option><option>Abu Dhabi</option><option>Sharjah</option>
                 <option>Ajman</option><option>Fujairah</option><option>Ras Al Khaimah</option><option>Umm Al Quwain</option>
@@ -1807,5 +1813,7 @@
     setTimeout(initPlaceAdMap, 400);
   };
 </script>
+</main>
+
 </body>
 </html>

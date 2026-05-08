@@ -4,6 +4,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Jet Skis for Sale in UAE — DUBIMOTORS</title>
+    <!-- Font preconnect + stylesheet (loaded in parallel with style.css) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" />
   <link rel="stylesheet" href="style.css" />
   <style>
     .page-hero{background:var(--dark);padding:32px 0 28px}
@@ -39,7 +43,7 @@
     .range-row{display:flex;gap:8px;align-items:center}
     .range-input{flex:1;border:1.5px solid var(--border);border-radius:8px;padding:8px 10px;font-size:13px;font-family:inherit;outline:none;min-width:0}
     .range-input:focus{border-color:var(--orange)}
-    .range-sep{font-size:12px;color:#999;flex-shrink:0}
+    .range-sep{font-size:12px;color: #666;flex-shrink:0}
     .checkbox-list{display:flex;flex-direction:column;gap:9px}
     .checkbox-item{display:flex;align-items:center;gap:9px;cursor:pointer}
     .checkbox-item input[type="checkbox"]{width:15px;height:15px;accent-color:var(--orange);cursor:pointer;flex-shrink:0}
@@ -70,7 +74,9 @@
   </style>
 </head>
 <body>
-<div id="navbar-placeholder"></div>
+<header id="navbar-placeholder"></header>
+
+<main>
 
 <div class="page-hero">
   <div class="container">
@@ -90,12 +96,12 @@
 <div class="filter-bar">
   <div class="container">
     <button class="btn-mobile-filter" onclick="toggleSidebar()">&#9881; Filters</button>
-    <select class="filter-select filter-select-wide" id="filterCity" onchange="applyFilters()">
+    <select class="filter-select filter-select-wide" id="filterCity" onchange="applyFilters()" aria-label="Filter by city">
       <option value="">All Emirates</option><option>Dubai</option><option>Abu Dhabi</option><option>Sharjah</option><option>Ajman</option><option>Fujairah</option><option>Ras Al Khaimah</option><option>Umm Al Quwain</option>
     </select>
-    <select class="filter-select filter-select-wide" id="filterMake" onchange="onTopMakeChange()"><option value="">All Makes</option></select>
-    <select class="filter-select filter-select-wide" id="filterModel" onchange="applyFilters()" disabled><option value="">All Models</option></select>
-    <select class="filter-select" id="filterCondition" onchange="applyFilters()">
+    <select class="filter-select filter-select-wide" id="filterMake" onchange="onTopMakeChange()" aria-label="Filter by make"><option value="">All Makes</option></select>
+    <select class="filter-select filter-select-wide" id="filterModel" onchange="applyFilters()" disabled aria-label="Filter by model"><option value="">All Models</option></select>
+    <select class="filter-select" id="filterCondition" onchange="applyFilters()" aria-label="Filter by condition">
       <option value="">All Conditions</option><option>Brand New</option><option>Used</option>
     </select>
     <div class="filter-count" id="filter-count"></div>
@@ -154,7 +160,7 @@
     <div>
       <div class="results-header">
         <div class="results-title" id="results-title">All Listings</div>
-        <select class="sort-select" id="sortSelect" onchange="applyFilters()">
+        <select class="sort-select" id="sortSelect" onchange="applyFilters()" aria-label="Sort listings">
           <option value="default">Sort: Featured</option><option value="price-asc">Price: Low to High</option><option value="price-desc">Price: High to Low</option><option value="year-desc">Newest First</option>
         </select>
       </div>
@@ -316,5 +322,7 @@
 
   applyFilters();
 </script>
+</main>
+
 </body>
 </html>

@@ -4,6 +4,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Log In — DUBIMOTORS</title>
+    <!-- Font preconnect + stylesheet (loaded in parallel with style.css) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" />
   <link rel="stylesheet" href="style.css" />
   <!-- Google reCAPTCHA v2 -->
   <script src="https://www.google.com/recaptcha/api.js" async defer></script>
@@ -41,7 +45,7 @@
     .auth-left-sub { font-size: 15px; color: #666; line-height: 1.7; margin-bottom: 40px; max-width: 400px; }
     .auth-feature { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
     .auth-feature-icon { width: 36px; height: 36px; background: rgba(232,69,10,0.15); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
-    .auth-feature-text { font-size: 14px; color: #888; }
+    .auth-feature-text { font-size: 14px; color: #666; }
 
     .auth-right {
       background: var(--white);
@@ -112,6 +116,7 @@
 </head>
 <body>
 
+<main>
 <div class="auth-page">
   <!-- LEFT PANEL -->
   <div class="auth-left">
@@ -243,6 +248,7 @@
 </div>
 
 <div id="toast" class="toast"></div>
+</main>
 
 <script src="shared.js"></script>
 <script src="components.js"></script>

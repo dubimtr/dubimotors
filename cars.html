@@ -20,6 +20,10 @@
   <meta name="twitter:title" content="Cars for Sale in UAE — DubiMotors" />
   <meta name="twitter:description" content="Browse thousands of verified cars for sale across Dubai, Abu Dhabi and all Emirates." />
   <meta name="twitter:image" content="https://www.dubimotors.ae/hero-porsche.jpg" />
+    <!-- Font preconnect + stylesheet (loaded in parallel with style.css) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" />
   <link rel="stylesheet" href="style.css" />
   <style>
     /* ── Page Hero ── */
@@ -132,7 +136,7 @@
       min-width: 0;
     }
     .range-input:focus { border-color: var(--orange); }
-    .range-sep { font-size: 12px; color: #999; flex-shrink: 0; }
+    .range-sep { font-size: 12px; color: #666; flex-shrink: 0; }
     /* Checkbox list */
     .checkbox-list { display: flex; flex-direction: column; gap: 9px; }
     .checkbox-item { display: flex; align-items: center; gap: 9px; cursor: pointer; }
@@ -205,7 +209,9 @@
 </head>
 <body>
 
-<div id="navbar-placeholder"></div>
+<header id="navbar-placeholder"></header>
+
+<main>
 
 <!-- PAGE HERO -->
 <div class="page-hero">
@@ -233,7 +239,7 @@
 <div class="filter-bar">
   <div class="container">
     <button class="btn-mobile-filter" onclick="toggleSidebar()">⚙ Filters</button>
-    <select class="filter-select filter-select-wide" id="filterCity" onchange="applyFilters()">
+    <select class="filter-select filter-select-wide" id="filterCity" onchange="applyFilters()" aria-label="Filter by city">
       <option value="">All Cities</option>
       <option>Dubai</option>
       <option>Abu Dhabi</option>
@@ -243,15 +249,15 @@
       <option>Ras Al Khaimah</option>
       <option>Umm Al Quwain</option>
     </select>
-    <select class="filter-select filter-select-wide" id="filterMake" onchange="onTopMakeChange()">
+    <select class="filter-select filter-select-wide" id="filterMake" onchange="onTopMakeChange()" aria-label="Filter by make">
       <option value="">All Makes</option>
     </select>
-    <select class="filter-select filter-select-wide" id="filterModel" onchange="onTopModelChange()" disabled>
+    <select class="filter-select filter-select-wide" id="filterModel" onchange="onTopModelChange()" disabled aria-label="Filter by model">
       <option value="">All Models</option>
-    </select>    <select class="filter-select filter-select-wide" id="filterTrim" onchange="onTopTrimChange()" disabled>
+    </select>    <select class="filter-select filter-select-wide" id="filterTrim" onchange="onTopTrimChange()" disabled aria-label="Filter by trim">
       <option value="">All Trims</option>
     </select>
-    <select class="filter-select" id="filterCondition" onchange="applyFilters()">
+    <select class="filter-select" id="filterCondition" onchange="applyFilters()" aria-label="Filter by condition">
       <option value="">Condition</option>
       <option value="Brand New">Brand New</option>
       <option value="Used">Used</option>
@@ -380,7 +386,7 @@
       <!-- Engine CC -->
       <div class="sidebar-card">
         <div class="sidebar-title">Engine (cc)</div>
-        <select class="sidebar-select" id="filterEngineCC" onchange="applyFilters()">
+        <select class="sidebar-select" id="filterEngineCC" onchange="applyFilters()" aria-label="Filter by engine size">
           <option value="">Any</option>
           <option value="1000">Up to 1,000cc</option>
           <option value="1600">Up to 1,600cc</option>
@@ -432,7 +438,7 @@
     <div>
       <div class="results-header">
         <div class="results-title" id="results-title">All Listings</div>
-        <select class="sort-select" id="sortSelect" onchange="applyFilters()">
+        <select class="sort-select" id="sortSelect" onchange="applyFilters()" aria-label="Sort listings">
           <option value="default">Sort: Featured</option>
           <option value="price-asc">Price: Low to High</option>
           <option value="price-desc">Price: High to Low</option>
@@ -823,5 +829,7 @@
 
   applyFilters();
 </script>
+</main>
+
 </body>
 </html>

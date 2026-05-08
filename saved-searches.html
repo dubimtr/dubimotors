@@ -4,6 +4,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Saved Searches — DUBIMOTORS</title>
+    <!-- Font preconnect + stylesheet (loaded in parallel with style.css) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" />
   <link rel="stylesheet" href="style.css" />
   <script src="user-common.js"></script>
   <style>
@@ -125,7 +129,7 @@
             <div class="ss-label">${ss.label}</div>
             <div class="ss-filters">${pills}</div>
             <div class="ss-meta">
-              ${ss.newResults > 0 ? `<span class="ss-new-badge">+${ss.newResults} new results</span>` : '<span class="ss-date" style="color:#aaa;">No new results</span>'}
+              ${ss.newResults > 0 ? `<span class="ss-new-badge">+${ss.newResults} new results</span>` : '<span class="ss-date" style="color: #666;">No new results</span>'}
               <span class="ss-date">Saved ${dmTimeAgo(ss.savedDate)}</span>
               <label class="alert-toggle">
                 <input type="checkbox" ${ss.alertEnabled ? 'checked' : ''} onchange="toggleAlert('${ss.id}', this.checked)" />
