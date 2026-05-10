@@ -93,8 +93,8 @@
             Verified
           </div>
           <div class="dash-stats">
-            <div class="dash-stat"><div class="dash-stat-num" id="sidebar-active-ads">3</div><div class="dash-stat-label">Active Ads</div></div>
-            <div class="dash-stat"><div class="dash-stat-num" id="sidebar-saved">3</div><div class="dash-stat-label">Saved</div></div>
+            <div class="dash-stat"><div class="dash-stat-num" id="sidebar-active-ads">0</div><div class="dash-stat-label">Active Ads</div></div>
+            <div class="dash-stat"><div class="dash-stat-num" id="sidebar-saved">0</div><div class="dash-stat-label">Saved</div></div>
           </div>
         </div>
 
@@ -369,6 +369,26 @@
       }
     }
 
+    // Fetch real counts for the sidebar (Active Ads + Saved/Favourites)
+    async function applySidebarCounts(user) {
+      if (!window.supa || !user) return;
+      try {
+        const [adsRes, favRes] = await Promise.all([
+          window.supa.from('listings')
+            .select('id', { count: 'exact', head: true })
+            .eq('owner_id', user.id)
+            .eq('status', 'active'),
+          window.supa.from('favourites')
+            .select('listing_id', { count: 'exact', head: true })
+            .eq('user_id', user.id),
+        ]);
+        const activeEl = document.getElementById('sidebar-active-ads');
+        const savedEl  = document.getElementById('sidebar-saved');
+        if (activeEl && typeof adsRes.count === 'number') activeEl.textContent = adsRes.count;
+        if (savedEl  && typeof favRes.count === 'number') savedEl.textContent  = favRes.count;
+      } catch { /* non-fatal */ }
+    }
+
     async function saveProfile() {
       if (!window.Auth) { showToast('Authentication not ready.'); return; }
       const display_name = document.getElementById('inp-fullname').value.trim();
@@ -413,6 +433,8 @@
       applyProfileToUI(user, profile);
       // Now that real data is in place, fade the page in
       document.documentElement.classList.add('auth-resolved');
+      // Fetch real counts in the background (don't block fade-in)
+      applySidebarCounts(user);
     })();
   </script>
 </body>

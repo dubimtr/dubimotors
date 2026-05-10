@@ -108,7 +108,9 @@
     renderNavbar('recent-searches');
     renderFooter();
 
-    let searches = [...DM_RECENT_SEARCHES];
+    // Recent searches: Phase 4 will track these via localStorage and/or
+    // a recent_searches table. For now, always show empty state.
+    let searches = [];
 
     function showToast(msg) {
       const t = document.getElementById('toast');

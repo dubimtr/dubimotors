@@ -127,10 +127,11 @@
 
     function renderSavedSearches() {
       const list = document.getElementById('ss-list');
-      if (!DM_SAVED_SEARCHES.length) {
-        list.innerHTML = `<div class="empty-state"><div class="empty-state-icon">🔍</div><div class="empty-state-title">No saved searches yet</div><div class="empty-state-sub">When you save a search, it will appear here and alert you to new matches.</div></div>`;
-        return;
-      }
+      // Saved searches feature is a Phase 4 build — connects to public.saved_searches table.
+      // Always show empty state for now.
+      list.innerHTML = `<div class="empty-state"><div class="empty-state-icon">🔍</div><div class="empty-state-title">No saved searches yet</div><div class="empty-state-sub">When you save a search, it will appear here and alert you to new matches.</div></div>`;
+      return;
+      // ── unreachable code below kept for Phase 4 reference ──
       list.innerHTML = DM_SAVED_SEARCHES.map(ss => {
         const pills = Object.entries(ss.filters).map(([k, v]) => `<span class="ss-filter-pill">${v}</span>`).join('');
         return `

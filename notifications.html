@@ -125,7 +125,9 @@
     renderNavbar('notifications');
     renderFooter();
 
-    let notifs = [...DM_NOTIFICATIONS];
+    // Notifications feature not yet built — Phase 4 will populate from a real
+    // notifications table. For now, the page shows an empty state.
+    let notifs = [];
     let currentFilter = 'all';
 
     function showToast(msg) {

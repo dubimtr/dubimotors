@@ -127,8 +127,8 @@
           <div class="chat-panel" id="chat-panel">
             <div class="chat-empty">
               <div class="chat-empty-icon">💬</div>
-              <div class="chat-empty-title">Select a conversation</div>
-              <div class="chat-empty-sub">Choose a chat from the left to start messaging.</div>
+              <div class="chat-empty-title">Coming soon</div>
+              <div class="chat-empty-sub">In-app messaging is launching soon. For now, contact sellers directly via Call or WhatsApp from any listing.</div>
             </div>
           </div>
         </div>
@@ -166,19 +166,13 @@
 
     function renderChatList() {
       const list = document.getElementById('chat-list-items');
-      list.innerHTML = DM_CHATS.map(chat => `
-        <div class="chat-item ${activeChat === chat.id ? 'active' : ''}" onclick="openChat('${chat.id}')">
-          <div class="chat-item-avatar" style="background:${chat.avatarColor}">${chat.initials}</div>
-          <div class="chat-item-body">
-            <div class="chat-item-name">${chat.with}</div>
-            <div class="chat-item-preview">${chat.lastMessage}</div>
-          </div>
-          <div class="chat-item-meta">
-            <span class="chat-item-time">${chat.time}</span>
-            ${chat.unread > 0 ? `<span class="chat-unread">${chat.unread}</span>` : ''}
-          </div>
-        </div>
-      `).join('');
+      // Real-time chat is a Phase 4 feature. For now, show an empty state.
+      list.innerHTML = `
+        <div style="text-align:center;padding:40px 20px;color:var(--grey);">
+          <div style="font-size:40px;margin-bottom:10px;">&#x1F4AC;</div>
+          <div style="font-size:16px;font-weight:800;color:var(--dark);margin-bottom:6px;">No messages yet</div>
+          <div style="font-size:13px;line-height:1.6;">Start by browsing listings and contacting sellers via WhatsApp or call.</div>
+        </div>`;
     }
 
     function openChat(id) {
