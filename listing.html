@@ -795,15 +795,97 @@
     document.getElementById('seller-name').textContent = listing.seller;
     document.getElementById('seller-badge').textContent = listing.verified ? '✓ Verified Dealer' : 'Private Seller';
 
-    // ── CALL & WHATSAPP BUTTONS ──
+    // ── CALL & WHATSAPP BUTTONS — gated on email verification ──
     const phone = (listing.phone || SELLER_PHONE).replace(/\s+/g, '');
-    document.getElementById('btn-call').href = 'tel:' + phone;
-
+    const callHref = 'tel:' + phone;
     const waMsg = encodeURIComponent(
       `Hi, I'm interested in your listing: ${listing.title} (${DM.formatPrice(listing.price)}) on DUBIMOTORS.\n` +
       `View listing: ${window.location.href}`
     );
-    document.getElementById('btn-whatsapp').href = `https://wa.me/${phone.replace('+','')}?text=${waMsg}`;
+    const waHref = `https://wa.me/${phone.replace('+','')}?text=${waMsg}`;
+
+    // Helper: if user not signed in → redirect to login. If signed in but not
+    // verified → show our verification modal. If verified → return true.
+    async function ensureVerifiedToContact() {
+      if (!window.Auth) return true; // graceful degrade
+      const user = await window.Auth.getUser();
+      if (!user) {
+        // Not logged in — bounce to login with redirect-back
+        const next = encodeURIComponent(window.location.pathname + window.location.search);
+        window.location.href = 'login.html?next=' + next;
+        return false;
+      }
+      const verified = await window.Auth.isEmailVerified();
+      if (verified) return true;
+      // Show our reusable modal
+      return await showContactVerificationModal();
+    }
+
+    function showContactVerificationModal() {
+      return new Promise((resolve) => {
+        if (document.getElementById('contact-verify-modal')) return resolve(false);
+        const overlay = document.createElement('div');
+        overlay.id = 'contact-verify-modal';
+        overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:10000;display:flex;align-items:center;justify-content:center;padding:20px;';
+        const modal = document.createElement('div');
+        modal.style.cssText = 'background:#fff;border-radius:14px;max-width:420px;width:100%;padding:32px 28px;text-align:center;';
+        modal.innerHTML = `
+          <div style="font-size:48px;margin-bottom:12px;">&#x2709;&#xFE0F;</div>
+          <div style="font-size:20px;font-weight:800;color:var(--dark);margin-bottom:8px;">Verify your email to contact sellers</div>
+          <div style="font-size:14px;color:var(--grey);line-height:1.6;margin-bottom:20px;">
+            We protect sellers from spam by asking buyers to verify their email first. It only takes a moment.
+          </div>
+          <div id="cvm-status" style="display:none;background:#FFF3CD;color:#856404;padding:10px;border-radius:8px;font-size:13px;margin-bottom:14px;"></div>
+          <button id="cvm-send" style="width:100%;background:var(--orange);color:#fff;border:none;border-radius:10px;padding:14px;font-size:15px;font-weight:700;cursor:pointer;margin-bottom:8px;">Send Verification Email</button>
+          <button id="cvm-check" style="width:100%;background:transparent;color:var(--dark);border:1.5px solid #e5e5e5;border-radius:10px;padding:12px;font-size:14px;font-weight:600;cursor:pointer;margin-bottom:8px;">I&rsquo;ve Verified — Check Now</button>
+          <button id="cvm-cancel" style="width:100%;background:transparent;color:#888;border:none;padding:8px;font-size:13px;cursor:pointer;">Cancel</button>
+        `;
+        overlay.appendChild(modal);
+        document.body.appendChild(overlay);
+
+        const status = (msg, kind) => {
+          const el = modal.querySelector('#cvm-status');
+          el.textContent = msg;
+          el.style.background = kind === 'error' ? '#FFEBEE' : (kind === 'ok' ? '#E8F5E9' : '#FFF3CD');
+          el.style.color      = kind === 'error' ? '#C62828' : (kind === 'ok' ? '#2E7D32' : '#856404');
+          el.style.display = 'block';
+        };
+        const close = (r) => { overlay.remove(); resolve(r); };
+
+        modal.querySelector('#cvm-send').onclick = async () => {
+          const btn = modal.querySelector('#cvm-send');
+          btn.disabled = true; btn.textContent = 'Sending…';
+          const r = await window.Auth.sendVerificationEmail('contact');
+          btn.disabled = false; btn.textContent = 'Send Verification Email';
+          if (r.alreadyVerified) { close(true); return; }
+          if (r.error) status('Could not send: ' + r.error, 'error');
+          else status('Email sent! Check your inbox (and spam folder).', 'ok');
+        };
+        modal.querySelector('#cvm-check').onclick = async () => {
+          if (window.Auth && window.Auth.clearProfileCache) window.Auth.clearProfileCache();
+          const v = await window.Auth.isEmailVerified();
+          if (v) { close(true); return; }
+          status('Still not verified. Click the link in your email and try again.', 'error');
+        };
+        modal.querySelector('#cvm-cancel').onclick = () => close(false);
+        overlay.onclick = (e) => { if (e.target === overlay) close(false); };
+      });
+    }
+
+    const callBtn = document.getElementById('btn-call');
+    const waBtn = document.getElementById('btn-whatsapp');
+    callBtn.href = callHref;
+    waBtn.href = waHref;
+    callBtn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      const ok = await ensureVerifiedToContact();
+      if (ok) window.location.href = callHref;
+    });
+    waBtn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      const ok = await ensureVerifiedToContact();
+      if (ok) window.open(waHref, '_blank', 'noopener');
+    });
 
     // ── KEY SPECS HIGHLIGHT BOXES (Year / Mileage / Engine / Regional Spec) ──
     const specsGrid = document.getElementById('specs-grid');

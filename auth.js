@@ -124,24 +124,106 @@ window.Auth = (() => {
   }
 
   /**
-   * Check if the current user has verified their email.
+   * Check if the current user has verified their email via DubiMotors' custom flow.
    * Returns: true | false | null (no user)
+   *
+   * Checks profiles.email_verified_at (set when user clicks the link in our
+   * custom welcome/verification email — NOT Supabase's built-in flag, which we
+   * keep disabled in the dashboard).
    */
   async function isEmailVerified() {
-    const user = await getUser();
-    if (!user) return null;
-    return Boolean(user.email_confirmed_at || user.confirmed_at);
+    const profile = await getProfile();
+    if (!profile) return null;
+    return Boolean(profile.email_verified_at);
+  }
+
+  /**
+   * Send a verification email on demand (e.g. when user hits the place-ad gate).
+   * Calls the server endpoint, which generates a fresh token + sends via Resend.
+   * @param {string} reason - 'place-ad' | 'contact' | other
+   */
+  async function sendVerificationEmail(reason) {
+    if (!window.supa) return { error: 'Auth not ready' };
+    const { data: { session } } = await window.supa.auth.getSession();
+    if (!session) return { error: 'Not signed in' };
+    try {
+      const res = await fetch('/api/send-verification-email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ reason: reason || '' }),
+      });
+      const data = await res.json();
+      if (!res.ok) return { error: data.error || 'Failed to send' };
+      return { ok: true, alreadyVerified: data.alreadyVerified || false };
+    } catch (e) {
+      return { error: e.message || 'Network error' };
+    }
+  }
+
+  /**
+   * Send the welcome email (right after signup). Requires an active session.
+   */
+  async function sendWelcomeEmail() {
+    if (!window.supa) return { error: 'Auth not ready' };
+    const { data: { session } } = await window.supa.auth.getSession();
+    if (!session) return { error: 'Not signed in' };
+    try {
+      const res = await fetch('/api/send-welcome-email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+        body: '{}',
+      });
+      const data = await res.json();
+      if (!res.ok) return { error: data.error || 'Failed to send' };
+      return { ok: true };
+    } catch (e) {
+      return { error: e.message || 'Network error' };
+    }
+  }
+
+  /**
+   * Send the "your listing is live" email. Called after a listing's status
+   * flips to 'active'. Requires an active session (must be the owner).
+   */
+  async function sendListingApprovedEmail(listingId) {
+    if (!window.supa) return { error: 'Auth not ready' };
+    const { data: { session } } = await window.supa.auth.getSession();
+    if (!session) return { error: 'Not signed in' };
+    try {
+      const res = await fetch('/api/send-listing-approved-email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ listing_id: listingId }),
+      });
+      const data = await res.json();
+      if (!res.ok) return { error: data.error || 'Failed to send' };
+      return { ok: true };
+    } catch (e) {
+      return { error: e.message || 'Network error' };
+    }
+  }
+
+  /**
+   * Refresh the cached profile (call after verification to reflect new state).
+   */
+  function clearProfileCache() {
+    _profile = null;
+    _profileLoadedFor = null;
   }
 
   /** Resend the confirmation email to the current user. */
   async function resendConfirmation() {
-    const user = await getUser();
-    if (!user) return { error: 'Not signed in' };
-    const { error } = await window.supa.auth.resend({
-      type: 'signup',
-      email: user.email,
-    });
-    return { error: error ? error.message : null };
+    // Now uses our custom flow rather than Supabase's built-in resend
+    return await sendVerificationEmail('resend');
   }
 
   /**
@@ -207,5 +289,9 @@ window.Auth = (() => {
     updateProfile,
     isEmailVerified,
     resendConfirmation,
+    sendWelcomeEmail,
+    sendVerificationEmail,
+    sendListingApprovedEmail,
+    clearProfileCache,
   };
 })();

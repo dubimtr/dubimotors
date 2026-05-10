@@ -826,6 +826,213 @@ Return ONLY this JSON:
 }
 
 // ══════════════════════════════════════════════════════════════════════════
+// EMAIL VERIFICATION & TRANSACTIONAL EMAIL ENDPOINTS
+// ══════════════════════════════════════════════════════════════════════════
+const crypto = require('crypto');
+const emailModule = require('./email-module.js');
+const { getSupabaseAdmin } = require('./supabase-admin.js');
+
+function sha256Hex(s) {
+  return crypto.createHash('sha256').update(s).digest('hex');
+}
+
+// Generate a fresh URL-safe random token + its SHA-256 hash
+function newToken() {
+  const raw = crypto.randomBytes(32).toString('base64url'); // url-safe
+  return { raw, hash: sha256Hex(raw) };
+}
+
+/**
+ * Authenticate a request via the Authorization: Bearer <jwt> header.
+ * Returns the user object from Supabase auth, or null if invalid.
+ *
+ * The JWT is the access_token from the user's Supabase session, sent by the
+ * frontend in the Authorization header.
+ */
+async function getUserFromRequest(req) {
+  const supa = getSupabaseAdmin();
+  if (!supa) return null;
+  const auth = req.headers['authorization'] || req.headers['Authorization'];
+  if (!auth || !auth.startsWith('Bearer ')) return null;
+  const token = auth.slice(7).trim();
+  if (!token) return null;
+  try {
+    const { data, error } = await supa.auth.getUser(token);
+    if (error || !data || !data.user) return null;
+    return data.user;
+  } catch (e) {
+    console.warn('[auth] getUserFromRequest failed:', e.message);
+    return null;
+  }
+}
+
+/* ── POST /api/send-welcome-email — fired right after signup ──
+   Body: { user_id }
+   Auth: requires Authorization Bearer token (the just-signed-up user's session)
+*/
+async function handleSendWelcomeEmail(req, res) {
+  const supa = getSupabaseAdmin();
+  if (!supa) return jsonRes(res, { error: 'Service unavailable' }, 503);
+
+  const user = await getUserFromRequest(req);
+  if (!user) return jsonRes(res, { error: 'Not authenticated' }, 401);
+
+  // Generate token, store hash
+  const { raw, hash } = newToken();
+  const { error: insErr } = await supa
+    .from('verification_tokens')
+    .insert({ user_id: user.id, token_hash: hash, purpose: 'signup' });
+  if (insErr) {
+    console.error('[welcome] token insert failed:', insErr.message);
+    return jsonRes(res, { error: 'Could not create token' }, 500);
+  }
+
+  // Pull display name from profile (trigger created it at signup)
+  const { data: profile } = await supa.from('profiles').select('display_name').eq('id', user.id).maybeSingle();
+  const displayName = (profile && profile.display_name) || (user.email && user.email.split('@')[0]) || '';
+
+  const verifyUrl = `${emailModule.SITE_URL}/verify-email.html?token=${encodeURIComponent(raw)}`;
+  const tpl = emailModule.welcomeEmail({ name: displayName, verifyUrl });
+  const result = await emailModule.sendEmail({ to: user.email, ...tpl });
+
+  if (!result.ok) return jsonRes(res, { error: result.error || 'Send failed' }, 500);
+  return jsonRes(res, { ok: true, disabled: result.disabled || false });
+}
+
+/* ── POST /api/send-verification-email — on-demand (gate-triggered resend) ──
+   Body: { reason }       reason: 'place-ad' | 'contact' | (any string)
+   Auth: requires Authorization Bearer token
+*/
+async function handleSendVerificationEmail(req, res) {
+  const supa = getSupabaseAdmin();
+  if (!supa) return jsonRes(res, { error: 'Service unavailable' }, 503);
+
+  const user = await getUserFromRequest(req);
+  if (!user) return jsonRes(res, { error: 'Not authenticated' }, 401);
+
+  let body = {};
+  try { body = await parseBody(req); } catch {}
+  const reason = String(body.reason || '').slice(0, 32);
+
+  // Already verified? Don't bother sending.
+  const { data: profile } = await supa
+    .from('profiles')
+    .select('email_verified_at, display_name')
+    .eq('id', user.id)
+    .maybeSingle();
+  if (profile && profile.email_verified_at) {
+    return jsonRes(res, { ok: true, alreadyVerified: true });
+  }
+
+  const { raw, hash } = newToken();
+  const { error: insErr } = await supa
+    .from('verification_tokens')
+    .insert({ user_id: user.id, token_hash: hash, purpose: 'on_demand' });
+  if (insErr) {
+    console.error('[verify] token insert failed:', insErr.message);
+    return jsonRes(res, { error: 'Could not create token' }, 500);
+  }
+
+  const displayName = (profile && profile.display_name) || (user.email && user.email.split('@')[0]) || '';
+  const verifyUrl = `${emailModule.SITE_URL}/verify-email.html?token=${encodeURIComponent(raw)}`;
+  const tpl = emailModule.verificationEmail({ name: displayName, verifyUrl, reason });
+  const result = await emailModule.sendEmail({ to: user.email, ...tpl });
+
+  if (!result.ok) return jsonRes(res, { error: result.error || 'Send failed' }, 500);
+  return jsonRes(res, { ok: true, disabled: result.disabled || false });
+}
+
+/* ── GET /api/verify-email?token=xxx — public, validates token, marks verified ── */
+async function handleVerifyEmailToken(req, res) {
+  const supa = getSupabaseAdmin();
+  if (!supa) return jsonRes(res, { ok: false, error: 'Service unavailable' }, 503);
+
+  // Parse token from query string
+  const idx = req.url.indexOf('?');
+  const qs = idx >= 0 ? req.url.slice(idx + 1) : '';
+  const params = new URLSearchParams(qs);
+  const raw = params.get('token');
+  if (!raw) return jsonRes(res, { ok: false, error: 'Missing token' }, 400);
+
+  const hash = sha256Hex(raw);
+  const { data: tokenRow, error: tErr } = await supa
+    .from('verification_tokens')
+    .select('id, user_id, expires_at, used_at')
+    .eq('token_hash', hash)
+    .maybeSingle();
+
+  if (tErr) {
+    console.error('[verify] token lookup failed:', tErr.message);
+    return jsonRes(res, { ok: false, error: 'Server error' }, 500);
+  }
+  if (!tokenRow) return jsonRes(res, { ok: false, error: 'Invalid or expired link' }, 400);
+  if (tokenRow.used_at) return jsonRes(res, { ok: false, error: 'This link has already been used' }, 400);
+  if (new Date(tokenRow.expires_at).getTime() < Date.now()) {
+    return jsonRes(res, { ok: false, error: 'This link has expired. Please request a new one.' }, 400);
+  }
+
+  // Mark token used + mark profile verified (in parallel — both atomic)
+  const now = new Date().toISOString();
+  const [tokenUpdate, profileUpdate] = await Promise.all([
+    supa.from('verification_tokens').update({ used_at: now }).eq('id', tokenRow.id),
+    supa.from('profiles').update({ email_verified_at: now }).eq('id', tokenRow.user_id),
+  ]);
+
+  if (tokenUpdate.error || profileUpdate.error) {
+    console.error('[verify] update failed:', tokenUpdate.error || profileUpdate.error);
+    return jsonRes(res, { ok: false, error: 'Could not complete verification' }, 500);
+  }
+
+  // Invalidate any other outstanding tokens for this user
+  try {
+    await supa.from('verification_tokens')
+      .update({ used_at: now })
+      .eq('user_id', tokenRow.user_id)
+      .is('used_at', null);
+  } catch { /* non-fatal */ }
+
+  return jsonRes(res, { ok: true });
+}
+
+/* ── POST /api/send-listing-approved-email — internal, fired after AI approves ──
+   Body: { listing_id }
+   Auth: requires Authorization Bearer token (the listing's owner)
+*/
+async function handleSendListingApprovedEmail(req, res) {
+  const supa = getSupabaseAdmin();
+  if (!supa) return jsonRes(res, { error: 'Service unavailable' }, 503);
+
+  const user = await getUserFromRequest(req);
+  if (!user) return jsonRes(res, { error: 'Not authenticated' }, 401);
+
+  let body = {};
+  try { body = await parseBody(req); } catch {}
+  const listingId = body.listing_id;
+  if (!listingId) return jsonRes(res, { error: 'Missing listing_id' }, 400);
+
+  // Confirm the listing belongs to this user and is active
+  const { data: listing, error: lErr } = await supa
+    .from('listings')
+    .select('id, owner_id, title, status')
+    .eq('id', listingId)
+    .maybeSingle();
+  if (lErr || !listing) return jsonRes(res, { error: 'Listing not found' }, 404);
+  if (listing.owner_id !== user.id) return jsonRes(res, { error: 'Not owner' }, 403);
+  if (listing.status !== 'active') return jsonRes(res, { ok: true, skipped: 'not_active' });
+
+  // Pull display name
+  const { data: profile } = await supa.from('profiles').select('display_name').eq('id', user.id).maybeSingle();
+  const displayName = (profile && profile.display_name) || (user.email && user.email.split('@')[0]) || '';
+
+  const listingUrl = `${emailModule.SITE_URL}/listing.html?id=${encodeURIComponent(listing.id)}`;
+  const tpl = emailModule.listingApprovedEmail({ name: displayName, title: listing.title, listingUrl });
+  const result = await emailModule.sendEmail({ to: user.email, ...tpl });
+
+  if (!result.ok) return jsonRes(res, { error: result.error || 'Send failed' }, 500);
+  return jsonRes(res, { ok: true, disabled: result.disabled || false });
+}
+
+// ══════════════════════════════════════════════════════════════════════════
 // HTTP SERVER
 // ══════════════════════════════════════════════════════════════════════════
 const server = http.createServer(async (req, res) => {
@@ -845,6 +1052,12 @@ const server = http.createServer(async (req, res) => {
     if (url === '/api/mulkiya-scan') return handleMulkiyaScan(req, res);
     if (url === '/api/price-estimate') return handlePriceEstimate(req, res);
     if (url === '/api/verify-listing') return handleVerifyListing(req, res);
+    if (url === '/api/send-welcome-email') return handleSendWelcomeEmail(req, res);
+    if (url === '/api/send-verification-email') return handleSendVerificationEmail(req, res);
+    if (url === '/api/send-listing-approved-email') return handleSendListingApprovedEmail(req, res);
+  }
+  if (req.method === 'GET') {
+    if (url === '/api/verify-email') return handleVerifyEmailToken(req, res);
   }
 
   // Security headers (apply to all non-API responses too)

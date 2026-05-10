@@ -975,8 +975,9 @@
   let _emailVerified = false;       // ditto
   const SUPABASE_BUCKET = 'vehicle-photos';
 
-  // Auth + email-verification bootstrap. Sets up _currentUser and shows the
-  // verification banner if the user signed up but never confirmed their email.
+  // Auth bootstrap. Sets up _currentUser. We DON'T show a verification banner
+  // upfront — verification is gated at the moment the user clicks Publish (and
+  // similarly at "Call Seller" / "WhatsApp" on listing.html).
   (async () => {
     let tries = 0;
     while (!window.Auth && tries < 50) { await new Promise(r => setTimeout(r, 50)); tries++; }
@@ -985,55 +986,79 @@
     const user = await window.Auth.requireAuth();
     if (!user) return; // requireAuth already redirected
     _currentUser = user;
-    _emailVerified = Boolean(user.email_confirmed_at || user.confirmed_at);
-
-    if (!_emailVerified) {
-      showEmailVerificationBanner();
-    }
+    _emailVerified = await window.Auth.isEmailVerified();
   })();
 
-  // Show a banner at the top of the form prompting the user to verify their email.
-  function showEmailVerificationBanner() {
-    if (document.getElementById('email-verify-banner')) return;
-    const banner = document.createElement('div');
-    banner.id = 'email-verify-banner';
-    banner.style.cssText = 'background:#FFF3CD;border:1px solid #FFD700;border-radius:10px;padding:14px 18px;margin:0 auto 16px;max-width:1200px;font-size:14px;color:#856404;line-height:1.6;display:flex;align-items:center;gap:14px;flex-wrap:wrap;';
-    banner.innerHTML = `
-      <div style="font-size:22px;">&#x2709;&#xFE0F;</div>
-      <div style="flex:1;min-width:200px;">
-        <strong>Please verify your email to publish listings.</strong>
-        We sent a confirmation link to <strong>${(_currentUser && _currentUser.email) || ''}</strong>.
-      </div>
-      <button id="resend-verify-btn" style="background:#856404;color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;">Resend Email</button>
-      <button id="check-verify-btn" style="background:transparent;color:#856404;border:1px solid #856404;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;">I&apos;ve Verified</button>
-    `;
-    // Insert at top of main content
-    const main = document.querySelector('main') || document.querySelector('.page-bg') || document.body.querySelector('section') || document.body;
-    main.parentNode.insertBefore(banner, main);
+  // Show a modal asking the user to verify their email before publishing.
+  // Resolves with true if user verifies during this session, false otherwise.
+  function showEmailVerificationModal({ reason } = {}) {
+    return new Promise((resolve) => {
+      // If already up, ignore double-click
+      if (document.getElementById('email-verify-modal-overlay')) return resolve(false);
 
-    document.getElementById('resend-verify-btn').onclick = async () => {
-      const btn = document.getElementById('resend-verify-btn');
-      btn.disabled = true;
-      btn.textContent = 'Sending…';
-      const { error } = await window.Auth.resendConfirmation();
-      btn.disabled = false;
-      btn.textContent = 'Resend Email';
-      if (error) showToast('Could not send: ' + error);
-      else showToast('Confirmation email sent. Please check your inbox (and spam folder).');
-    };
+      const overlay = document.createElement('div');
+      overlay.id = 'email-verify-modal-overlay';
+      overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:10000;display:flex;align-items:center;justify-content:center;padding:20px;';
 
-    document.getElementById('check-verify-btn').onclick = async () => {
-      // Fetch user fresh — confirmation flips email_confirmed_at on Supabase side
-      const { data: { user } } = await window.supa.auth.getUser();
-      if (user && (user.email_confirmed_at || user.confirmed_at)) {
-        _currentUser = user;
-        _emailVerified = true;
-        banner.remove();
-        showToast('Email verified! You can now publish listings.');
-      } else {
-        showToast('Still not verified. Click the link in your email and try again.');
-      }
-    };
+      const modal = document.createElement('div');
+      modal.style.cssText = 'background:#fff;border-radius:14px;max-width:420px;width:100%;padding:32px 28px;text-align:center;';
+      modal.innerHTML = `
+        <div style="font-size:48px;margin-bottom:12px;">&#x2709;&#xFE0F;</div>
+        <div style="font-size:20px;font-weight:800;color:var(--dark);margin-bottom:8px;">Verify your email to continue</div>
+        <div style="font-size:14px;color:var(--grey);line-height:1.6;margin-bottom:20px;">
+          Before publishing your listing, please verify your email address to keep DubiMotors safe from spam.
+          We&rsquo;ll send a one-tap confirmation link to <strong style="color:var(--dark);">${(_currentUser && _currentUser.email) || 'your inbox'}</strong>.
+        </div>
+        <div id="evm-status" style="display:none;background:#FFF3CD;color:#856404;padding:10px;border-radius:8px;font-size:13px;margin-bottom:14px;"></div>
+        <button id="evm-send" style="width:100%;background:var(--orange);color:#fff;border:none;border-radius:10px;padding:14px;font-size:15px;font-weight:700;cursor:pointer;margin-bottom:8px;">Send Verification Email</button>
+        <button id="evm-check" style="width:100%;background:transparent;color:var(--dark);border:1.5px solid var(--border);border-radius:10px;padding:12px;font-size:14px;font-weight:600;cursor:pointer;margin-bottom:8px;">I&rsquo;ve Verified — Check Now</button>
+        <button id="evm-cancel" style="width:100%;background:transparent;color:var(--grey);border:none;padding:8px;font-size:13px;cursor:pointer;">Cancel</button>
+      `;
+      overlay.appendChild(modal);
+      document.body.appendChild(overlay);
+
+      const status = (msg, kind) => {
+        const el = modal.querySelector('#evm-status');
+        el.textContent = msg;
+        el.style.background = kind === 'error' ? '#FFEBEE' : (kind === 'ok' ? '#E8F5E9' : '#FFF3CD');
+        el.style.color      = kind === 'error' ? '#C62828' : (kind === 'ok' ? '#2E7D32' : '#856404');
+        el.style.display = 'block';
+      };
+
+      const close = (result) => {
+        overlay.remove();
+        resolve(result);
+      };
+
+      modal.querySelector('#evm-send').onclick = async () => {
+        const btn = modal.querySelector('#evm-send');
+        btn.disabled = true; btn.textContent = 'Sending…';
+        const r = await window.Auth.sendVerificationEmail(reason || 'place-ad');
+        btn.disabled = false; btn.textContent = 'Send Verification Email';
+        if (r.alreadyVerified) {
+          _emailVerified = true;
+          close(true);
+          return;
+        }
+        if (r.error) status('Could not send: ' + r.error, 'error');
+        else status('Email sent! Check your inbox (and spam folder), then click the link.', 'ok');
+      };
+
+      modal.querySelector('#evm-check').onclick = async () => {
+        // Refresh profile cache + check
+        if (window.Auth && window.Auth.clearProfileCache) window.Auth.clearProfileCache();
+        const verified = await window.Auth.isEmailVerified();
+        if (verified) {
+          _emailVerified = true;
+          close(true);
+          return;
+        }
+        status('Still not verified. Click the link in your email and try again.', 'error');
+      };
+
+      modal.querySelector('#evm-cancel').onclick = () => close(false);
+      overlay.onclick = (e) => { if (e.target === overlay) close(false); };
+    });
   }
 
   renderNavbar('');
@@ -1711,12 +1736,17 @@
     const user = await window.Auth.getUser();
     if (!user) { window.location.href = 'login.html?next=/place-ad.html'; return; }
     _currentUser = user;
-    _emailVerified = Boolean(user.email_confirmed_at || user.confirmed_at);
+
+    // Re-check verification status fresh (user may have just verified)
+    if (window.Auth.clearProfileCache) window.Auth.clearProfileCache();
+    _emailVerified = await window.Auth.isEmailVerified();
     if (!_emailVerified) {
-      showEmailVerificationBanner();
-      showToast('Please verify your email before publishing.', 5000);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-      return;
+      const verified = await showEmailVerificationModal({ reason: 'place-ad' });
+      if (!verified) {
+        // User cancelled the modal → don't proceed
+        return;
+      }
+      _emailVerified = true;
     }
 
     // ─── 2. Common required fields ───
@@ -1922,6 +1952,8 @@
       submitBtn.innerHTML = 'Publish Listing';
 
       if (approved) {
+        // Fire the "your listing is live" email — non-blocking
+        window.Auth.sendListingApprovedEmail(listingId).catch(() => {});
         // Redirect to the newly published listing
         window.location.href = `listing.html?id=${listingId}`;
       } else {

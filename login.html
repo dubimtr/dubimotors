@@ -353,6 +353,11 @@
         return;
       }
     }
+
+    // Fire the welcome email (with verify link) — non-blocking. If Resend isn't
+    // configured the server logs and the call returns ok anyway.
+    window.Auth.sendWelcomeEmail().catch(() => {});
+
     showToast('Welcome to DubiMotors!');
     redirectAfterAuth();
   }
