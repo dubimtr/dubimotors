@@ -372,6 +372,9 @@ async function dmFillDashboardSidebar() {
       window.location.href = 'index.html';
     };
   });
+
+  // Reveal the now-populated sidebar (CSS hides it until this class is added).
+  document.documentElement.classList.add('auth-resolved');
 }
 
 if (typeof window !== 'undefined') {

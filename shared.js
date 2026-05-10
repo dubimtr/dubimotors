@@ -2502,6 +2502,8 @@ const DM = (() => {
       sellerLogo,
       phone: row.contact_phone,
       verified: row.verified,
+      status: row.status,         // 'active' | 'pending_review' | 'sold' | 'rejected' | 'expired'
+      ownerId: row.owner_id,
       featured: row.featured,
       warranty: row.warranty,
       serviceHistory: row.service_history,
@@ -2534,20 +2536,39 @@ const DM = (() => {
 
     _readyPromise = (async () => {
       try {
-        const { data, error } = await window.supa
+        // Fetch active listings (visible to everyone)
+        const activeRes = await window.supa
           .from('listings')
           .select('*, listing_images(url, is_primary, display_order)')
           .eq('status', 'active')
           .order('featured', { ascending: false })
           .order('created_at', { ascending: false });
 
-        if (error) {
-          console.warn('[DubiMotors] Supabase listings query failed; keeping fallback:', error.message);
+        if (activeRes.error) {
+          console.warn('[DubiMotors] Supabase listings query failed; keeping fallback:', activeRes.error.message);
           _loaded = true;
           return;
         }
-        if (!data || data.length === 0) {
-          console.info('[DubiMotors] Supabase returned no active listings; keeping fallback.');
+
+        // Also fetch this user's OWN pending/rejected/sold listings (so they can preview).
+        // Owner-only — others won't see these because of RLS + the status filter.
+        let ownPending = [];
+        try {
+          const { data: { user } } = await window.supa.auth.getUser();
+          if (user) {
+            const ownRes = await window.supa
+              .from('listings')
+              .select('*, listing_images(url, is_primary, display_order)')
+              .eq('owner_id', user.id)
+              .neq('status', 'active')
+              .order('created_at', { ascending: false });
+            if (!ownRes.error && Array.isArray(ownRes.data)) ownPending = ownRes.data;
+          }
+        } catch { /* non-fatal */ }
+
+        const data = (activeRes.data || []).concat(ownPending);
+        if (data.length === 0) {
+          console.info('[DubiMotors] Supabase returned no listings; keeping fallback.');
           _loaded = true;
           return;
         }

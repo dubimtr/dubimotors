@@ -752,7 +752,7 @@ async function handleVerifyListing(req, res) {
     return jsonRes(res, { approved: false, reason: 'The price entered seems unrealistic. Please enter a valid AED price.' });
   }
 
-  const prompt = `You are a listing verification AI for DubiMotors, a UAE vehicle marketplace. Your job is to detect fake, duplicate, irrelevant, or suspicious listings.
+  const prompt = `You are a listing verification AI for DubiMotors, a UAE vehicle marketplace. Your job is to detect low-quality, irrelevant, or suspicious listings.
 
 Listing details:
 - Vehicle: ${vehicleDesc}
@@ -764,21 +764,23 @@ Listing details:
 - Seller name: ${name || 'not provided'}
 - Phone: ${phone || 'not provided'}
 
-Check for these red flags:
-1. FAKE/SCAM: Price is unrealistically low (e.g. AED 500 for a car, AED 1000 for a yacht)
-2. WRONG CATEGORY: Item is clearly not a vehicle (e.g. listing a house, phone, or job)
+Check for these issues:
+1. PRICING: Price seems unrealistic for the vehicle (e.g. AED 500 for a car, AED 1000 for a yacht)
+2. WRONG CATEGORY: Item is clearly not a vehicle (e.g. a house, phone, or job listing)
 3. SPAM/IRRELEVANT: Description contains unrelated content, excessive links, or promotional spam
-4. IMPOSSIBLE SPECS: Year is in the future beyond 2026, mileage is negative, or specs are nonsensical
-5. DUPLICATE INDICATOR: Generic placeholder text like "test", "aaa", "xxx", "asdf" in title or description
-6. MISSING CRITICAL INFO: Brand is completely unknown or model doesn't exist for that brand
+4. IMPOSSIBLE SPECS: Year is beyond 2027, mileage is negative, or specs are nonsensical
+5. PLACEHOLDER TEXT: Generic placeholder like "test", "aaa", "xxx", "asdf" in title or description
+6. MISSING CRITICAL INFO: Brand is unknown or model doesn't exist for that brand
 
-Approve the listing if it looks like a genuine vehicle listing, even if some details are missing.
-Reject only if there are clear red flags.
+Approve if it looks like a genuine vehicle listing, even if some details are missing.
+Reject only if there are clear issues.
+
+IMPORTANT — when writing the rejection reason, use professional, neutral language. Address the seller directly. Do NOT use words like "scam", "fake", or "fraud" — these are accusatory. Instead, describe the issue factually: "the price seems too low for this vehicle", "the listing appears to be missing key details", "the description contains placeholder text", etc.
 
 Return ONLY this JSON:
 {
   "approved": true or false,
-  "reason": "Brief explanation if rejected, or empty string if approved",
+  "reason": "Brief, neutral explanation if rejected, or empty string if approved",
   "confidence": "high/medium/low"
 }`;
 

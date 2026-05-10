@@ -25,14 +25,18 @@ function renderNavbar(activePage = '') {
       html:not(.auth-resolved) #main-name,
       html:not(.auth-resolved) #main-avatar,
       html:not(.auth-resolved) .profile-avatar-meta,
-      html:not(.auth-resolved) .profile-form-grid { visibility: hidden; opacity: 0; }
+      html:not(.auth-resolved) .profile-form-grid,
+      html:not(.auth-resolved) .dash-profile-card,
+      html:not(.auth-resolved) .dash-nav { visibility: hidden; opacity: 0; }
       html.auth-resolved #sidebar-name,
       html.auth-resolved #sidebar-email,
       html.auth-resolved #sidebar-avatar,
       html.auth-resolved #main-name,
       html.auth-resolved #main-avatar,
       html.auth-resolved .profile-avatar-meta,
-      html.auth-resolved .profile-form-grid { visibility: visible; opacity: 1; transition: opacity .15s ease; }
+      html.auth-resolved .profile-form-grid,
+      html.auth-resolved .dash-profile-card,
+      html.auth-resolved .dash-nav { visibility: visible; opacity: 1; transition: opacity .15s ease; }
     `;
     document.head.appendChild(style);
   }
