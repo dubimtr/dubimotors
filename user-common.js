@@ -277,7 +277,101 @@ function dmTimeAgo(dateStr) {
   return Math.floor(diff/365) + ' year(s) ago';
 }
 function dmGetInitials(name) {
-  return name.split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase();
+  if (!name) return 'U';
+  return name.trim().split(/\s+/).map(w => w[0]).slice(0, 2).join('').substring(0, 2).toUpperCase() || 'U';
+}
+
+/**
+ * Fill the dashboard sidebar (used by my-ads, saved-searches, recent-searches,
+ * chats, notifications, profile pages) with REAL user data from Supabase auth.
+ *
+ * Looks for these elements (all optional — no error if any are missing):
+ *   .dash-avatar       — user initials
+ *   .dash-name         — display name
+ *   .dash-email        — email
+ *   .dash-stat-num     — first one is Active Ads, second is Saved/Favourites
+ *   .dash-nav-badge    — sidebar nav badges; hidden unless count > 0
+ *
+ * This is called on each user page. Polls briefly for window.Auth to load.
+ */
+async function dmFillDashboardSidebar() {
+  if (typeof window === 'undefined') return;
+
+  // Wait for Auth to load
+  let tries = 0;
+  while (!window.Auth && tries < 60) { await new Promise(r => setTimeout(r, 50)); tries++; }
+  if (!window.Auth) return;
+
+  const user = await window.Auth.getUser();
+  if (!user) return; // requireAuth on the page itself handles unauthenticated case
+
+  const profile = await window.Auth.getProfile();
+  const displayName = (profile && profile.display_name)
+    || (user.user_metadata && user.user_metadata.display_name)
+    || (user.email ? user.email.split('@')[0] : 'User');
+  const email = user.email || '';
+  const initials = dmGetInitials(displayName);
+
+  // Profile card
+  const avatarEl = document.querySelector('.dash-avatar');
+  const nameEl = document.querySelector('.dash-name');
+  const emailEl = document.querySelector('.dash-email');
+  if (avatarEl) avatarEl.textContent = initials;
+  if (nameEl)   nameEl.textContent = displayName;
+  if (emailEl)  emailEl.textContent = email;
+
+  // Hide all sidebar nav badges by default — they'll be shown if real counts exist
+  document.querySelectorAll('.dash-nav-badge').forEach(b => b.style.display = 'none');
+
+  // Fetch real counts in parallel
+  if (!window.supa) return;
+  try {
+    const [adsRes, favRes] = await Promise.all([
+      window.supa.from('listings')
+        .select('id', { count: 'exact', head: true })
+        .eq('owner_id', user.id)
+        .eq('status', 'active'),
+      window.supa.from('favourites')
+        .select('listing_id', { count: 'exact', head: true })
+        .eq('user_id', user.id),
+    ]);
+
+    const activeCount = (typeof adsRes.count === 'number') ? adsRes.count : 0;
+    const savedCount  = (typeof favRes.count === 'number') ? favRes.count : 0;
+
+    // Sidebar profile card stats: first stat is Active Ads, second is Saved
+    const stats = document.querySelectorAll('.dash-stat-num');
+    if (stats[0]) stats[0].textContent = activeCount;
+    if (stats[1]) stats[1].textContent = savedCount;
+
+    // Sidebar nav: show My Ads count if > 0
+    const myAdsLink = document.querySelector('a[href="my-ads.html"].dash-nav-item');
+    if (myAdsLink) {
+      const badge = myAdsLink.querySelector('.dash-nav-badge');
+      if (badge && activeCount > 0) {
+        badge.textContent = activeCount;
+        badge.style.display = '';
+      }
+    }
+    const savedLink = document.querySelector('a[href="saved-searches.html"].dash-nav-item');
+    if (savedLink) {
+      const badge = savedLink.querySelector('.dash-nav-badge');
+      // Saved Searches: feature not built yet → leave hidden
+      if (badge) badge.style.display = 'none';
+    }
+  } catch (e) {
+    console.warn('[dmFillDashboardSidebar] fetch failed:', e);
+  }
+
+  // Wire the Log Out button (sidebar usually has its own)
+  const logoutLinks = document.querySelectorAll('a[href="login.html"].dash-nav-item, .dash-logout');
+  logoutLinks.forEach(a => {
+    a.onclick = async (e) => {
+      e.preventDefault();
+      if (window.Auth) await window.Auth.signOut();
+      window.location.href = 'index.html';
+    };
+  });
 }
 
 if (typeof window !== 'undefined') {
@@ -290,4 +384,5 @@ if (typeof window !== 'undefined') {
   window.dmFormatPrice = dmFormatPrice;
   window.dmTimeAgo = dmTimeAgo;
   window.dmGetInitials = dmGetInitials;
+  window.dmFillDashboardSidebar = dmFillDashboardSidebar;
 }
