@@ -124,6 +124,27 @@ window.Auth = (() => {
   }
 
   /**
+   * Check if the current user has verified their email.
+   * Returns: true | false | null (no user)
+   */
+  async function isEmailVerified() {
+    const user = await getUser();
+    if (!user) return null;
+    return Boolean(user.email_confirmed_at || user.confirmed_at);
+  }
+
+  /** Resend the confirmation email to the current user. */
+  async function resendConfirmation() {
+    const user = await getUser();
+    if (!user) return { error: 'Not signed in' };
+    const { error } = await window.supa.auth.resend({
+      type: 'signup',
+      email: user.email,
+    });
+    return { error: error ? error.message : null };
+  }
+
+  /**
    * Subscribe to auth state changes (login, logout, token refresh).
    * Returns an unsubscribe function.
    */
@@ -184,5 +205,7 @@ window.Auth = (() => {
     onChange,
     requireAuth,
     updateProfile,
+    isEmailVerified,
+    resendConfirmation,
   };
 })();

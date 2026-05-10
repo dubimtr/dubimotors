@@ -215,6 +215,8 @@
       setTimeout(() => t.classList.remove('show'), 3000);
     }
 
+    let myAds = []; // populated from Supabase
+
     function filterAds(filter, btn) {
       currentFilter = filter;
       document.querySelectorAll('.ads-tab').forEach(t => t.classList.remove('active'));
@@ -222,15 +224,64 @@
       renderAds();
     }
 
+    // Load the current user's listings from Supabase (with primary photo)
+    async function loadMyAds() {
+      let tries = 0;
+      while (!window.Auth && tries < 50) { await new Promise(r => setTimeout(r, 50)); tries++; }
+      if (!window.Auth) return;
+      const user = await window.Auth.getUser();
+      if (!user) return; // requireAuth above already redirects
+
+      const { data, error } = await window.supa
+        .from('listings')
+        .select('id, title, price, status, view_count, location, created_at, listing_images(url, is_primary)')
+        .eq('owner_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.warn('[my-ads] failed to load:', error.message);
+        myAds = [];
+        renderAds();
+        return;
+      }
+      myAds = (data || []).map(row => {
+        const primary = (row.listing_images || []).find(i => i.is_primary) || (row.listing_images || [])[0];
+        return {
+          id: row.id,
+          title: row.title,
+          price: row.price,
+          status: row.status,           // active | pending_review | sold | expired | rejected
+          views: row.view_count || 0,
+          inquiries: 0,                 // not yet tracked — TODO Phase 4
+          img: primary ? primary.url : '',
+          postedDate: row.created_at,
+          location: row.location || '',
+          verified: row.status === 'active',
+        };
+      });
+      renderAds();
+    }
+
+    function statusLabel(s) {
+      switch (s) {
+        case 'active':         return '● Active';
+        case 'pending_review': return '● Pending Review';
+        case 'sold':           return '● Sold';
+        case 'expired':        return '● Expired';
+        case 'rejected':       return '● Rejected';
+        default:               return s;
+      }
+    }
+
     function renderAds() {
       const list = document.getElementById('ads-list');
-      const ads = currentFilter === 'all' ? DM_MY_ADS : DM_MY_ADS.filter(a => a.status === currentFilter);
+      const ads = currentFilter === 'all' ? myAds : myAds.filter(a => a.status === currentFilter);
 
       if (ads.length === 0) {
         list.innerHTML = `<div class="empty-state">
           <div class="empty-state-icon">📋</div>
           <div class="empty-state-title">No listings here</div>
-          <div class="empty-state-sub">You have no ${currentFilter} listings at the moment.</div>
+          <div class="empty-state-sub">You have no ${currentFilter === 'all' ? '' : currentFilter} listings ${currentFilter === 'all' ? 'yet' : 'at the moment'}.</div>
           <button class="btn-place-ad-cta" onclick="window.location.href='place-ad.html'">+ Place Your First Ad</button>
         </div>`;
         return;
@@ -238,10 +289,10 @@
 
       list.innerHTML = ads.map(ad => `
         <div class="ad-card" id="ad-${ad.id}">
-          <img class="ad-card-img" src="${ad.img}" alt="${ad.title}" loading="lazy" onerror="this.style.background='#eee'"/>
+          <img class="ad-card-img" src="${ad.img}" alt="${ad.title}" loading="lazy" onerror="this.style.background='#eee'; this.style.minHeight='100px'"/>
           <div>
             <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:4px;">
-              <span class="ad-status-badge ${ad.status}">${ad.status === 'active' ? '● Active' : '● Expired'}</span>
+              <span class="ad-status-badge ${ad.status}">${statusLabel(ad.status)}</span>
               ${ad.verified ? '<span class="verified-ai-badge">🤖 Verified by AI</span>' : ''}
             </div>
             <div class="ad-card-title">${ad.title}</div>
@@ -266,10 +317,12 @@
             </div>
           </div>
           <div class="ad-card-actions">
-            <button class="btn-ad-action primary" onclick="showToast('Opening listing editor...')">Edit</button>
+            <button class="btn-ad-action primary" onclick="window.location.href='listing.html?id=${ad.id}'">View</button>
             ${ad.status === 'active'
-              ? `<button class="btn-ad-action" onclick="showToast('Listing marked as sold!')">Mark Sold</button>`
-              : `<button class="btn-ad-action primary" onclick="showToast('Listing renewed for 60 days!')">Renew</button>`
+              ? `<button class="btn-ad-action" onclick="markSold('${ad.id}')">Mark Sold</button>`
+              : ad.status === 'sold' || ad.status === 'expired'
+                ? `<button class="btn-ad-action primary" onclick="showToast('Renew flow coming soon.')">Renew</button>`
+                : ''
             }
             <button class="btn-ad-action danger" onclick="deleteAd('${ad.id}')">Delete</button>
           </div>
@@ -277,14 +330,24 @@
       `).join('');
     }
 
-    function deleteAd(id) {
-      if (!confirm('Are you sure you want to delete this listing?')) return;
-      const el = document.getElementById('ad-' + id);
-      if (el) { el.style.opacity = '0.3'; el.style.pointerEvents = 'none'; }
-      showToast('Listing deleted.');
+    async function markSold(id) {
+      if (!confirm('Mark this listing as sold? It will be hidden from public search.')) return;
+      const { error } = await window.supa.from('listings').update({ status: 'sold' }).eq('id', id);
+      if (error) { showToast('Could not update: ' + error.message); return; }
+      showToast('Listing marked as sold.');
+      loadMyAds();
     }
 
-    renderAds();
+    async function deleteAd(id) {
+      if (!confirm('Are you sure you want to delete this listing? This cannot be undone.')) return;
+      const { error } = await window.supa.from('listings').delete().eq('id', id);
+      if (error) { showToast('Could not delete: ' + error.message); return; }
+      showToast('Listing deleted.');
+      loadMyAds();
+    }
+
+    // Load real ads on page ready
+    loadMyAds();
   </script>
 </body>
 </html>

@@ -926,23 +926,29 @@
         <!-- Listing Package -->
         <div class="pricing-card">
           <div class="pricing-title">Listing Package</div>
-          <div class="pricing-option selected" onclick="selectPlan(this)">
+          <div class="pricing-option selected" data-package="basic" onclick="selectPlan(this)">
             <div><div class="pricing-option-label">Basic</div><div class="pricing-option-sub">30 days · Standard listing</div></div>
             <div class="pricing-option-price">Free</div>
           </div>
-          <div class="pricing-option" onclick="selectPlan(this)">
-            <div><div class="pricing-option-label">Featured</div><div class="pricing-option-sub">30 days · Top of search results</div></div>
-            <div class="pricing-option-price">AED 99</div>
+          <div class="pricing-option" data-package="featured" data-disabled="true" style="opacity:0.55;cursor:not-allowed;position:relative;" onclick="showToast('Featured listings coming soon — payment integration is being set up.')">
+            <div>
+              <div class="pricing-option-label">Featured</div>
+              <div class="pricing-option-sub">30 days · Top of search results</div>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
+              <span style="background:var(--orange);color:#fff;font-size:9px;font-weight:700;padding:2px 8px;border-radius:8px;letter-spacing:0.3px;">COMING SOON</span>
+              <div class="pricing-option-price">AED 99</div>
+            </div>
           </div>
-          <div class="pricing-option" onclick="selectPlan(this)">
+          <div class="pricing-option" data-package="premium" data-disabled="true" style="opacity:0.55;cursor:not-allowed;position:relative;" onclick="showToast('Premium listings coming soon — payment integration is being set up.')">
             <div>
               <div class="pricing-option-label">Premium</div>
               <div class="pricing-option-sub">60 days · Homepage + Email blast</div>
             </div>
-            <div class="pricing-option-price" style="white-space:nowrap;">AED 249</div>
-          </div>
-          <div class="recaptcha-wrap">
-            <div class="g-recaptcha" data-sitekey="6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI"></div>
+            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
+              <span style="background:var(--orange);color:#fff;font-size:9px;font-weight:700;padding:2px 8px;border-radius:8px;letter-spacing:0.3px;">COMING SOON</span>
+              <div class="pricing-option-price" style="white-space:nowrap;">AED 249</div>
+            </div>
           </div>
           <button class="btn-submit-ad" onclick="submitAd()">Publish Listing</button>
         </div>
@@ -964,13 +970,72 @@
 <script src="components.js"></script>
 <script>
 
-  // Auth guard: redirect to login if not signed in
+  // ─── State for the rest of the script ───
+  let _currentUser = null;          // populated by the auth bootstrap below
+  let _emailVerified = false;       // ditto
+  const SUPABASE_BUCKET = 'vehicle-photos';
+
+  // Auth + email-verification bootstrap. Sets up _currentUser and shows the
+  // verification banner if the user signed up but never confirmed their email.
   (async () => {
     let tries = 0;
     while (!window.Auth && tries < 50) { await new Promise(r => setTimeout(r, 50)); tries++; }
     if (!window.Auth) return;
-    await window.Auth.requireAuth();
+
+    const user = await window.Auth.requireAuth();
+    if (!user) return; // requireAuth already redirected
+    _currentUser = user;
+    _emailVerified = Boolean(user.email_confirmed_at || user.confirmed_at);
+
+    if (!_emailVerified) {
+      showEmailVerificationBanner();
+    }
   })();
+
+  // Show a banner at the top of the form prompting the user to verify their email.
+  function showEmailVerificationBanner() {
+    if (document.getElementById('email-verify-banner')) return;
+    const banner = document.createElement('div');
+    banner.id = 'email-verify-banner';
+    banner.style.cssText = 'background:#FFF3CD;border:1px solid #FFD700;border-radius:10px;padding:14px 18px;margin:0 auto 16px;max-width:1200px;font-size:14px;color:#856404;line-height:1.6;display:flex;align-items:center;gap:14px;flex-wrap:wrap;';
+    banner.innerHTML = `
+      <div style="font-size:22px;">&#x2709;&#xFE0F;</div>
+      <div style="flex:1;min-width:200px;">
+        <strong>Please verify your email to publish listings.</strong>
+        We sent a confirmation link to <strong>${(_currentUser && _currentUser.email) || ''}</strong>.
+      </div>
+      <button id="resend-verify-btn" style="background:#856404;color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;">Resend Email</button>
+      <button id="check-verify-btn" style="background:transparent;color:#856404;border:1px solid #856404;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;">I&apos;ve Verified</button>
+    `;
+    // Insert at top of main content
+    const main = document.querySelector('main') || document.querySelector('.page-bg') || document.body.querySelector('section') || document.body;
+    main.parentNode.insertBefore(banner, main);
+
+    document.getElementById('resend-verify-btn').onclick = async () => {
+      const btn = document.getElementById('resend-verify-btn');
+      btn.disabled = true;
+      btn.textContent = 'Sending…';
+      const { error } = await window.Auth.resendConfirmation();
+      btn.disabled = false;
+      btn.textContent = 'Resend Email';
+      if (error) showToast('Could not send: ' + error);
+      else showToast('Confirmation email sent. Please check your inbox (and spam folder).');
+    };
+
+    document.getElementById('check-verify-btn').onclick = async () => {
+      // Fetch user fresh — confirmation flips email_confirmed_at on Supabase side
+      const { data: { user } } = await window.supa.auth.getUser();
+      if (user && (user.email_confirmed_at || user.confirmed_at)) {
+        _currentUser = user;
+        _emailVerified = true;
+        banner.remove();
+        showToast('Email verified! You can now publish listings.');
+      } else {
+        showToast('Still not verified. Click the link in your email and try again.');
+      }
+    };
+  }
+
   renderNavbar('');
   renderFooter();
 
@@ -1237,8 +1302,15 @@
 
   /* ── Pricing plan ── */
   function selectPlan(el) {
+    if (el.dataset.disabled === 'true') return; // Featured/Premium not yet available
     document.querySelectorAll('.pricing-option').forEach(p => p.classList.remove('selected'));
     el.classList.add('selected');
+  }
+
+  // Returns the currently selected listing package: 'basic' | 'featured' | 'premium'
+  function selectedPackage() {
+    const sel = document.querySelector('.pricing-option.selected');
+    return (sel && sel.dataset.package) || 'basic';
   }
 
   /* ══════════════════════════════════════════════════════════════
@@ -1552,27 +1624,126 @@
     btn.innerHTML = '<span>&#x2728;</span> Regenerate';
   }
 
-  /* ── Submit ── */
+  /* ══════════════════════════════════════════════════════════════
+     SUBMIT — uploads photos to Storage, inserts listing + images,
+     runs AI moderation, sets final status.
+  ══════════════════════════════════════════════════════════════ */
+
+  // Map a category page key to the listings.category enum value the DB expects
+  function dbCategory(cat) {
+    return cat; // values match: cars, bikes, boats, jetski, heavy, plates, accessories
+  }
+
+  // Map a UI condition string to one the DB CHECK constraint accepts
+  function dbCondition(c) {
+    if (!c) return null;
+    if (/new/i.test(c)) return 'New';
+    if (/used|pre-owned/i.test(c)) return 'Used';
+    return null;
+  }
+
+  function dbTransmission(t) {
+    if (!t) return null;
+    const v = t.trim();
+    if (['Automatic','Manual','CVT','Semi-Automatic'].includes(v)) return v;
+    return null;
+  }
+
+  function dbFuel(f) {
+    if (!f) return null;
+    const v = f.trim();
+    if (['Gasoline','Diesel','Hybrid','Electric','Plug-in Hybrid'].includes(v)) return v;
+    return null;
+  }
+
+  function dbEmirate(e) {
+    if (!e) return null;
+    const valid = ['Dubai','Abu Dhabi','Sharjah','Ajman','Umm Al Quwain','Ras Al Khaimah','Fujairah'];
+    return valid.includes(e) ? e : null;
+  }
+
+  // Upload one File to Supabase Storage. Returns { path, publicUrl } or throws.
+  async function uploadOnePhoto(file, userId, listingTempId, index) {
+    // Sanitize filename — Storage rejects most non-ASCII characters
+    const ext = (file.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g,'') || 'jpg';
+    const cleanName = `${String(index).padStart(2,'0')}-${Date.now()}.${ext}`;
+    const path = `${userId}/${listingTempId}/${cleanName}`;
+    const { error } = await window.supa.storage
+      .from(SUPABASE_BUCKET)
+      .upload(path, file, {
+        cacheControl: '31536000',
+        upsert: false,
+        contentType: file.type || 'image/jpeg',
+      });
+    if (error) throw new Error(`Photo upload failed: ${error.message}`);
+    // Public URL (the bucket is public)
+    const { data: pub } = window.supa.storage.from(SUPABASE_BUCKET).getPublicUrl(path);
+    return { path, publicUrl: pub.publicUrl };
+  }
+
+  // Render an inline progress bar above the submit button
+  function setSubmitProgress(stage, current, total) {
+    let bar = document.getElementById('submit-progress');
+    const submitBtn = document.querySelector('.btn-submit-ad');
+    if (!bar) {
+      bar = document.createElement('div');
+      bar.id = 'submit-progress';
+      bar.style.cssText = 'background:#FFF7ED;border:1px solid #FED7AA;border-radius:10px;padding:14px;margin:0 0 12px;font-size:13px;color:var(--dark);';
+      submitBtn.parentNode.insertBefore(bar, submitBtn);
+    }
+    const pct = total > 0 ? Math.round((current / total) * 100) : 0;
+    bar.innerHTML = `
+      <div style="font-weight:700;margin-bottom:6px;">${stage}</div>
+      ${total > 0 ? `<div style="background:#fff;border-radius:6px;height:8px;overflow:hidden;border:1px solid #FED7AA;"><div style="background:var(--orange);height:100%;width:${pct}%;transition:width .2s;"></div></div>
+      <div style="font-size:11px;color:var(--grey);margin-top:4px;">${current} of ${total}</div>` : ''}
+    `;
+  }
+
+  function clearSubmitProgress() {
+    const bar = document.getElementById('submit-progress');
+    if (bar) bar.remove();
+  }
+
+  // The main publish flow
   async function submitAd() {
-    const price = document.getElementById('inp-price').value;
-    const name = document.getElementById('inp-name').value;
-    const phone = document.getElementById('inp-phone').value;
-    const email = document.getElementById('inp-email').value;
+    // ─── 1. Auth + verification gate ───
+    if (!window.Auth) { showToast('Authentication not ready. Please refresh.'); return; }
+    const user = await window.Auth.getUser();
+    if (!user) { window.location.href = 'login.html?next=/place-ad.html'; return; }
+    _currentUser = user;
+    _emailVerified = Boolean(user.email_confirmed_at || user.confirmed_at);
+    if (!_emailVerified) {
+      showEmailVerificationBanner();
+      showToast('Please verify your email before publishing.', 5000);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
 
-    if (!price) { showToast('Please enter a price.'); return; }
-    if (!name || !phone) { showToast('Please fill in your Name and Phone Number.'); return; }
+    // ─── 2. Common required fields ───
+    const price = parseInt(document.getElementById('inp-price').value, 10);
+    const name  = document.getElementById('inp-name').value.trim();
+    const phone = document.getElementById('inp-phone').value.trim();
+    const email = document.getElementById('inp-email').value.trim();
 
-    // Build category-specific data
-    let brand = '', model = '', trim = '', year = '', km = '', condition = '', desc = '', location = '';
+    if (!price || price <= 0) { showToast('Please enter a valid price.'); return; }
+    if (!name || !phone)      { showToast('Please fill in your Name and Phone Number.'); return; }
+
+    // ─── 3. Category-specific fields ───
+    let brand='', model='', trim='', year=null, km=null, condition='', desc='';
+    let location='', emirate=null, lat=null, lng=null;
+    let bodyType=null, doors=null, seats=null, color=null, regionalSpec=null;
+    let transmission=null, fuelType=null, engine=null, hp=null, cylinders=null;
 
     if (currentCat === 'plates') {
-      const emirate = document.getElementById('sel-plate-emirate').value;
+      const e = document.getElementById('sel-plate-emirate').value;
       const plateNum = document.getElementById('inp-plate-number').value;
-      if (!emirate || !plateNum) { showToast('Please fill in the Emirate and Plate Number.'); return; }
+      if (!e || !plateNum) { showToast('Please fill in the Emirate and Plate Number.'); return; }
       brand = 'Number Plate';
-      model = `${emirate} ${document.getElementById('inp-plate-code').value || ''} ${plateNum}`.trim();
+      model = `${e} ${document.getElementById('inp-plate-code').value || ''} ${plateNum}`.trim();
       desc = document.getElementById('inp-plate-desc').value;
-      location = emirate;
+      location = e;
+      emirate = dbEmirate(e);
+      year = new Date().getFullYear();
     } else if (currentCat === 'accessories') {
       const accName = document.getElementById('inp-acc-name').value;
       if (!accName) { showToast('Please enter the item name.'); return; }
@@ -1581,61 +1752,200 @@
       condition = document.getElementById('sel-acc-condition').value;
       desc = document.getElementById('inp-acc-desc').value;
       location = document.getElementById('sel-acc-location').value;
+      emirate = dbEmirate(location);
+      year = new Date().getFullYear();
     } else {
-      brand = document.getElementById('sel-brand').value;
-      model = document.getElementById('sel-model').value;
-      trim = document.getElementById('sel-trim').value;
-      year = document.getElementById('sel-year').value;
-      km = document.getElementById('inp-km').value;
-      condition = document.getElementById('sel-condition').value;
-      desc = document.getElementById('inp-desc') ? document.getElementById('inp-desc').value : '';
-      location = document.getElementById('sel-location').value;
+      brand        = document.getElementById('sel-brand').value;
+      model        = document.getElementById('sel-model').value;
+      trim         = document.getElementById('sel-trim').value || '';
+      year         = parseInt(document.getElementById('sel-year').value, 10) || null;
+      km           = parseInt(document.getElementById('inp-km').value, 10);
+      if (Number.isNaN(km)) km = null;
+      condition    = document.getElementById('sel-condition').value;
+      desc         = document.getElementById('inp-desc') ? document.getElementById('inp-desc').value : '';
+      location     = document.getElementById('sel-location').value;
+      emirate      = dbEmirate(location);
+      lat          = parseFloat(document.getElementById('inp-lat').value) || null;
+      lng          = parseFloat(document.getElementById('inp-lng').value) || null;
+      bodyType     = (document.getElementById('sel-body') || {}).value || null;
+      doors        = parseInt((document.getElementById('sel-doors') || {}).value, 10) || null;
+      seats        = parseInt((document.getElementById('sel-seats') || {}).value, 10) || null;
+      const extColor = (document.getElementById('sel-ext-color') || {}).value || null;
+      color        = extColor;
+      regionalSpec = (document.getElementById('sel-spec') || {}).value || null;
+      transmission = dbTransmission((document.getElementById('sel-trans') || {}).value);
+      fuelType     = dbFuel((document.getElementById('sel-fuel') || {}).value);
+      engine       = (document.getElementById('inp-engine') || {}).value || null;
+      hp           = parseInt((document.getElementById('inp-hp') || {}).value, 10) || null;
+      cylinders    = parseInt((document.getElementById('sel-cyl') || {}).value, 10) || null;
       if (!brand || !model) { showToast('Please fill in Brand and Model.'); return; }
+      if (!year)            { showToast('Please select the year.'); return; }
     }
+
+    // ─── 4. Photos check ───
+    // Combine sources — manual flow uses `manualPhotos`, AI flow uses `aiUploadedFiles`
+    const photos = (manualPhotos && manualPhotos.length) ? manualPhotos
+                 : (aiUploadedFiles && aiUploadedFiles.length) ? aiUploadedFiles
+                 : [];
+    if (currentCat !== 'plates' && photos.length < 3) {
+      showToast(`Please upload at least 3 photos. Currently uploaded: ${photos.length}.`, 5000);
+      return;
+    }
+    if (photos.length > 20) { showToast('Maximum 20 photos per listing.'); return; }
+
+    // Title built from key fields
+    const title = (currentCat === 'plates' || currentCat === 'accessories')
+      ? model
+      : `${year} ${brand} ${model}${trim ? ' ' + trim : ''}`.trim();
 
     const submitBtn = document.querySelector('.btn-submit-ad');
     submitBtn.disabled = true;
-    submitBtn.innerHTML = '&#x23F3; Verifying with AI...';
+    submitBtn.innerHTML = 'Publishing…';
+
+    // Generate a temp folder name; the listing UUID we get back from insert is the
+    // canonical one, but Storage uploads need to happen first (we want to fail fast
+    // if photos can't upload before inserting a row).
+    const tempFolder = (window.crypto && window.crypto.randomUUID)
+      ? window.crypto.randomUUID()
+      : Date.now().toString(36) + Math.random().toString(36).slice(2);
+
+    let uploadedPhotos = []; // [{ path, publicUrl }]
 
     try {
-      const res = await fetch('/api/verify-listing', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ brand, model, trim, year, price, km, condition, desc, location, name, phone, email })
-      });
-      const data = await res.json();
-
-      if (data.approved) {
-        // Show success screen
-        document.querySelector('.ad-form-layout').innerHTML = `
-          <div style="grid-column:1/-1;text-align:center;padding:60px 20px;">
-            <div style="font-size:72px;margin-bottom:20px;">&#x2705;</div>
-            <div style="font-size:28px;font-weight:900;color:var(--dark);margin-bottom:12px;">Your Listing is Live!</div>
-            <div style="display:inline-flex;align-items:center;gap:8px;background:#E8F5E9;color:#2E7D32;border:1px solid #A5D6A7;border-radius:20px;padding:8px 20px;font-size:14px;font-weight:700;margin-bottom:20px;">
-              <span>&#x1F916;</span> Verified by AI
-            </div>
-            <div style="font-size:16px;color:var(--grey);max-width:480px;margin:0 auto 32px;line-height:1.7;">${data.message}${email ? '<br><br>A confirmation email has been sent to <strong>' + email + '</strong>.' : ''}</div>
-            <button class="btn-primary" onclick="window.location.href='index.html'">Back to Home</button>
-          </div>`;
-      } else {
-        // Rejected — show reason
-        submitBtn.disabled = false;
-        submitBtn.innerHTML = 'Publish Listing';
-        showToast('Listing flagged: ' + (data.reason || 'Please review your listing details.'), 6000);
-        // Show inline warning
-        let warn = document.getElementById('ai-verify-warning');
-        if (!warn) {
-          warn = document.createElement('div');
-          warn.id = 'ai-verify-warning';
-          warn.style.cssText = 'background:#FFF3CD;border:1px solid #FFD700;border-radius:10px;padding:14px 18px;margin-top:12px;font-size:14px;color:#856404;line-height:1.6;';
-          submitBtn.parentNode.insertBefore(warn, submitBtn.nextSibling);
-        }
-        warn.innerHTML = '<strong>&#x26A0;&#xFE0F; AI Review:</strong> ' + (data.reason || 'Please check your listing details and try again.');
+      // ─── 5. Upload photos to Storage ───
+      setSubmitProgress('Uploading photos…', 0, photos.length);
+      for (let i = 0; i < photos.length; i++) {
+        const result = await uploadOnePhoto(photos[i], user.id, tempFolder, i);
+        uploadedPhotos.push(result);
+        setSubmitProgress('Uploading photos…', i + 1, photos.length);
       }
-    } catch (e) {
+
+      // ─── 6. Insert listing row ───
+      setSubmitProgress('Creating your listing…', 0, 0);
+      const listingRow = {
+        owner_id: user.id,
+        status: 'pending_review',         // updated below based on AI verdict
+        package: selectedPackage(),
+        category: dbCategory(currentCat),
+        title,
+        make: brand,
+        model: model,
+        trim: trim || null,
+        year: year || new Date().getFullYear(),
+        price,
+        km,
+        condition: dbCondition(condition),
+        engine,
+        hp,
+        cylinders,
+        transmission,
+        fuel_type: fuelType,
+        body_type: bodyType,
+        doors,
+        seats,
+        color,
+        regional_spec: regionalSpec,
+        description: desc || null,
+        emirate,
+        location: location || null,
+        latitude: lat,
+        longitude: lng,
+        contact_name: name,
+        contact_phone: phone,
+        contact_whatsapp: phone,
+        verified: false,
+        warranty: false,
+        service_history: false,
+        featured: false,
+        is_demo: false,
+      };
+      const { data: inserted, error: insErr } = await window.supa
+        .from('listings')
+        .insert(listingRow)
+        .select('id')
+        .single();
+      if (insErr) throw new Error('Could not create listing: ' + insErr.message);
+      const listingId = inserted.id;
+
+      // ─── 7. Insert image rows ───
+      setSubmitProgress('Saving photos…', 0, 0);
+      const imageRows = uploadedPhotos.map((p, idx) => ({
+        listing_id: listingId,
+        url: p.publicUrl,
+        storage_path: p.path,
+        is_primary: idx === 0,
+        display_order: idx,
+      }));
+      const { error: imgErr } = await window.supa.from('listing_images').insert(imageRows);
+      if (imgErr) throw new Error('Could not save photo references: ' + imgErr.message);
+
+      // ─── 8. AI moderation (existing endpoint) ───
+      setSubmitProgress('AI is reviewing your listing…', 0, 0);
+      let approved = true;
+      let reason = '';
+      try {
+        const verifyRes = await fetch('/api/verify-listing', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ brand, model, trim, year, price, km, condition, desc, location, name, phone, email }),
+        });
+        const verifyData = await verifyRes.json();
+        approved = !!verifyData.approved;
+        reason = verifyData.reason || verifyData.message || '';
+      } catch (e) {
+        // AI down → leave as pending_review for manual approval (fail closed)
+        approved = false;
+        reason = 'Automatic review unavailable. A team member will review shortly.';
+      }
+
+      // ─── 9. Update listing status with moderation result ───
+      const finalStatus = approved ? 'active' : 'pending_review';
+      await window.supa
+        .from('listings')
+        .update({
+          status: finalStatus,
+          moderation_reason: reason,
+          moderation_at: new Date().toISOString(),
+        })
+        .eq('id', listingId);
+
+      // ─── 10. Done ───
+      clearSubmitProgress();
       submitBtn.disabled = false;
       submitBtn.innerHTML = 'Publish Listing';
-      showToast('Submission failed. Please try again.');
+
+      if (approved) {
+        // Redirect to the newly published listing
+        window.location.href = `listing.html?id=${listingId}`;
+      } else {
+        // Show pending screen instead of redirecting (listing isn't visible yet)
+        document.querySelector('.ad-form-layout').innerHTML = `
+          <div style="grid-column:1/-1;text-align:center;padding:60px 20px;">
+            <div style="font-size:64px;margin-bottom:16px;">&#x1F50D;</div>
+            <div style="font-size:26px;font-weight:900;color:var(--dark);margin-bottom:10px;">Your Listing is Under Review</div>
+            <div style="display:inline-flex;align-items:center;gap:8px;background:#FFF3CD;color:#856404;border:1px solid #FFD700;border-radius:20px;padding:8px 18px;font-size:13px;font-weight:700;margin-bottom:18px;">
+              Pending review
+            </div>
+            <div style="font-size:15px;color:var(--grey);max-width:520px;margin:0 auto 28px;line-height:1.7;">
+              ${reason ? '<strong>AI note:</strong> ' + reason + '<br><br>' : ''}
+              Our team will review your listing shortly. You&apos;ll be notified once it&apos;s approved and live on DubiMotors. You can track its status in <a href="my-ads.html" style="color:var(--orange);font-weight:700;">My Ads</a>.
+            </div>
+            <button class="btn-primary" onclick="window.location.href='my-ads.html'">View My Ads</button>
+          </div>`;
+      }
+    } catch (e) {
+      console.error('[place-ad] submit failed:', e);
+      // Best-effort cleanup of uploaded photos so we don't leave orphans in Storage.
+      // RLS allows the user to delete their own photos.
+      if (uploadedPhotos.length) {
+        try {
+          await window.supa.storage.from(SUPABASE_BUCKET).remove(uploadedPhotos.map(p => p.path));
+        } catch { /* non-fatal */ }
+      }
+      clearSubmitProgress();
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = 'Publish Listing';
+      showToast('Could not publish: ' + (e.message || 'unknown error'), 6000);
     }
   }
 
