@@ -121,6 +121,8 @@ window.Auth = (() => {
     await window.supa.auth.signOut();
     _profile = null;
     _profileLoadedFor = null;
+    // Clear cached sidebar data so the next user (or visitor) starts fresh
+    if (typeof window.dmClearSidebarCache === 'function') window.dmClearSidebarCache();
   }
 
   /**

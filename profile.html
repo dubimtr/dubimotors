@@ -417,6 +417,33 @@
 
     // Wait for auth to be ready, require sign-in, load profile data
     (async () => {
+      // ─── INSTANT RENDER from cache (if any) — synchronous, no awaits ───
+      try {
+        const raw = sessionStorage.getItem('dm_sidebar_cache_v1');
+        if (raw) {
+          const c = JSON.parse(raw);
+          if (c && c.userId) {
+            const sa = document.getElementById('sidebar-avatar');
+            const sn = document.getElementById('sidebar-name');
+            const se = document.getElementById('sidebar-email');
+            const aa = document.getElementById('sidebar-active-ads');
+            const ss = document.getElementById('sidebar-saved');
+            const ma = document.getElementById('main-avatar');
+            const mn = document.getElementById('main-name');
+            if (sa) sa.textContent = c.initials || '';
+            if (sn) sn.textContent = c.displayName || '';
+            if (se) se.textContent = c.email || '';
+            if (aa && typeof c.activeCount === 'number') aa.textContent = c.activeCount;
+            if (ss && typeof c.savedCount  === 'number') ss.textContent = c.savedCount;
+            if (ma) ma.textContent = c.initials || '';
+            if (mn) mn.textContent = c.displayName || '';
+            // Reveal the page immediately — fresh data slots in below
+            document.documentElement.classList.add('auth-resolved');
+          }
+        }
+      } catch {}
+
+      // ─── BACKGROUND REFRESH (catches any changes since cache was written) ───
       // Give auth.js a tick to attach itself
       let tries = 0;
       while (!window.Auth && tries < 50) { await new Promise(r => setTimeout(r, 50)); tries++; }
@@ -431,10 +458,27 @@
 
       const profile = await window.Auth.getProfile();
       applyProfileToUI(user, profile);
-      // Now that real data is in place, fade the page in
+      // Now that real data is in place, fade the page in (idempotent)
       document.documentElement.classList.add('auth-resolved');
-      // Fetch real counts in the background (don't block fade-in)
-      applySidebarCounts(user);
+      // Fetch real counts in the background (don't block fade-in) and update cache
+      applySidebarCounts(user).then(() => {
+        // After counts update, refresh the cache so other pages get the latest
+        try {
+          const initials = initialsFor((profile && profile.display_name) || user.email.split('@')[0]);
+          const activeText = document.getElementById('sidebar-active-ads');
+          const savedText  = document.getElementById('sidebar-saved');
+          const snap = {
+            userId: user.id,
+            displayName: (profile && profile.display_name) || user.email.split('@')[0],
+            email: user.email || '',
+            initials,
+            activeCount: activeText ? parseInt(activeText.textContent, 10) || 0 : 0,
+            savedCount:  savedText  ? parseInt(savedText.textContent,  10) || 0 : 0,
+            cachedAt: Date.now(),
+          };
+          sessionStorage.setItem('dm_sidebar_cache_v1', JSON.stringify(snap));
+        } catch {}
+      });
     })();
   </script>
 </body>

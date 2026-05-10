@@ -155,9 +155,9 @@ function verificationEmail({ name, verifyUrl, reason }) {
 }
 
 function listingApprovedEmail({ name, title, listingUrl }) {
-  const headline = `Your listing is live!`;
+  const headline = `Your listing is LIVE!`;
   const intro = `Hi ${escapeHtml(name || 'there')},<br><br>
-    Your listing &ldquo;<strong>${escapeHtml(title || 'your vehicle')}</strong>&rdquo; has been approved by our AI moderation team and is now live on DubiMotors.<br><br>
+    Your listing &ldquo;<strong>${escapeHtml(title || 'your vehicle')}</strong>&rdquo; has been approved by our AI moderation team and is now <strong>LIVE</strong> on DubiMotors.<br><br>
     Buyers can contact you directly via call or WhatsApp from the listing page.`;
   const html = emailLayout({
     headline,
@@ -166,8 +166,8 @@ function listingApprovedEmail({ name, title, listingUrl }) {
     ctaUrl: listingUrl,
     postCta: `Tip: keep your phone nearby. Most successful sellers reply to inquiries within an hour.`,
   });
-  const text = `Your DubiMotors listing is live!\n\nHi ${name || 'there'},\n\n"${title || 'Your listing'}" is now live: ${listingUrl}\n\nThe DubiMotors team`;
-  return { subject: `Your listing is live on DubiMotors`, html, text };
+  const text = `Your DubiMotors listing is LIVE!\n\nHi ${name || 'there'},\n\n"${title || 'Your listing'}" is now LIVE: ${listingUrl}\n\nThe DubiMotors team`;
+  return { subject: `Your listing is LIVE on DubiMotors`, html, text };
 }
 
 // HTML escape for user-controlled strings inside email templates

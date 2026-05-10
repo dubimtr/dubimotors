@@ -294,16 +294,101 @@ function dmGetInitials(name) {
  *
  * This is called on each user page. Polls briefly for window.Auth to load.
  */
+/**
+ * Fill the dashboard sidebar with REAL user data from Supabase auth.
+ *
+ * Performance strategy:
+ * - On first page load, fetch user + profile + counts, cache in sessionStorage
+ * - On subsequent page navigations, render INSTANTLY from cache (no flicker, no
+ *   wait for Mumbai round trip)
+ * - Then refresh from Supabase in the background to catch any changes
+ *
+ * Cache key: 'dm_sidebar_cache_v1'. Cleared on signOut and when stale (>10 min).
+ *
+ * Looks for these elements (all optional — no error if any are missing):
+ *   .dash-avatar       — user initials
+ *   .dash-name         — display name
+ *   .dash-email        — email
+ *   .dash-stat-num     — first one is Active Ads, second is Saved/Favourites
+ *   .dash-nav-badge    — sidebar nav badges; hidden unless count > 0
+ */
+const DM_SIDEBAR_CACHE_KEY = 'dm_sidebar_cache_v1';
+const DM_SIDEBAR_CACHE_TTL = 10 * 60 * 1000; // 10 min — stale cache still renders, just background-refreshed sooner
+
+function dmReadSidebarCache() {
+  try {
+    const raw = sessionStorage.getItem(DM_SIDEBAR_CACHE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (!parsed || !parsed.userId) return null;
+    return parsed;
+  } catch { return null; }
+}
+
+function dmWriteSidebarCache(data) {
+  try { sessionStorage.setItem(DM_SIDEBAR_CACHE_KEY, JSON.stringify(data)); } catch {}
+}
+
+function dmClearSidebarCache() {
+  try { sessionStorage.removeItem(DM_SIDEBAR_CACHE_KEY); } catch {}
+}
+
+// Apply a cache snapshot synchronously to the DOM (used both for instant render
+// and for re-render after background refresh).
+function dmApplySidebarSnapshot(snap) {
+  if (!snap) return;
+  const avatarEl = document.querySelector('.dash-avatar');
+  const nameEl   = document.querySelector('.dash-name');
+  const emailEl  = document.querySelector('.dash-email');
+  if (avatarEl) avatarEl.textContent = snap.initials || '';
+  if (nameEl)   nameEl.textContent   = snap.displayName || '';
+  if (emailEl)  emailEl.textContent  = snap.email || '';
+
+  const stats = document.querySelectorAll('.dash-stat-num');
+  if (stats[0] && typeof snap.activeCount === 'number') stats[0].textContent = snap.activeCount;
+  if (stats[1] && typeof snap.savedCount  === 'number') stats[1].textContent = snap.savedCount;
+
+  // Sidebar nav badges: show My Ads count if > 0
+  document.querySelectorAll('.dash-nav-badge').forEach(b => b.style.display = 'none');
+  const myAdsLink = document.querySelector('a[href="my-ads.html"].dash-nav-item');
+  if (myAdsLink) {
+    const badge = myAdsLink.querySelector('.dash-nav-badge');
+    if (badge && snap.activeCount > 0) {
+      badge.textContent = snap.activeCount;
+      badge.style.display = '';
+    }
+  }
+}
+
 async function dmFillDashboardSidebar() {
   if (typeof window === 'undefined') return;
 
+  // ─── 1. INSTANT RENDER from cache (if any) ───
+  const cache = dmReadSidebarCache();
+  if (cache) {
+    dmApplySidebarSnapshot(cache);
+    // Reveal the sidebar immediately — no waiting for network
+    document.documentElement.classList.add('auth-resolved');
+  }
+
+  // ─── 2. BACKGROUND REFRESH (always runs, may update DOM if data changed) ───
   // Wait for Auth to load
   let tries = 0;
   while (!window.Auth && tries < 60) { await new Promise(r => setTimeout(r, 50)); tries++; }
   if (!window.Auth) return;
 
   const user = await window.Auth.getUser();
-  if (!user) return; // requireAuth on the page itself handles unauthenticated case
+  if (!user) {
+    // Not logged in — clear cache and bail (page's own requireAuth will redirect)
+    dmClearSidebarCache();
+    return;
+  }
+
+  // If the cached user is a different user than the actual one, drop the cache
+  // (e.g. signed out + back in as someone else)
+  if (cache && cache.userId && cache.userId !== user.id) {
+    dmClearSidebarCache();
+  }
 
   const profile = await window.Auth.getProfile();
   const displayName = (profile && profile.display_name)
@@ -312,68 +397,53 @@ async function dmFillDashboardSidebar() {
   const email = user.email || '';
   const initials = dmGetInitials(displayName);
 
-  // Profile card
-  const avatarEl = document.querySelector('.dash-avatar');
-  const nameEl = document.querySelector('.dash-name');
-  const emailEl = document.querySelector('.dash-email');
-  if (avatarEl) avatarEl.textContent = initials;
-  if (nameEl)   nameEl.textContent = displayName;
-  if (emailEl)  emailEl.textContent = email;
+  let activeCount = (cache && cache.activeCount) || 0;
+  let savedCount  = (cache && cache.savedCount)  || 0;
 
-  // Hide all sidebar nav badges by default — they'll be shown if real counts exist
-  document.querySelectorAll('.dash-nav-badge').forEach(b => b.style.display = 'none');
-
-  // Fetch real counts in parallel
-  if (!window.supa) return;
-  try {
-    const [adsRes, favRes] = await Promise.all([
-      window.supa.from('listings')
-        .select('id', { count: 'exact', head: true })
-        .eq('owner_id', user.id)
-        .eq('status', 'active'),
-      window.supa.from('favourites')
-        .select('listing_id', { count: 'exact', head: true })
-        .eq('user_id', user.id),
-    ]);
-
-    const activeCount = (typeof adsRes.count === 'number') ? adsRes.count : 0;
-    const savedCount  = (typeof favRes.count === 'number') ? favRes.count : 0;
-
-    // Sidebar profile card stats: first stat is Active Ads, second is Saved
-    const stats = document.querySelectorAll('.dash-stat-num');
-    if (stats[0]) stats[0].textContent = activeCount;
-    if (stats[1]) stats[1].textContent = savedCount;
-
-    // Sidebar nav: show My Ads count if > 0
-    const myAdsLink = document.querySelector('a[href="my-ads.html"].dash-nav-item');
-    if (myAdsLink) {
-      const badge = myAdsLink.querySelector('.dash-nav-badge');
-      if (badge && activeCount > 0) {
-        badge.textContent = activeCount;
-        badge.style.display = '';
-      }
+  if (window.supa) {
+    try {
+      const [adsRes, favRes] = await Promise.all([
+        window.supa.from('listings')
+          .select('id', { count: 'exact', head: true })
+          .eq('owner_id', user.id)
+          .eq('status', 'active'),
+        window.supa.from('favourites')
+          .select('listing_id', { count: 'exact', head: true })
+          .eq('user_id', user.id),
+      ]);
+      if (typeof adsRes.count === 'number') activeCount = adsRes.count;
+      if (typeof favRes.count === 'number') savedCount  = favRes.count;
+    } catch (e) {
+      console.warn('[dmFillDashboardSidebar] count fetch failed:', e);
     }
-    const savedLink = document.querySelector('a[href="saved-searches.html"].dash-nav-item');
-    if (savedLink) {
-      const badge = savedLink.querySelector('.dash-nav-badge');
-      // Saved Searches: feature not built yet → leave hidden
-      if (badge) badge.style.display = 'none';
-    }
-  } catch (e) {
-    console.warn('[dmFillDashboardSidebar] fetch failed:', e);
   }
+
+  const fresh = {
+    userId: user.id,
+    displayName,
+    email,
+    initials,
+    activeCount,
+    savedCount,
+    cachedAt: Date.now(),
+  };
+
+  // Apply the fresh snapshot (overwrites instant cache render)
+  dmApplySidebarSnapshot(fresh);
+  dmWriteSidebarCache(fresh);
 
   // Wire the Log Out button (sidebar usually has its own)
   const logoutLinks = document.querySelectorAll('a[href="login.html"].dash-nav-item, .dash-logout');
   logoutLinks.forEach(a => {
     a.onclick = async (e) => {
       e.preventDefault();
+      dmClearSidebarCache();
       if (window.Auth) await window.Auth.signOut();
       window.location.href = 'index.html';
     };
   });
 
-  // Reveal the now-populated sidebar (CSS hides it until this class is added).
+  // Reveal the now-populated sidebar (idempotent — already added if cache existed)
   document.documentElement.classList.add('auth-resolved');
 }
 
@@ -388,4 +458,5 @@ if (typeof window !== 'undefined') {
   window.dmTimeAgo = dmTimeAgo;
   window.dmGetInitials = dmGetInitials;
   window.dmFillDashboardSidebar = dmFillDashboardSidebar;
+  window.dmClearSidebarCache = dmClearSidebarCache;
 }
