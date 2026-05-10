@@ -381,22 +381,22 @@ function renderFooter() {
           </div>
           <div>
             <div class="footer-col-title">Company</div>
-            <a class="footer-link" href="#">About DubiMotors</a>
+            <a class="footer-link" href="about.html">About DubiMotors</a>
             <a class="footer-link" href="#">Contact Us</a>
-            <a class="footer-link" href="#">Careers</a>
-            <a class="footer-link" href="#">Blog</a>
-            <a class="footer-link" href="#">Help Centre</a>
-            <a class="footer-link" href="#">Privacy Policy</a>
-            <a class="footer-link" href="#">Terms of Use</a>
-            <a class="footer-link" href="#">Cookie Policy</a>
+            <a class="footer-link" href="careers.html">Careers</a>
+            <a class="footer-link" href="blog.html">Blog</a>
+            <a class="footer-link" href="help.html">Help Centre</a>
+            <a class="footer-link" href="privacy.html">Privacy Policy</a>
+            <a class="footer-link" href="terms.html">Terms of Use</a>
+            <a class="footer-link" href="privacy.html">Cookie Policy</a>
           </div>
         </div>
         <div class="footer-bottom">
-          <div class="footer-copy">© 2025 DubiMotors. All rights reserved. UAE's First AI-Powered Vehicle Marketplace.</div>
+          <div class="footer-copy">© 2026 DubiMotors. All rights reserved. UAE's First AI-Powered Vehicle Marketplace.</div>
           <div class="footer-legal">
-            <a href="#">Privacy</a>
-            <a href="#">Terms</a>
-            <a href="#">Cookies</a>
+            <a href="privacy.html">Privacy</a>
+            <a href="terms.html">Terms</a>
+            <a href="privacy.html">Cookies</a>
           </div>
         </div>
       </div>
