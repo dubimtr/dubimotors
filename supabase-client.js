@@ -12,8 +12,8 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 (function () {
-  const SUPABASE_URL = https://jfwxkmtsmsnbsduxdzow.supabase.co;        // e.g. 'https://abcdefghij.supabase.co'
-  const SUPABASE_ANON_KEY = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impmd3hrbXRzbXNuYnNkdXhkem93Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgzODg2MjQsImV4cCI6MjA5Mzk2NDYyNH0.mJ8krarTZ8YlrXkaxVZmYOMW6fuhDvfEthtPXsp4qbI; // long string starting with 'eyJ...'
+  const SUPABASE_URL = 'https://jfwxkmtsmsnbsduxdzow.supabase.co'
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impmd3hrbXRzbXNuYnNkdXhkem93Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgzODg2MjQsImV4cCI6MjA5Mzk2NDYyNH0.mJ8krarTZ8YlrXkaxVZmYOMW6fuhDvfEthtPXsp4qbI';
 
   if (!window.supabase || !window.supabase.createClient) {
     console.error('[DubiMotors] Supabase JS client not loaded. Check the CDN <script> tag.');
