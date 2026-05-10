@@ -42,6 +42,39 @@ const PORT = process.env.PORT || 8080;
 const STATIC_DIR = __dirname;
 const NODE_ENV = process.env.NODE_ENV || 'development';
 
+// ── Listings catalog (used by Dubi Agent so it can answer with real data) ──
+// Loaded once at startup. Replace this with a Supabase query in Phase 3.
+const DM = require('./shared.js');
+
+/**
+ * Build a compact, token-efficient catalog string for injection into the
+ * agent's system prompt. Format: one line per listing with the fields
+ * the AI is most likely to reason about. Keeps the prompt under ~2000 tokens
+ * even with 200+ listings.
+ */
+function buildAgentCatalog() {
+  if (!DM || !DM.listings) return '(catalog unavailable)';
+  const lines = DM.listings.map(l => {
+    const parts = [
+      `id=${l.id}`,
+      `${l.year || '?'} ${l.make || ''} ${l.model || ''}${l.trim ? ' ' + l.trim : ''}`.trim(),
+      `cat=${l.category}`,
+      `AED ${l.price?.toLocaleString() || '?'}`,
+      l.km !== undefined ? `${l.km.toLocaleString()}km` : null,
+      l.condition ? `cond=${l.condition}` : null,
+      l.location ? `in ${l.location}` : null,
+      l.seller ? `seller=${l.seller}` : null,
+      l.featured ? 'FEATURED' : null,
+    ].filter(Boolean);
+    return '- ' + parts.join(' | ');
+  });
+  return lines.join('\n');
+}
+
+// Build once at boot. If you add listings without restart, this becomes stale.
+const AGENT_CATALOG = buildAgentCatalog();
+console.log(`Loaded ${DM?.listings?.length || 0} listings into agent catalog`);
+
 // ── MIME types ──
 const MIME = {
   '.html': 'text/html', '.css': 'text/css', '.js': 'application/javascript',
@@ -127,7 +160,7 @@ async function handleAgent(req, res) {
   const systemPrompt = `You are Dubi Agent, a friendly and knowledgeable AI assistant for DUBIMOTORS — the UAE's leading marketplace for buying and selling cars, boats, motorcycles, and jet skis.
 
 Your role is to:
-- Help users find the right vehicle based on their needs and budget
+- Help users find the right vehicle from the LIVE LISTINGS below based on their needs and budget
 - Explain how to place ads, listing packages (Basic: Free 30 days, Featured: AED 99 30 days, Premium: AED 249 60 days)
 - Explain how to contact sellers (Call or WhatsApp buttons on listings)
 - Answer questions about car finance, insurance, and inspections in the UAE
@@ -135,8 +168,16 @@ Your role is to:
 - Help with understanding listing details, specs, and prices
 - Be concise, warm, and professional. Use short paragraphs.
 - Always respond in the same language the user writes in.
-- If asked about a specific vehicle price, give a general UAE market range.
-- Do NOT make up specific listing details that don't exist.`;
+
+CRITICAL RULES FOR LISTINGS:
+- When the user asks about prices, cheapest/most expensive, specific cars, or what's available, ALWAYS answer using the LIVE LISTINGS catalog below — never invent vehicles or prices.
+- When recommending a specific vehicle, mention the make, model, year, and price exactly as listed.
+- If you mention a specific vehicle, also tell the user they can click "Details" on the listing card to see full info, photos, and contact the seller.
+- If asked something the catalog doesn't cover (e.g. "do you have a 2020 BMW 3 Series?"), say so honestly and offer to help them browse a category.
+- For general UAE market questions ("how much does insurance cost?"), use your general knowledge — these aren't about listings.
+
+LIVE LISTINGS CATALOG (${DM?.listings?.length || 0} active listings):
+${AGENT_CATALOG}`;
 
   const messages = [
     { role: 'system', content: systemPrompt },

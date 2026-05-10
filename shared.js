@@ -2541,3 +2541,8 @@ const DM = (() => {
 
   return { listings, formatPrice, getCounts, getByCategory, getById, renderCard };
 })();
+
+// Node.js (server-side) export — ignored by browsers
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = DM;
+}
