@@ -187,7 +187,7 @@
             </div>
           </div>
           <div style="display:flex;gap:12px;margin-top:24px;">
-            <button class="btn-save" onclick="saveProfile()">Save Changes</button>
+            <button class="btn-save" id="btn-save-profile" onclick="saveProfile()">Save Changes</button>
             <button class="btn-outline" onclick="showToast('Changes discarded.')">Cancel</button>
           </div>
         </div>
@@ -318,15 +318,93 @@
       setTimeout(() => t.classList.remove('show'), 3000);
     }
 
-    function saveProfile() {
-      const name = document.getElementById('inp-fullname').value;
-      document.getElementById('sidebar-name').textContent = name;
-      document.getElementById('main-name').textContent = name;
-      const initials = name.split(' ').map(w => w[0]).join('').substring(0, 2).toUpperCase();
+    function setBusy(btnId, busy, originalText) {
+      const b = document.getElementById(btnId);
+      if (!b) return;
+      if (busy) { b.dataset.original = b.innerHTML; b.innerHTML = 'Saving…'; b.disabled = true; }
+      else { b.innerHTML = b.dataset.original || originalText; b.disabled = false; }
+    }
+
+    function initialsFor(name) {
+      if (!name) return 'U';
+      return name.trim().split(/\s+/).map(w => w[0]).slice(0, 2).join('').toUpperCase() || 'U';
+    }
+
+    function applyProfileToUI(user, profile) {
+      const displayName = (profile && profile.display_name) || user.email.split('@')[0];
+      const email = user.email || '';
+      const phone = (profile && profile.phone) || '';
+      const emirate = (profile && profile.emirate) || 'Dubai';
+      const bio = (profile && profile.bio) || '';
+      const initials = initialsFor(displayName);
+
+      // Sidebar
       document.getElementById('sidebar-avatar').textContent = initials;
+      document.getElementById('sidebar-name').textContent = displayName;
+      document.getElementById('sidebar-email').textContent = email;
+
+      // Main card
       document.getElementById('main-avatar').textContent = initials;
+      document.getElementById('main-name').textContent = displayName;
+      const memberMeta = document.querySelector('.profile-avatar-meta');
+      if (memberMeta && profile && profile.member_since) {
+        const d = new Date(profile.member_since);
+        const opts = { year: 'numeric', month: 'long' };
+        memberMeta.innerHTML = `Member since ${d.toLocaleDateString('en-US', opts)} &nbsp;·&nbsp; ${emirate}`;
+      }
+
+      // Form fields
+      document.getElementById('inp-fullname').value = displayName;
+      document.getElementById('inp-displayname').value = displayName;
+      document.getElementById('inp-email').value = email;
+      document.getElementById('inp-email').disabled = true; // can't edit email here
+      document.getElementById('inp-phone').value = phone;
+      document.getElementById('inp-bio').value = bio;
+      const sel = document.getElementById('sel-location');
+      if (sel) {
+        for (const o of sel.options) if (o.text === emirate) { o.selected = true; break; }
+      }
+    }
+
+    async function saveProfile() {
+      if (!window.Auth) { showToast('Authentication not ready.'); return; }
+      const display_name = document.getElementById('inp-fullname').value.trim();
+      const phone        = document.getElementById('inp-phone').value.trim();
+      const emirate      = document.getElementById('sel-location').value;
+      const bio          = document.getElementById('inp-bio').value.trim();
+
+      if (!display_name) { showToast('Please enter your name.'); return; }
+
+      setBusy('btn-save-profile', true);
+      const { error } = await window.Auth.updateProfile({ display_name, phone, emirate, bio });
+      setBusy('btn-save-profile', false, 'Save Changes');
+
+      if (error) {
+        showToast('Could not save: ' + error);
+        return;
+      }
+      // Refresh navbar + sidebar with new values
+      const user = await window.Auth.getUser();
+      const profile = await window.Auth.getProfile();
+      applyProfileToUI(user, profile);
+      // Tell the navbar to update too
+      if (typeof updateNavbarAuthState === 'function') updateNavbarAuthState();
       showToast('Profile updated successfully!');
     }
+
+    // Wait for auth to be ready, require sign-in, load profile data
+    (async () => {
+      // Give auth.js a tick to attach itself
+      let tries = 0;
+      while (!window.Auth && tries < 50) { await new Promise(r => setTimeout(r, 50)); tries++; }
+      if (!window.Auth) { showToast('Authentication failed to load. Please refresh.'); return; }
+
+      const user = await window.Auth.requireAuth();
+      if (!user) return; // requireAuth redirects, this is just a safety net
+
+      const profile = await window.Auth.getProfile();
+      applyProfileToUI(user, profile);
+    })();
   </script>
 </body>
 </html>

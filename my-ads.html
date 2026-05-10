@@ -190,8 +190,19 @@
   <div id="footer-placeholder"></div>
   <div class="toast" id="toast"></div>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js" defer></script>
+  <script src="supabase-client.js" defer></script>
+  <script src="auth.js" defer></script>
   <script src="components.js"></script>
   <script>
+
+  // Auth guard: redirect to login if not signed in
+  (async () => {
+    let tries = 0;
+    while (!window.Auth && tries < 50) { await new Promise(r => setTimeout(r, 50)); tries++; }
+    if (!window.Auth) return;
+    await window.Auth.requireAuth();
+  })();
     renderNavbar('my-ads');
     renderFooter();
 

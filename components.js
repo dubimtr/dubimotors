@@ -170,6 +170,144 @@ function renderNavbar(activePage = '') {
       document.body.style.overflow = '';
     }
   });
+
+  // Apply current auth state (logged in vs logged out)
+  updateNavbarAuthState();
+  // Re-apply on auth changes (login, logout, token refresh from another tab)
+  if (window.Auth && typeof window.Auth.onChange === 'function') {
+    window.Auth.onChange(() => updateNavbarAuthState());
+  }
+}
+
+/**
+ * Update the navbar to reflect the current auth state.
+ * - Logged out: hide notif/chat/user, show Sign In button.
+ * - Logged in:  fill in real name, email, initials; wire logout.
+ */
+async function updateNavbarAuthState() {
+  if (!window.Auth) return;
+  const user = await window.Auth.getUser();
+  const navRight = document.querySelector('.nav-right');
+  if (!navRight) return;
+
+  const notifBtn = document.getElementById('nav-notif-btn');
+  const chatBtn  = document.getElementById('nav-chat-btn');
+  const userBtn  = document.getElementById('nav-user-btn');
+  const placeAdBtn = navRight.querySelector('.btn-place-ad');
+  let signInBtn = document.getElementById('nav-signin-btn');
+
+  if (!user) {
+    // Logged out: hide auth-only UI, show Sign In button
+    if (notifBtn) notifBtn.style.display = 'none';
+    if (chatBtn)  chatBtn.style.display  = 'none';
+    if (userBtn)  userBtn.style.display  = 'none';
+    if (placeAdBtn) placeAdBtn.style.display = 'none';
+
+    if (!signInBtn) {
+      signInBtn = document.createElement('button');
+      signInBtn.id = 'nav-signin-btn';
+      signInBtn.className = 'btn-place-ad';
+      signInBtn.textContent = 'Sign In';
+      signInBtn.style.background = 'var(--orange)';
+      signInBtn.onclick = () => {
+        const next = encodeURIComponent(window.location.pathname + window.location.search);
+        window.location.href = 'login.html?next=' + next;
+      };
+      // Insert before the hamburger button so it sits in the right place
+      const hamb = document.getElementById('nav-hamburger-btn');
+      if (hamb) navRight.insertBefore(signInBtn, hamb);
+      else navRight.appendChild(signInBtn);
+    }
+
+    // Mobile nav: hide auth-only entries, add a Sign In link
+    const mobileNav = document.getElementById('mobile-nav-menu');
+    if (mobileNav) {
+      mobileNav.querySelectorAll('a').forEach(a => {
+        const href = a.getAttribute('href') || '';
+        if (['profile.html','my-ads.html','chats.html','notifications.html','place-ad.html','login.html'].includes(href)) {
+          a.style.display = 'none';
+        }
+      });
+      if (!document.getElementById('mobile-signin-link')) {
+        const link = document.createElement('a');
+        link.id = 'mobile-signin-link';
+        link.href = 'login.html';
+        link.textContent = '🔐 Sign In';
+        link.style.cssText = 'padding:10px 0;color:var(--orange);font-size:14px;font-weight:700;';
+        const divider = mobileNav.querySelector('div[style*="border-top"]');
+        if (divider) divider.appendChild(link);
+        else mobileNav.appendChild(link);
+      }
+    }
+    return;
+  }
+
+  // Logged in: show auth-only UI, hide Sign In button if it exists
+  if (notifBtn) notifBtn.style.display = '';
+  if (chatBtn)  chatBtn.style.display  = '';
+  if (userBtn)  userBtn.style.display  = '';
+  if (placeAdBtn) placeAdBtn.style.display = '';
+  if (signInBtn) signInBtn.style.display = 'none';
+
+  // Hide the mobile sign-in link if we created one earlier
+  const mobileSignIn = document.getElementById('mobile-signin-link');
+  if (mobileSignIn) mobileSignIn.style.display = 'none';
+  // Restore mobile auth links
+  const mobileNav = document.getElementById('mobile-nav-menu');
+  if (mobileNav) {
+    mobileNav.querySelectorAll('a').forEach(a => {
+      const href = a.getAttribute('href') || '';
+      if (['profile.html','my-ads.html','chats.html','notifications.html','place-ad.html','login.html'].includes(href)) {
+        a.style.display = '';
+      }
+    });
+  }
+
+  // Pull real profile for display name + initials
+  const profile = await window.Auth.getProfile();
+  const displayName = (profile && profile.display_name) || (user.user_metadata && user.user_metadata.display_name) || user.email.split('@')[0];
+  const email = user.email || '';
+  const initials = displayName.trim().split(/\s+/).map(w => w[0]).slice(0, 2).join('').toUpperCase() || 'U';
+
+  // Update navbar avatar (the small button)
+  const avatarEl = userBtn ? userBtn.querySelector('.nav-user-avatar') : null;
+  if (avatarEl) avatarEl.textContent = initials;
+
+  // Update dropdown header (the rich card at the top)
+  const userDD = document.getElementById('user-dropdown');
+  if (userDD) {
+    const card = userDD.querySelector('.nav-dropdown-header');
+    if (card) {
+      const names = card.querySelectorAll('div[style*="font-weight:800"]');
+      const subs  = card.querySelectorAll('div[style*="font-size:11px"]');
+      names.forEach(n => n.textContent = displayName);
+      subs.forEach(s => s.textContent = email);
+      const bigAvatar = card.querySelector('div[style*="border-radius:50%"]');
+      if (bigAvatar) bigAvatar.textContent = initials;
+    }
+    // Wire the logout link
+    const logoutLink = userDD.querySelector('a[href="login.html"]');
+    if (logoutLink) {
+      logoutLink.onclick = async (e) => {
+        e.preventDefault();
+        await window.Auth.signOut();
+        window.location.href = 'index.html';
+      };
+    }
+  }
+
+  // Mobile logout link too
+  if (mobileNav) {
+    const mLogout = mobileNav.querySelector('a[href="login.html"]');
+    if (mLogout) {
+      mLogout.textContent = 'Log Out';
+      mLogout.onclick = async (e) => {
+        e.preventDefault();
+        await window.Auth.signOut();
+        window.location.href = 'index.html';
+      };
+    }
+  }
 }
 
 function _toggleNavDD(id) {
