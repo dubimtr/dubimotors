@@ -605,6 +605,8 @@
 </div>
 
 <script src="https://api.mapbox.com/mapbox-gl-js/v3.3.0/mapbox-gl.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js" defer></script>
+<script src="supabase-client.js" defer></script>
 <script src="shared.js"></script>
 <script src="components.js"></script>
 <script src="lightbox.js"></script>
@@ -614,13 +616,24 @@
 
   const params = new URLSearchParams(window.location.search);
   const id = params.get('id');
-  const listing = DM.getById(id);
+  let listing = DM.getById(id);
 
   // Seller phone (demo — in production this comes from the listing)
   const SELLER_PHONE = '+971501234567';
 
+  // If not found in the embedded fallback, the listing might exist only in
+  // Supabase (a newly added listing). Wait for live data, then reload.
   if (!listing) {
-    document.body.innerHTML += '<div style="text-align:center;padding:100px 20px;"><h2>Listing not found</h2><a href="index.html">Back to Home</a></div>';
+    if (DM.isLoaded && DM.isLoaded()) {
+      // Already loaded from Supabase and still nothing — really doesn't exist.
+      document.body.innerHTML += '<div style="text-align:center;padding:100px 20px;"><h2>Listing not found</h2><a href="index.html">Back to Home</a></div>';
+    } else {
+      // Show a loader and reload the page once live data arrives.
+      document.body.innerHTML += '<div style="text-align:center;padding:100px 20px;"><h2>Loading listing…</h2></div>';
+      window.addEventListener('dm:listings-loaded', () => {
+        window.location.reload();
+      }, { once: true });
+    }
   } else {
     // ── DYNAMIC SEO META TAGS ──
     const listingPrice = listing.price ? 'AED ' + listing.price.toLocaleString() : '';
@@ -965,6 +978,25 @@
   document.getElementById('finance-modal').addEventListener('click', function(e) {
     if (e.target === this) closeFinanceModal();
   });
+
+  // Re-render when live Supabase data arrives (replaces the embedded fallback)
+  window.addEventListener('dm:listings-loaded', () => {
+    try {
+      if (typeof allListings !== 'undefined') {
+        if (typeof currentCat !== 'undefined') {
+          allListings = DM.getByCategory(currentCat);
+        } else if (Array.isArray(allListings)) {
+          // For pages that combine categories (marine.html), reload from DM.listings
+          allListings = DM.listings.filter(l => allListings.some(a => a.category === l.category));
+        }
+        if (typeof filtered !== 'undefined') filtered = [...allListings];
+      }
+      if (typeof applyFilters === 'function') return applyFilters();
+      if (typeof renderPage === 'function') return renderPage();
+      if (typeof render === 'function') return render();
+    } catch (e) { console.warn('[DubiMotors] re-render after live data failed:', e); }
+  });
+
 </script>
 </main>
 

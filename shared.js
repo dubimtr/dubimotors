@@ -6,8 +6,11 @@ const DM = (() => {
     return `https://static.wixstatic.com/media/${hash}~mv2.${ext}/v1/fill/w_${w},h_${h},al_c,q_90,enc_avif,quality_auto/${hash}~mv2.${ext}`;
   }
 
-  // Real listings from the Wix site with their actual images
-  const listings = [
+  // Listings array — initially populated from the embedded fallback below,
+  // then replaced (in place) by live Supabase data once DM.ready() resolves.
+  // Page code holds references to this array, so we mutate it instead of
+  // reassigning to keep those references valid.
+  let listings = [
     {
       id: 'gta-001',
       title: '2024 Jetour T2 Traveler+',
@@ -2443,6 +2446,146 @@ const DM = (() => {
     }
   ];
 
+  // ─── SUPABASE LIVE DATA LOADER ─────────────────────────────────────────────
+  // The fallback listings array above is replaced by live Supabase data when
+  // available. If Supabase is unreachable (no client, network failure, etc.)
+  // we keep the embedded fallback so the site never appears empty.
+
+  // Convert a Supabase row (snake_case, separate images table) to the legacy
+  // listing shape used throughout the codebase (camelCase, inline images).
+  function toLegacyShape(row) {
+    // Sort images by display_order, primary first
+    const imgs = (row.listing_images || [])
+      .slice()
+      .sort((a, b) => {
+        if (a.is_primary && !b.is_primary) return -1;
+        if (!a.is_primary && b.is_primary) return 1;
+        return (a.display_order || 0) - (b.display_order || 0);
+      })
+      .map(i => i.url);
+    const primary = (row.listing_images || []).find(i => i.is_primary);
+
+    // Pick a sensible seller logo from the seller name
+    let sellerLogo = null;
+    if (row.contact_name) {
+      const name = row.contact_name.toLowerCase();
+      if (name.includes('gta')) sellerLogo = 'logos/gta-cars.webp';
+      else if (name.includes('sharmax')) sellerLogo = 'logos/sharmax.webp';
+    }
+
+    return {
+      // Use legacy_id if present so existing URLs (sitemap, indexed pages) keep working.
+      // Fall back to UUID id otherwise.
+      id: row.legacy_id || row.id,
+      uuid: row.id,                         // always available, for new code
+      title: row.title,
+      category: row.category,
+      make: row.make,
+      model: row.model,
+      trim: row.trim,
+      price: row.price,
+      year: row.year,
+      km: row.km,
+      condition: row.condition,
+      engine: row.engine,
+      hp: row.hp,
+      cylinders: row.cylinders,
+      transmission: row.transmission,
+      bodyType: row.body_type,
+      doors: row.doors,
+      seats: row.seats,
+      color: row.color,
+      fuelType: row.fuel_type,
+      regionalSpec: row.regional_spec,
+      location: row.location,
+      seller: row.contact_name,
+      sellerLogo,
+      phone: row.contact_phone,
+      verified: row.verified,
+      featured: row.featured,
+      warranty: row.warranty,
+      serviceHistory: row.service_history,
+      serviceContract: row.service_history, // legacy alias for renderCard
+      addedDate: row.created_at ? row.created_at.split('T')[0] : null,
+      lat: row.latitude,
+      lng: row.longitude,
+      locationAddress: row.location,
+      mainImg: primary ? primary.url : (imgs[0] || ''),
+      images: imgs,
+      description: row.description,
+      isDemo: row.is_demo,
+    };
+  }
+
+  // Single in-flight promise for the load. DM.ready() always returns this.
+  let _readyPromise = null;
+  let _loaded = false;
+
+  function ready() {
+    if (_readyPromise) return _readyPromise;
+
+    // No Supabase client available → resolve immediately with the embedded fallback.
+    if (typeof window === 'undefined' || !window.supa) {
+      console.info('[DubiMotors] Supabase client not available; using embedded listings fallback.');
+      _readyPromise = Promise.resolve();
+      _loaded = true;
+      return _readyPromise;
+    }
+
+    _readyPromise = (async () => {
+      try {
+        const { data, error } = await window.supa
+          .from('listings')
+          .select('*, listing_images(url, is_primary, display_order)')
+          .eq('status', 'active')
+          .order('featured', { ascending: false })
+          .order('created_at', { ascending: false });
+
+        if (error) {
+          console.warn('[DubiMotors] Supabase listings query failed; keeping fallback:', error.message);
+          _loaded = true;
+          return;
+        }
+        if (!data || data.length === 0) {
+          console.info('[DubiMotors] Supabase returned no active listings; keeping fallback.');
+          _loaded = true;
+          return;
+        }
+
+        const liveListings = data.map(toLegacyShape);
+        // Replace contents of the array in place so existing references stay valid
+        listings.length = 0;
+        liveListings.forEach(l => listings.push(l));
+        _loaded = true;
+        console.info(`[DubiMotors] Loaded ${listings.length} listings from Supabase.`);
+
+        // Notify any page-level code that wants to re-render with live data.
+        // Pages can listen with: window.addEventListener('dm:listings-loaded', () => { ... })
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('dm:listings-loaded', { detail: { count: listings.length } }));
+        }
+      } catch (e) {
+        console.error('[DubiMotors] Unexpected error loading listings:', e);
+        _loaded = true;
+      }
+    })();
+
+    return _readyPromise;
+  }
+
+  // Auto-start the load once the DOM is ready (and deferred scripts like Supabase have loaded).
+  // Pages that need data before rendering should still call `await DM.ready()`.
+  if (typeof window !== 'undefined') {
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => ready().catch(() => {}), { once: true });
+    } else {
+      // Already loaded (e.g. shared.js is deferred and executes after DOM is parsed)
+      ready().catch(() => {});
+    }
+  }
+
+  // ─── HELPERS ───────────────────────────────────────────────────────────────
+
   function formatPrice(p) {
     return 'AED ' + p.toLocaleString();
   }
@@ -2539,7 +2682,7 @@ const DM = (() => {
       </div>`;
   }
 
-  return { listings, formatPrice, getCounts, getByCategory, getById, renderCard };
+  return { listings, formatPrice, getCounts, getByCategory, getById, renderCard, ready, isLoaded: () => _loaded };
 })();
 
 // Node.js (server-side) export — ignored by browsers
