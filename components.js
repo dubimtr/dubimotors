@@ -71,7 +71,6 @@ function renderNavbar(activePage = '') {
               </div>
             </div>
           </div>
-                <div style="flex:1;min-width:0;">
           <!-- User Avatar -->
           <div class="nav-user-btn" id="nav-user-btn">
             <div class="nav-user-avatar"></div>
