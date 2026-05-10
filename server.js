@@ -1034,6 +1034,102 @@ async function handleSendListingApprovedEmail(req, res) {
   return jsonRes(res, { ok: true, disabled: result.disabled || false });
 }
 
+/* ── POST /api/internal/listing-activated — webhook from Postgres trigger ──
+   Fires when ANY listing's status flips to 'active' (AI approval, manual SQL,
+   admin panel, etc.). Authenticated via X-Webhook-Secret header.
+
+   Body: { listing_id: "<uuid>" }
+
+   Idempotent: checks listings.listing_live_email_sent_at and skips if already sent.
+   Marks it on success so it can never be sent twice.
+*/
+async function handleListingActivatedWebhook(req, res) {
+  // ─── Authenticate ───
+  const expectedSecret = process.env.WEBHOOK_SECRET;
+  if (!expectedSecret) {
+    console.warn('[webhook] WEBHOOK_SECRET not configured — refusing to process webhook');
+    return jsonRes(res, { error: 'Service not configured' }, 503);
+  }
+  const providedSecret = req.headers['x-webhook-secret'];
+  if (!providedSecret || providedSecret !== expectedSecret) {
+    return jsonRes(res, { error: 'Unauthorized' }, 401);
+  }
+
+  const supa = getSupabaseAdmin();
+  if (!supa) return jsonRes(res, { error: 'Service unavailable' }, 503);
+
+  let body = {};
+  try { body = await parseBody(req); } catch {}
+  const listingId = body.listing_id;
+  if (!listingId) return jsonRes(res, { error: 'Missing listing_id' }, 400);
+
+  // Look up listing + owner
+  const { data: listing, error: lErr } = await supa
+    .from('listings')
+    .select('id, owner_id, title, status, listing_live_email_sent_at')
+    .eq('id', listingId)
+    .maybeSingle();
+  if (lErr || !listing) {
+    console.warn('[webhook] listing not found:', listingId, lErr && lErr.message);
+    return jsonRes(res, { error: 'Listing not found' }, 404);
+  }
+
+  // Idempotency: skip if already sent
+  if (listing.listing_live_email_sent_at) {
+    return jsonRes(res, { ok: true, skipped: 'already_sent' });
+  }
+  // Defensive: status should be active
+  if (listing.status !== 'active') {
+    return jsonRes(res, { ok: true, skipped: 'not_active' });
+  }
+
+  // Look up owner email + display name. auth.users requires service-role access
+  let ownerEmail = null;
+  let displayName = '';
+  try {
+    const { data: userData, error: uErr } = await supa.auth.admin.getUserById(listing.owner_id);
+    if (uErr || !userData || !userData.user) {
+      console.warn('[webhook] owner user lookup failed:', uErr && uErr.message);
+      return jsonRes(res, { error: 'Owner not found' }, 404);
+    }
+    ownerEmail = userData.user.email;
+  } catch (e) {
+    console.error('[webhook] auth.admin.getUserById threw:', e.message);
+    return jsonRes(res, { error: 'Owner lookup failed' }, 500);
+  }
+  if (!ownerEmail) {
+    console.warn('[webhook] owner has no email:', listing.owner_id);
+    return jsonRes(res, { ok: true, skipped: 'no_email' });
+  }
+
+  const { data: profile } = await supa
+    .from('profiles')
+    .select('display_name')
+    .eq('id', listing.owner_id)
+    .maybeSingle();
+  displayName = (profile && profile.display_name) || ownerEmail.split('@')[0];
+
+  const listingUrl = `${emailModule.SITE_URL}/listing.html?id=${encodeURIComponent(listing.id)}`;
+  const tpl = emailModule.listingApprovedEmail({ name: displayName, title: listing.title, listingUrl });
+  const result = await emailModule.sendEmail({ to: ownerEmail, ...tpl });
+
+  if (!result.ok) {
+    console.error('[webhook] email send failed:', result.error);
+    return jsonRes(res, { error: result.error || 'Send failed' }, 500);
+  }
+
+  // Mark sent for idempotency
+  try {
+    await supa.from('listings')
+      .update({ listing_live_email_sent_at: new Date().toISOString() })
+      .eq('id', listing.id);
+  } catch (e) {
+    console.warn('[webhook] could not mark listing as emailed:', e.message);
+  }
+
+  return jsonRes(res, { ok: true });
+}
+
 // ══════════════════════════════════════════════════════════════════════════
 // HTTP SERVER
 // ══════════════════════════════════════════════════════════════════════════
@@ -1057,6 +1153,7 @@ const server = http.createServer(async (req, res) => {
     if (url === '/api/send-welcome-email') return handleSendWelcomeEmail(req, res);
     if (url === '/api/send-verification-email') return handleSendVerificationEmail(req, res);
     if (url === '/api/send-listing-approved-email') return handleSendListingApprovedEmail(req, res);
+    if (url === '/api/internal/listing-activated') return handleListingActivatedWebhook(req, res);
   }
   if (req.method === 'GET') {
     if (url === '/api/verify-email') return handleVerifyEmailToken(req, res);

@@ -354,9 +354,11 @@
       }
     }
 
-    // Fire the welcome email (with verify link) — non-blocking. If Resend isn't
-    // configured the server logs and the call returns ok anyway.
-    window.Auth.sendWelcomeEmail().catch(() => {});
+    // Fire the welcome email (with verify link). We give it up to 3 seconds
+    // before redirecting so the request isn't cancelled by navigation.
+    const welcomePromise = window.Auth.sendWelcomeEmail().catch(() => {});
+    const welcomeTimeout = new Promise(r => setTimeout(r, 3000));
+    await Promise.race([welcomePromise, welcomeTimeout]);
 
     showToast('Welcome to DubiMotors!');
     redirectAfterAuth();

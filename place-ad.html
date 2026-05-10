@@ -506,8 +506,8 @@
               <label class="form-label">Transfer Included</label>
               <select class="form-input" id="sel-plate-transfer" aria-label="Select Sel-plate-transfer">
                 <option value="">Select</option>
-                <option>Yes — transfer included in price</option>
-                <option>No — buyer arranges transfer</option>
+                <option>Yes, transfer included in price</option>
+                <option>No, buyer arranges transfer</option>
                 <option>Negotiable</option>
               </select>
             </div>
@@ -775,7 +775,7 @@
           </div>
           <!-- PIN LOCATION MAP -->
           <div class="form-full" style="margin-top:8px;">
-            <label class="form-label" style="margin-bottom:8px;display:block;">📍 Pin Exact Location <span style="font-size:12px;color:var(--grey);font-weight:400;">(optional — helps buyers find you)</span></label>
+            <label class="form-label" style="margin-bottom:8px;display:block;">📍 Pin Exact Location <span style="font-size:12px;color:var(--grey);font-weight:400;">(optional, helps buyers find you)</span></label>
             <div id="place-ad-map" style="width:100%;height:280px;border-radius:12px;border:1.5px solid var(--border);overflow:hidden;background:#eee;"></div>
             <div id="place-ad-map-address" style="font-size:12px;color:var(--grey);margin-top:6px;min-height:18px;"></div>
             <input type="hidden" id="inp-lat" />
@@ -930,7 +930,7 @@
             <div><div class="pricing-option-label">Basic</div><div class="pricing-option-sub">30 days · Standard listing</div></div>
             <div class="pricing-option-price">Free</div>
           </div>
-          <div class="pricing-option" data-package="featured" data-disabled="true" style="opacity:0.55;cursor:not-allowed;position:relative;" onclick="showToast('Featured listings coming soon — payment integration is being set up.')">
+          <div class="pricing-option" data-package="featured" data-disabled="true" style="opacity:0.55;cursor:not-allowed;position:relative;" onclick="showToast('Featured listings coming soon. Payment integration is being set up.')">
             <div>
               <div class="pricing-option-label">Featured</div>
               <div class="pricing-option-sub">30 days · Top of search results</div>
@@ -940,7 +940,7 @@
               <div class="pricing-option-price">AED 99</div>
             </div>
           </div>
-          <div class="pricing-option" data-package="premium" data-disabled="true" style="opacity:0.55;cursor:not-allowed;position:relative;" onclick="showToast('Premium listings coming soon — payment integration is being set up.')">
+          <div class="pricing-option" data-package="premium" data-disabled="true" style="opacity:0.55;cursor:not-allowed;position:relative;" onclick="showToast('Premium listings coming soon. Payment integration is being set up.')">
             <div>
               <div class="pricing-option-label">Premium</div>
               <div class="pricing-option-sub">60 days · Homepage + Email blast</div>
@@ -1952,9 +1952,10 @@
       submitBtn.innerHTML = 'Publish Listing';
 
       if (approved) {
-        // Fire the "your listing is live" email — non-blocking
-        window.Auth.sendListingApprovedEmail(listingId).catch(() => {});
-        // Redirect to the newly published listing
+        // The "your listing is live" email is now fired server-side by the
+        // Postgres trigger on listings.status → 'active'. Works for AI approval,
+        // manual SQL, admin panel, etc. — single source of truth, no race.
+        // Redirect to the newly published listing.
         window.location.href = `listing.html?id=${listingId}`;
       } else {
         // Show pending screen instead of redirecting (listing isn't visible yet)

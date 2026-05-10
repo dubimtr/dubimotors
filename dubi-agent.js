@@ -207,7 +207,7 @@
         <div class="dubi-agent-avatar" style="overflow:hidden;padding:0"><img src="dubi-agent-icon.png" alt="Dubi Agent" style="width:100%;height:100%;object-fit:cover;border-radius:50%" /></div>
         <div class="dubi-agent-info">
           <div class="dubi-agent-name">Dubi <span>Agent</span></div>
-          <div class="dubi-agent-status">Online — Ready to help</div>
+          <div class="dubi-agent-status">Online. Ready to help</div>
         </div>
         <button class="dubi-agent-close" onclick="dubiAgentToggle()">✕</button>
       </div>
@@ -242,7 +242,7 @@
     isOpen = !isOpen;
     document.getElementById('dubi-agent-window').classList.toggle('open', isOpen);
     if (isOpen && history.length === 0) {
-      dubiAddMessage('agent', `Hi! I'm <strong>Dubi Agent</strong> — your AI-powered assistant for DUBIMOTORS.<br><br>I can help you find the right vehicle, understand how listings work, explain pricing, or answer any questions about buying and selling in the UAE. How can I help you today?`);
+      dubiAddMessage('agent', `Hi! I'm <strong>Dubi Agent</strong>, your AI-powered assistant for DUBIMOTORS.<br><br>I can help you find the right vehicle, understand how listings work, explain pricing, or answer any questions about buying and selling in the UAE. How can I help you today?`);
     }
     if (isOpen && window.innerWidth > 768) setTimeout(() => document.getElementById('dubi-agent-input').focus(), 120);
   };

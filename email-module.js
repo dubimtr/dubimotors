@@ -120,7 +120,7 @@ function emailLayout({ headline, intro, ctaLabel, ctaUrl, postCta, expiryNote })
 function welcomeEmail({ name, verifyUrl }) {
   const headline = `You&rsquo;re almost there! Welcome to DubiMotors`;
   const intro = `Hi ${escapeHtml(name || 'there')},<br><br>
-    Thanks for joining DubiMotors — UAE&rsquo;s AI-powered vehicle marketplace. You can already start browsing thousands of cars, motorcycles, boats, and more.<br><br>
+    Thanks for joining DubiMotors, UAE&rsquo;s AI-powered vehicle marketplace. You can already start browsing thousands of cars, motorcycles, boats, and more.<br><br>
     To unlock posting listings and contacting sellers, please verify your email address by clicking below.`;
   const html = emailLayout({
     headline,
@@ -130,8 +130,8 @@ function welcomeEmail({ name, verifyUrl }) {
     postCta: `Once verified, you&rsquo;ll be able to publish ads and contact sellers directly via call or WhatsApp.`,
     expiryNote: 'This verification link will expire in 24 hours.',
   });
-  const text = `Welcome to DubiMotors!\n\nHi ${name || 'there'},\n\nThanks for joining. To post listings and contact sellers, please verify your email by visiting:\n\n${verifyUrl}\n\nThis link expires in 24 hours.\n\n— DubiMotors`;
-  return { subject: `Welcome to DubiMotors — Verify your email address`, html, text };
+  const text = `Welcome to DubiMotors!\n\nHi ${name || 'there'},\n\nThanks for joining. To post listings and contact sellers, please verify your email by visiting:\n\n${verifyUrl}\n\nThis link expires in 24 hours.\n\nThe DubiMotors team`;
+  return { subject: `Welcome to DubiMotors. Verify your email address`, html, text };
 }
 
 function verificationEmail({ name, verifyUrl, reason }) {
@@ -150,7 +150,7 @@ function verificationEmail({ name, verifyUrl, reason }) {
     ctaUrl: verifyUrl,
     expiryNote: 'This verification link will expire in 24 hours.',
   });
-  const text = `Verify your email to continue on DubiMotors.\n\nHi ${name || 'there'},\n\n${reasonLine}\n\nClick to verify:\n${verifyUrl}\n\nThis link expires in 24 hours.\n\n— DubiMotors`;
+  const text = `Verify your email to continue on DubiMotors.\n\nHi ${name || 'there'},\n\n${reasonLine}\n\nClick to verify:\n${verifyUrl}\n\nThis link expires in 24 hours.\n\nThe DubiMotors team`;
   return { subject: `Verify your email to continue on DubiMotors`, html, text };
 }
 
@@ -164,9 +164,9 @@ function listingApprovedEmail({ name, title, listingUrl }) {
     intro,
     ctaLabel: 'View My Listing',
     ctaUrl: listingUrl,
-    postCta: `Tip: keep your phone nearby — most successful sellers reply to inquiries within an hour.`,
+    postCta: `Tip: keep your phone nearby. Most successful sellers reply to inquiries within an hour.`,
   });
-  const text = `Your DubiMotors listing is live!\n\nHi ${name || 'there'},\n\n"${title || 'Your listing'}" is now live: ${listingUrl}\n\n— DubiMotors`;
+  const text = `Your DubiMotors listing is live!\n\nHi ${name || 'there'},\n\n"${title || 'Your listing'}" is now live: ${listingUrl}\n\nThe DubiMotors team`;
   return { subject: `Your listing is live on DubiMotors`, html, text };
 }
 
