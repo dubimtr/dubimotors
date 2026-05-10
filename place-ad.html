@@ -1884,18 +1884,25 @@
       let approved = true;
       let reason = '';
       try {
+        // 20-second hard timeout so a hung OpenAI call doesn't block forever
+        const ctrl = new AbortController();
+        const timer = setTimeout(() => ctrl.abort(), 20000);
         const verifyRes = await fetch('/api/verify-listing', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ brand, model, trim, year, price, km, condition, desc, location, name, phone, email }),
+          signal: ctrl.signal,
         });
+        clearTimeout(timer);
         const verifyData = await verifyRes.json();
         approved = !!verifyData.approved;
         reason = verifyData.reason || verifyData.message || '';
       } catch (e) {
-        // AI down → leave as pending_review for manual approval (fail closed)
+        // AI down or timed out → leave as pending_review for manual approval
         approved = false;
-        reason = 'Automatic review unavailable. A team member will review shortly.';
+        reason = e.name === 'AbortError'
+          ? 'Automatic review timed out. A team member will review shortly.'
+          : 'Automatic review unavailable. A team member will review shortly.';
       }
 
       // ─── 9. Update listing status with moderation result ───

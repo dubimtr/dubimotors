@@ -623,19 +623,52 @@
   const SELLER_PHONE = '+971501234567';
 
   // If not found in the embedded fallback, the listing might exist only in
-  // Supabase (a newly added listing). Wait for live data, then reload.
+  // Supabase (a newly added listing). Show a loader, wait for live data,
+  // then look up again — without reloading the page (which would loop).
   if (!listing) {
     if (DM.isLoaded && DM.isLoaded()) {
       // Already loaded from Supabase and still nothing — really doesn't exist.
       document.body.innerHTML += '<div style="text-align:center;padding:100px 20px;"><h2>Listing not found</h2><a href="index.html">Back to Home</a></div>';
     } else {
-      // Show a loader and reload the page once live data arrives.
-      document.body.innerHTML += '<div style="text-align:center;padding:100px 20px;"><h2>Loading listing…</h2></div>';
+      // Show a loader. When live data arrives, look up the listing fresh
+      // and continue the rest of the script via location.reload() ONCE.
+      // We use sessionStorage to detect a second pass and avoid loops.
+      const tag = '_dm_listing_reload_' + (id || '');
+      const main = document.querySelector('main') || document.body;
+      const loader = document.createElement('div');
+      loader.id = '_dm_loader';
+      loader.style.cssText = 'text-align:center;padding:100px 20px;';
+      loader.innerHTML = '<h2 style="color:#666;">Loading listing…</h2><div style="margin-top:14px;color:#999;font-size:14px;">Fetching the latest data</div>';
+      main.appendChild(loader);
+
       window.addEventListener('dm:listings-loaded', () => {
-        window.location.reload();
+        const fresh = DM.getById(id);
+        if (fresh) {
+          // Already-loaded? We can't easily run the rest of the IIFE on
+          // top of an existing render, so we reload — but only once.
+          if (!sessionStorage.getItem(tag)) {
+            sessionStorage.setItem(tag, '1');
+            window.location.reload();
+          } else {
+            // Second pass and still no luck — give up to avoid a loop.
+            sessionStorage.removeItem(tag);
+            loader.innerHTML = '<h2>Could not load this listing</h2><a href="index.html" style="color:var(--orange);font-weight:700;">Back to Home</a>';
+          }
+        } else {
+          loader.innerHTML = '<h2>Listing not found</h2><a href="index.html" style="color:var(--orange);font-weight:700;">Back to Home</a>';
+        }
       }, { once: true });
+
+      // Also handle the case where Supabase fetch fails entirely
+      setTimeout(() => {
+        if (DM.isLoaded && DM.isLoaded() && !DM.getById(id)) {
+          loader.innerHTML = '<h2>Listing not found</h2><a href="index.html" style="color:var(--orange);font-weight:700;">Back to Home</a>';
+        }
+      }, 8000);
     }
   } else {
+    // Clear the reload tag once we successfully render
+    try { sessionStorage.removeItem('_dm_listing_reload_' + id); } catch {}
     // ── DYNAMIC SEO META TAGS ──
     const listingPrice = listing.price ? 'AED ' + listing.price.toLocaleString() : '';
     const listingCity  = listing.city || listing.location || 'UAE';
