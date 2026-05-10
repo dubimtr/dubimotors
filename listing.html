@@ -610,6 +610,7 @@
 <script src="auth.js" defer></script>
 <script src="shared.js"></script>
 <script src="components.js"></script>
+  <script src="auth-modal.js" defer></script>
 <script src="lightbox.js"></script>
 <script>
   renderNavbar('');
@@ -825,16 +826,24 @@
     );
     const waHref = `https://wa.me/${phone.replace('+','')}?text=${waMsg}`;
 
-    // Helper: if user not signed in → redirect to login. If signed in but not
+    // Helper: if user not signed in → open auth modal. If signed in but not
     // verified → show our verification modal. If verified → return true.
     async function ensureVerifiedToContact() {
       if (!window.Auth) return true; // graceful degrade
-      const user = await window.Auth.getUser();
+      let user = await window.Auth.getUser();
       if (!user) {
-        // Not logged in — bounce to login with redirect-back
-        const next = encodeURIComponent(window.location.pathname + window.location.search);
-        window.location.href = 'login.html?next=' + next;
-        return false;
+        // Open the auth modal (in-page) instead of redirecting away
+        if (window.AuthModal) {
+          user = await window.AuthModal.open({
+            tab: 'login',
+            reason: 'Sign in to contact this seller.',
+          });
+          if (!user) return false; // user cancelled
+        } else {
+          const next = encodeURIComponent(window.location.pathname + window.location.search);
+          window.location.href = 'login.html?next=' + next;
+          return false;
+        }
       }
       const verified = await window.Auth.isEmailVerified();
       if (verified) return true;

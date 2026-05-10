@@ -249,9 +249,30 @@ window.Auth = (() => {
    * with a `next` parameter pointing back to the current page.
    * Returns the user when authenticated.
    */
+  /**
+   * Require an authenticated user. If signed in, returns the user.
+   * Otherwise:
+   *  - by default, redirects to login.html (preserves the page-load auth-guard pattern)
+   *  - if opts.useModal is true AND AuthModal is loaded, opens the modal instead
+   *
+   * @param {object} opts
+   * @param {boolean} opts.useModal - Open AuthModal instead of redirecting (default: false)
+   * @param {string} opts.reason - Message shown in the modal (only used when useModal)
+   * @param {string} opts.redirectTo - Override URL for the fallback redirect
+   */
   async function requireAuth(opts = {}) {
     const user = await getUser();
     if (user) return user;
+
+    if (opts.useModal && window.AuthModal) {
+      const u = await window.AuthModal.open({
+        tab: 'login',
+        reason: opts.reason || 'Please sign in to continue.',
+      });
+      return u || null;
+    }
+
+    // Default: full-page redirect
     const next = encodeURIComponent(window.location.pathname + window.location.search);
     const target = opts.redirectTo || `login.html?next=${next}`;
     window.location.href = target;

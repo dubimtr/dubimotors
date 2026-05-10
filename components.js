@@ -234,9 +234,19 @@ async function updateNavbarAuthState() {
       signInBtn.className = 'btn-place-ad';
       signInBtn.textContent = 'Sign In';
       signInBtn.style.background = 'var(--orange)';
-      signInBtn.onclick = () => {
-        const next = encodeURIComponent(window.location.pathname + window.location.search);
-        window.location.href = 'login.html?next=' + next;
+      signInBtn.onclick = async () => {
+        // Prefer the in-page modal. If for some reason it isn't loaded, fall
+        // back to the legacy login.html navigation.
+        if (window.AuthModal) {
+          const user = await window.AuthModal.open({ tab: 'login' });
+          if (user) {
+            // Refresh navbar with the now-signed-in state
+            updateNavbarAuthState();
+          }
+        } else {
+          const next = encodeURIComponent(window.location.pathname + window.location.search);
+          window.location.href = 'login.html?next=' + next;
+        }
       };
       // Insert before the hamburger button so it sits in the right place
       const hamb = document.getElementById('nav-hamburger-btn');
@@ -256,9 +266,22 @@ async function updateNavbarAuthState() {
       if (!document.getElementById('mobile-signin-link')) {
         const link = document.createElement('a');
         link.id = 'mobile-signin-link';
-        link.href = 'login.html';
+        link.href = '#';
         link.textContent = '🔐 Sign In';
         link.style.cssText = 'padding:10px 0;color:var(--orange);font-size:14px;font-weight:700;';
+        link.onclick = async (e) => {
+          e.preventDefault();
+          // Close the mobile nav first
+          const mn = document.getElementById('mobile-nav-menu');
+          if (mn) mn.classList.remove('open');
+          document.body.style.overflow = '';
+          if (window.AuthModal) {
+            const user = await window.AuthModal.open({ tab: 'login' });
+            if (user) updateNavbarAuthState();
+          } else {
+            window.location.href = 'login.html';
+          }
+        };
         const divider = mobileNav.querySelector('div[style*="border-top"]');
         if (divider) divider.appendChild(link);
         else mobileNav.appendChild(link);

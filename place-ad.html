@@ -968,6 +968,7 @@
 <script src="auth.js" defer></script>
 <script src="shared.js"></script>
 <script src="components.js"></script>
+  <script src="auth-modal.js" defer></script>
 <script>
 
   // ─── State for the rest of the script ───
@@ -1733,8 +1734,17 @@
   async function submitAd() {
     // ─── 1. Auth + verification gate ───
     if (!window.Auth) { showToast('Authentication not ready. Please refresh.'); return; }
-    const user = await window.Auth.getUser();
-    if (!user) { window.location.href = 'login.html?next=/place-ad.html'; return; }
+    let user = await window.Auth.getUser();
+    if (!user) {
+      // Should be unreachable (page-load requireAuth redirects), but defensive
+      if (window.AuthModal) {
+        user = await window.AuthModal.open({ tab: 'login', reason: 'Sign in to publish your listing.' });
+        if (!user) return;
+      } else {
+        window.location.href = 'login.html?next=/place-ad.html';
+        return;
+      }
+    }
     _currentUser = user;
 
     // Re-check verification status fresh (user may have just verified)
