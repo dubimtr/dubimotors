@@ -400,13 +400,19 @@
       // Give auth.js a tick to attach itself
       let tries = 0;
       while (!window.Auth && tries < 50) { await new Promise(r => setTimeout(r, 50)); tries++; }
-      if (!window.Auth) { showToast('Authentication failed to load. Please refresh.'); return; }
+      if (!window.Auth) {
+        showToast('Authentication failed to load. Please refresh.');
+        document.documentElement.classList.add('auth-resolved'); // unhide UI even on failure
+        return;
+      }
 
       const user = await window.Auth.requireAuth();
       if (!user) return; // requireAuth redirects, this is just a safety net
 
       const profile = await window.Auth.getProfile();
       applyProfileToUI(user, profile);
+      // Now that real data is in place, fade the page in
+      document.documentElement.classList.add('auth-resolved');
     })();
   </script>
 </body>

@@ -1,6 +1,42 @@
 // ─── SHARED COMPONENTS ────────────────────────────────────────────────────────
 
 function renderNavbar(activePage = '') {
+  // Inject auth-aware CSS once. Hides auth-dependent UI until updateNavbarAuthState
+  // adds .auth-resolved on <html>, preventing the flash of mock data.
+  if (!document.getElementById('dm-auth-css')) {
+    const style = document.createElement('style');
+    style.id = 'dm-auth-css';
+    style.textContent = `
+      /* Auth-dependent UI is hidden until auth state is determined. */
+      html:not(.auth-resolved) .nav-user-btn,
+      html:not(.auth-resolved) #nav-notif-btn,
+      html:not(.auth-resolved) #nav-chat-btn,
+      html:not(.auth-resolved) .btn-place-ad,
+      html:not(.auth-resolved) #nav-signin-btn { visibility: hidden; opacity: 0; }
+      html.auth-resolved .nav-user-btn,
+      html.auth-resolved #nav-notif-btn,
+      html.auth-resolved #nav-chat-btn,
+      html.auth-resolved .btn-place-ad,
+      html.auth-resolved #nav-signin-btn { visibility: visible; opacity: 1; transition: opacity .15s ease; }
+      /* Same for profile.html sidebar/main cards */
+      html:not(.auth-resolved) #sidebar-name,
+      html:not(.auth-resolved) #sidebar-email,
+      html:not(.auth-resolved) #sidebar-avatar,
+      html:not(.auth-resolved) #main-name,
+      html:not(.auth-resolved) #main-avatar,
+      html:not(.auth-resolved) .profile-avatar-meta,
+      html:not(.auth-resolved) .profile-form-grid { visibility: hidden; opacity: 0; }
+      html.auth-resolved #sidebar-name,
+      html.auth-resolved #sidebar-email,
+      html.auth-resolved #sidebar-avatar,
+      html.auth-resolved #main-name,
+      html.auth-resolved #main-avatar,
+      html.auth-resolved .profile-avatar-meta,
+      html.auth-resolved .profile-form-grid { visibility: visible; opacity: 1; transition: opacity .15s ease; }
+    `;
+    document.head.appendChild(style);
+  }
+
   document.getElementById('navbar-placeholder').innerHTML = `
     <nav class="navbar">
       <div class="container">
@@ -73,12 +109,12 @@ function renderNavbar(activePage = '') {
           </div>
           <!-- User Avatar -->
           <div class="nav-user-btn" id="nav-user-btn">
-            <div class="nav-user-avatar">AR</div>
+            <div class="nav-user-avatar"></div>
             <div class="nav-dropdown" id="user-dropdown" style="right:0;width:230px;">
               <div class="nav-dropdown-header" style="flex-direction:column;align-items:flex-start;gap:2px;padding-bottom:14px;border-bottom:1px solid var(--border);margin-bottom:4px;">
                 <div style="display:flex;align-items:center;gap:10px;">
-                  <div style="width:36px;height:36px;border-radius:50%;background:var(--orange);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;flex-shrink:0;">AR</div>
-                  <div><div style="font-weight:800;font-size:14px;">Ahmed Al Rashidi</div><div style="font-size:11px;color:var(--grey);">ahmed@example.com</div></div>
+                  <div style="width:36px;height:36px;border-radius:50%;background:var(--orange);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;flex-shrink:0;"></div>
+                  <div><div style="font-weight:800;font-size:14px;"></div><div style="font-size:11px;color:var(--grey);"></div></div>
                 </div>
               </div>
               <a class="nav-dropdown-item" href="profile.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>&nbsp;My Profile</a>
@@ -204,11 +240,12 @@ async function updateNavbarAuthState() {
   }
   if (!window.Auth) {
     console.warn('[components.js] window.Auth never became available; navbar not updated.');
+    document.documentElement.classList.add('auth-resolved'); // unhide UI even on failure
     return;
   }
   const user = await window.Auth.getUser();
   const navRight = document.querySelector('.nav-right');
-  if (!navRight) return;
+  if (!navRight) { document.documentElement.classList.add('auth-resolved'); return; }
 
   const notifBtn = document.getElementById('nav-notif-btn');
   const chatBtn  = document.getElementById('nav-chat-btn');
@@ -259,6 +296,7 @@ async function updateNavbarAuthState() {
         else mobileNav.appendChild(link);
       }
     }
+    document.documentElement.classList.add('auth-resolved');
     return;
   }
 
@@ -328,6 +366,7 @@ async function updateNavbarAuthState() {
       };
     }
   }
+  document.documentElement.classList.add('auth-resolved');
 }
 
 function _toggleNavDD(id) {
