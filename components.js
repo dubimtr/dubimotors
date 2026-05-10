@@ -171,12 +171,22 @@ function renderNavbar(activePage = '') {
     }
   });
 
-  // Apply current auth state (logged in vs logged out)
+  // Apply current auth state (logged in vs logged out). updateNavbarAuthState
+  // internally waits for window.Auth to load, so this works even though
+  // components.js runs before the deferred auth.js script.
   updateNavbarAuthState();
-  // Re-apply on auth changes (login, logout, token refresh from another tab)
-  if (window.Auth && typeof window.Auth.onChange === 'function') {
-    window.Auth.onChange(() => updateNavbarAuthState());
-  }
+  // Re-apply on auth changes (login, logout, token refresh from another tab).
+  // Wait briefly for window.Auth to be ready before subscribing.
+  (async () => {
+    let tries = 0;
+    while (!window.Auth && tries < 60) {
+      await new Promise(r => setTimeout(r, 50));
+      tries++;
+    }
+    if (window.Auth && typeof window.Auth.onChange === 'function') {
+      window.Auth.onChange(() => updateNavbarAuthState());
+    }
+  })();
 }
 
 /**
@@ -185,7 +195,17 @@ function renderNavbar(activePage = '') {
  * - Logged in:  fill in real name, email, initials; wire logout.
  */
 async function updateNavbarAuthState() {
-  if (!window.Auth) return;
+  // Wait for window.Auth to load. components.js runs synchronously at page render
+  // time, but auth.js is deferred. Poll briefly until Auth shows up.
+  let tries = 0;
+  while (!window.Auth && tries < 60) {  // up to ~3 seconds
+    await new Promise(r => setTimeout(r, 50));
+    tries++;
+  }
+  if (!window.Auth) {
+    console.warn('[components.js] window.Auth never became available; navbar not updated.');
+    return;
+  }
   const user = await window.Auth.getUser();
   const navRight = document.querySelector('.nav-right');
   if (!navRight) return;
