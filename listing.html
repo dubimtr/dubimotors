@@ -501,12 +501,13 @@
 
       <div class="seller-card">
         <div class="seller-card-title">Listed By</div>
-        <div class="seller-info">
+        <div class="seller-info" id="seller-info-wrap" style="cursor:pointer;" onclick="openSellerProfile(event)">
           <div class="seller-avatar">🏪</div>
-          <div>
+          <div style="flex:1;min-width:0;">
             <div class="seller-name" id="seller-name"></div>
             <div class="seller-badge" id="seller-badge"></div>
           </div>
+          <div id="seller-arrow" style="color:var(--grey);font-size:18px;display:none;">›</div>
         </div>
       </div>
 
@@ -882,6 +883,19 @@
     document.getElementById('sidebar-sub').textContent = listing.condition + ' · ' + listing.year + ' · ' + listing.location;
     document.getElementById('seller-name').textContent = listing.seller;
     document.getElementById('seller-badge').textContent = listing.verified ? '✓ Verified Dealer' : 'Private Seller';
+
+    // Make seller card clickable → user.html?id=<owner_id> (real UUIDs only)
+    const sellerOwnerId = listing.ownerId || listing.owner_id;
+    const sellerWrap = document.getElementById('seller-info-wrap');
+    const sellerArrow = document.getElementById('seller-arrow');
+    if (sellerOwnerId && /^[0-9a-f-]{36}$/i.test(String(sellerOwnerId))) {
+      sellerWrap.dataset.ownerId = sellerOwnerId;
+      sellerWrap.style.cursor = 'pointer';
+      if (sellerArrow) sellerArrow.style.display = '';
+    } else {
+      sellerWrap.style.cursor = 'default';
+      if (sellerArrow) sellerArrow.style.display = 'none';
+    }
 
     // ── CALL & WHATSAPP BUTTONS — gated on email verification ──
     const phone = (listing.phone || SELLER_PHONE).replace(/\s+/g, '');
@@ -1405,6 +1419,16 @@
     setTimeout(() => { const t = document.getElementById('msg-body'); if (t) t.focus(); }, 50);
   }
   window.openMessageModal = openMessageModal;
+
+  // Click seller card → navigate to public user profile (only if real UUID owner)
+  function openSellerProfile(e) {
+    if (e) e.stopPropagation();
+    const wrap = document.getElementById('seller-info-wrap');
+    const ownerId = wrap && wrap.dataset && wrap.dataset.ownerId;
+    if (!ownerId) return;
+    window.location.href = 'user.html?id=' + encodeURIComponent(ownerId);
+  }
+  window.openSellerProfile = openSellerProfile;
 
   function closeMessageModal() {
     const modal = document.getElementById('message-modal');

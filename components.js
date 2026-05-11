@@ -468,11 +468,12 @@ async function loadNavbarNotifications(userId) {
     const itemsHtml = (recent || []).map(n => {
       const icon = NAV_NOTIF_ICONS[n.type] || NAV_NOTIF_ICONS.system;
       const unread = !n.read_at;
-      // Per UX decision (round 5): the bell dropdown always navigates to
-      // notifications.html regardless of the notification's link_url.
-      // The notification ID is appended as a hash so the destination page can
-      // scroll the row into view and visually highlight it briefly.
-      const href = `notifications.html#n-${_navEscapeHtml(n.id)}`;
+      // Chat-related notifications (type=inquiry) jump to the conversation
+      // directly — that's the natural action for a chat alert. Everything else
+      // goes to /notifications.html with a hash so the row gets highlighted.
+      const href = (n.type === 'inquiry' && n.link_url)
+        ? _navEscapeHtml(n.link_url)
+        : `notifications.html#n-${_navEscapeHtml(n.id)}`;
       return `
         <a href="${href}" style="display:flex;gap:10px;padding:10px 14px;border-bottom:1px solid var(--border);text-decoration:none;color:inherit;${unread ? 'background:#FFF7F2;' : ''}">
           <div style="font-size:18px;flex-shrink:0;">${icon}</div>

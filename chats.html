@@ -442,8 +442,8 @@
     panel.innerHTML = `
       <div class="chat-header">
         <button class="chat-header-back" onclick="backToList()">&larr;</button>
-        <div class="chat-header-avatar">${escapeHtml(initials(otherName))}</div>
-        <div style="flex:1;min-width:0;">
+        <div class="chat-header-avatar" style="cursor:pointer;" onclick="openOtherUserProfile('${escapeHtml(conv._otherId)}')" title="View profile">${escapeHtml(initials(otherName))}</div>
+        <div style="flex:1;min-width:0;cursor:pointer;" onclick="openOtherUserProfile('${escapeHtml(conv._otherId)}')">
           <div class="chat-header-name">${escapeHtml(otherName)}</div>
           <div class="chat-header-listing">${conv._isBuyer ? 'Seller' : 'Buyer'} &middot; ${escapeHtml(listingTitle)}</div>
         </div>
@@ -631,6 +631,13 @@
     if (m) m.classList.toggle('open');
   }
   window.toggleHeaderMenu = toggleHeaderMenu;
+
+  // Click on chat header avatar/name → public user profile
+  function openOtherUserProfile(otherId) {
+    if (!otherId) return;
+    window.location.href = 'user.html?id=' + encodeURIComponent(otherId);
+  }
+  window.openOtherUserProfile = openOtherUserProfile;
 
   // Close menu when clicking outside
   document.addEventListener('click', (e) => {

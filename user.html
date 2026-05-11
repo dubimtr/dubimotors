@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>User Profile — DUBIMOTORS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" />
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    body { background: var(--light-grey); }
+    .user-profile-wrap { max-width: 1080px; margin: 0 auto; padding: 36px 16px 60px; }
+    .up-header {
+      background: var(--white);
+      border-radius: 16px;
+      padding: 32px;
+      box-shadow: var(--shadow);
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+    .up-avatar {
+      width: 100px; height: 100px;
+      border-radius: 50%;
+      background: var(--orange);
+      color: var(--white);
+      font-size: 36px;
+      font-weight: 800;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+    .up-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+    .up-info { flex: 1; min-width: 220px; }
+    .up-name { font-size: 26px; font-weight: 900; color: var(--dark); line-height: 1.2; }
+    .up-badges { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+    .up-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: #E8F5E9; color: #2E7D32;
+      font-size: 12px; font-weight: 700;
+      padding: 4px 12px; border-radius: 20px;
+    }
+    .up-badge.muted { background: var(--light-grey); color: var(--grey); }
+    .up-meta { color: var(--grey); font-size: 14px; margin-top: 8px; }
+    .up-actions { display: flex; flex-direction: column; gap: 10px; align-items: stretch; min-width: 200px; }
+    @media (max-width: 600px) { .up-actions { width: 100%; } }
+    .up-btn {
+      background: var(--orange); color: var(--white);
+      border: none; border-radius: 10px;
+      padding: 12px 18px; font-size: 14px; font-weight: 700;
+      cursor: pointer; text-align: center; text-decoration: none;
+    }
+    .up-btn:hover { background: var(--orange-hover); }
+    .up-btn.outline {
+      background: transparent; color: var(--dark); border: 1.5px solid var(--border);
+    }
+    .up-btn.outline:hover { border-color: var(--orange); color: var(--orange); }
+
+    .up-stats {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+      margin-top: 24px;
+    }
+    .up-stat { background: var(--white); border-radius: 12px; padding: 18px; text-align: center; box-shadow: var(--shadow); }
+    .up-stat-num { font-size: 24px; font-weight: 900; color: var(--dark); }
+    .up-stat-label { font-size: 12px; color: var(--grey); margin-top: 4px; font-weight: 600; }
+
+    .up-section { background: var(--white); border-radius: 16px; padding: 24px; box-shadow: var(--shadow); margin-top: 24px; }
+    .up-section-title { font-size: 18px; font-weight: 800; color: var(--dark); margin-bottom: 16px; }
+
+    .up-listings-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 16px;
+    }
+    .up-empty { text-align: center; padding: 40px 20px; color: var(--grey); }
+    .up-empty-icon { font-size: 40px; margin-bottom: 8px; }
+
+    .up-loading { text-align: center; padding: 60px 20px; color: var(--grey); font-size: 14px; }
+    .up-not-found { text-align: center; padding: 80px 20px; }
+    .up-not-found-icon { font-size: 56px; margin-bottom: 16px; }
+    .up-not-found-title { font-size: 22px; font-weight: 800; color: var(--dark); margin-bottom: 8px; }
+    .up-not-found-sub { font-size: 14px; color: var(--grey); margin-bottom: 20px; }
+  </style>
+</head>
+<body>
+  <div id="navbar-placeholder"></div>
+
+  <div class="user-profile-wrap" id="up-content">
+    <div class="up-loading">Loading user profile…</div>
+  </div>
+
+  <div id="footer-placeholder"></div>
+  <div class="toast" id="toast"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js" defer></script>
+  <script src="supabase-client.js" defer></script>
+  <script src="auth.js" defer></script>
+  <script src="shared.js"></script>
+  <script src="components.js"></script>
+  <script src="auth-modal.js" defer></script>
+  <script>
+    renderNavbar('');
+    renderFooter();
+
+    function escapeHtml(s) {
+      return String(s == null ? '' : s)
+        .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+        .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    }
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      if (!t) return;
+      t.textContent = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 3000);
+    }
+    function initials(name) {
+      return String(name || '?').trim().split(/\s+/).map(w => w[0]).slice(0, 2).join('').toUpperCase() || '?';
+    }
+    function memberSince(iso) {
+      if (!iso) return '';
+      const d = new Date(iso);
+      return d.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
+    }
+
+    function renderNotFound() {
+      document.getElementById('up-content').innerHTML = `
+        <div class="up-not-found">
+          <div class="up-not-found-icon">😕</div>
+          <div class="up-not-found-title">User not found</div>
+          <div class="up-not-found-sub">This user may have deactivated their account or the link is invalid.</div>
+          <a href="index.html" class="up-btn" style="display:inline-block;">Back to Home</a>
+        </div>`;
+    }
+
+    function renderProfile(profile, listings) {
+      const root = document.getElementById('up-content');
+      const isVerified = !!profile.is_verified;
+      const memberSinceStr = memberSince(profile.created_at);
+      const activeCount = (listings || []).filter(l => l.status === 'active').length;
+
+      const avatarHtml = profile.avatar_url
+        ? `<img src="${escapeHtml(profile.avatar_url)}" alt="" onerror="this.replaceWith(Object.assign(document.createElement('span'),{textContent:'${escapeHtml(initials(profile.display_name))}'}));" />`
+        : escapeHtml(initials(profile.display_name));
+
+      const verifiedBadge = isVerified
+        ? `<span class="up-badge"><svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M8 1l1.8 2.6L13 4.5l-2.1 2.4.3 3.1L8 8.7l-3.2 1.3.3-3.1L3 4.5l3.2-.9L8 1z" fill="#2E7D32"/></svg>Verified</span>`
+        : `<span class="up-badge muted">Unverified</span>`;
+
+      // Compute stats
+      const totalListings = (listings || []).length;
+      // Joined response time / deals — not available in current schema
+      // (deferred from this stage; stats card stays focused on listing counts)
+
+      root.innerHTML = `
+        <div class="up-header">
+          <div class="up-avatar">${avatarHtml}</div>
+          <div class="up-info">
+            <div class="up-name">${escapeHtml(profile.display_name || 'User')}</div>
+            <div class="up-badges">${verifiedBadge}</div>
+            ${memberSinceStr ? `<div class="up-meta">Member since ${escapeHtml(memberSinceStr)}</div>` : ''}
+          </div>
+          <div class="up-actions" id="up-actions-slot"></div>
+        </div>
+
+        <div class="up-stats">
+          <div class="up-stat"><div class="up-stat-num">${activeCount}</div><div class="up-stat-label">Active Listings</div></div>
+          <div class="up-stat"><div class="up-stat-num">${totalListings}</div><div class="up-stat-label">Total Listings</div></div>
+          <div class="up-stat"><div class="up-stat-num">${isVerified ? '✓' : '—'}</div><div class="up-stat-label">Verified</div></div>
+        </div>
+
+        <div class="up-section">
+          <div class="up-section-title">Listings by ${escapeHtml(profile.display_name || 'this user')}</div>
+          <div id="up-listings"></div>
+        </div>`;
+
+      // Render listings via DM.renderCard (same card style as everywhere else)
+      const grid = document.getElementById('up-listings');
+      const activeListings = (listings || []).filter(l => l.status === 'active');
+      if (!activeListings.length) {
+        grid.innerHTML = `
+          <div class="up-empty">
+            <div class="up-empty-icon">📭</div>
+            <div style="font-size:15px;font-weight:700;color:var(--dark);margin-bottom:4px;">No active listings</div>
+            <div style="font-size:13px;">${escapeHtml(profile.display_name || 'This user')} doesn't have any active listings right now.</div>
+          </div>`;
+      } else {
+        const cards = activeListings.map(l => {
+          // Reshape supabase row into the shape DM.renderCard expects
+          const imgs = (l.listing_images || [])
+            .slice()
+            .sort((a,b) => (b.is_primary?1:0) - (a.is_primary?1:0) || (a.display_order||0) - (b.display_order||0));
+          const mainImg = imgs[0] ? imgs[0].url : '';
+          const cardData = {
+            id: l.id,
+            title: l.title,
+            price: l.price,
+            year: l.year,
+            kilometers: l.kilometers,
+            location: l.location,
+            mainImg,
+            images: imgs.map(i => i.url),
+            verified: l.verified,
+            warranty: l.warranty,
+            serviceContract: l.service_history,
+            featured: l.featured,
+          };
+          return DM.renderCard(cardData);
+        }).join('');
+        grid.innerHTML = `<div class="up-listings-grid">${cards}</div>`;
+      }
+
+      // Action buttons — show "Message" only if current user is signed in
+      // and is not viewing their own profile
+      attachActions(profile);
+    }
+
+    async function attachActions(profile) {
+      const slot = document.getElementById('up-actions-slot');
+      if (!slot) return;
+
+      let me = null;
+      try {
+        if (window.Auth) me = await window.Auth.getUser();
+      } catch {}
+
+      // Own profile: show "Edit Profile"
+      if (me && me.id === profile.id) {
+        slot.innerHTML = `<a class="up-btn" href="profile.html">Edit My Profile</a>`;
+        return;
+      }
+
+      // Other user's profile, signed-in: show "Message" (only if they accept chat)
+      // We'd need to query chat_enabled, but to keep this simple we'll just show
+      // the button — clicking will redirect them to a listing-context message
+      // (since DubiMotors chat is always per-listing). For now we just suggest
+      // they pick a listing to message about.
+      if (me && me.id !== profile.id) {
+        const activeListings = window._upListings || [];
+        if (activeListings.length > 0) {
+          slot.innerHTML = `<a class="up-btn" href="listing.html?id=${escapeHtml(activeListings[0].id)}">View First Listing</a>`;
+        }
+        return;
+      }
+
+      // Not signed in
+      slot.innerHTML = `<a class="up-btn outline" href="login.html">Sign in to message</a>`;
+    }
+
+    // ──────────────────────────────────────────────────────────────────
+    // MAIN
+    // ──────────────────────────────────────────────────────────────────
+    (async () => {
+      let tries = 0;
+      while (!window.supa && tries < 50) { await new Promise(r => setTimeout(r, 50)); tries++; }
+      if (!window.supa) {
+        showToast('Could not connect — please refresh.');
+        return;
+      }
+
+      const url = new URLSearchParams(window.location.search);
+      const userId = url.get('id');
+      if (!userId) { renderNotFound(); return; }
+
+      // Light validation — IDs should be UUIDs
+      if (!/^[0-9a-f-]{36}$/i.test(userId)) { renderNotFound(); return; }
+
+      try {
+        // Fetch profile via public_profiles view (created by 15_round6 SQL)
+        const { data: profile, error: pErr } = await window.supa
+          .from('public_profiles')
+          .select('id, display_name, avatar_url, created_at, is_verified, is_deactivated')
+          .eq('id', userId)
+          .maybeSingle();
+        if (pErr) throw pErr;
+        if (!profile || profile.is_deactivated) { renderNotFound(); return; }
+
+        // Fetch this user's listings + primary images
+        const { data: listings, error: lErr } = await window.supa
+          .from('listings')
+          .select('id, title, price, year, kilometers, location, status, verified, warranty, service_history, featured, created_at, listing_images ( url, is_primary, display_order )')
+          .eq('owner_id', userId)
+          .eq('status', 'active')
+          .order('created_at', { ascending: false });
+        if (lErr) throw lErr;
+
+        // Stash for attachActions
+        window._upListings = listings || [];
+
+        renderProfile(profile, listings || []);
+      } catch (e) {
+        console.error('[user] load failed:', e);
+        renderNotFound();
+      }
+    })();
+  </script>
+</body>
+</html>

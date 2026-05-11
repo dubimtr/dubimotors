@@ -383,6 +383,18 @@
           </div>
         </div>
 
+        <!-- Vehicle Alerts -->
+        <div class="dash-card">
+          <div class="dash-card-title">Vehicle Alerts</div>
+          <div class="dash-card-sub">Get notified when a vehicle matching your criteria is listed. Each alert sends an in-app notification, and (if enabled in Notification Preferences above) an email. Manage your alerts on the <a href="saved-searches.html" style="color:var(--orange);font-weight:700;text-decoration:none;">Saved Searches</a> page.</div>
+
+          <div id="va-list" style="margin-top:12px;"></div>
+
+          <div style="margin-top:16px;">
+            <button class="btn-save" onclick="openAlertModal()">+ Create Vehicle Alert</button>
+          </div>
+        </div>
+
         <!-- Danger Zone -->
         <div class="dash-card" style="border:1.5px solid #FFCDD2;">
           <div class="dash-card-title" style="color:#C62828;">Danger Zone</div>
@@ -1038,6 +1050,198 @@
       }
     }
     window.saveContactPreferences = saveContactPreferences;
+
+    /* ──────────────────────────────────────────────────────────────
+       VEHICLE ALERTS — quick saved-search creator
+    ────────────────────────────────────────────────────────────── */
+
+    // Categories the alert form supports. Cars is the primary case; could
+    // expand later. For now, the form is car-focused (make/model/variant).
+    const ALERT_EMIRATES = ['Dubai','Abu Dhabi','Sharjah','Ajman','Ras Al Khaimah','Umm Al Quwain','Fujairah'];
+
+    function openAlertModal(existingFilters) {
+      const f = existingFilters || {};
+      dmOpenModal(`
+        <div class="dm-modal-title">Create Vehicle Alert</div>
+        <div class="dm-modal-sub">Tell us what you're looking for. We'll notify you when a match is listed.</div>
+
+        <div class="dm-modal-form-group" style="margin-bottom:12px;">
+          <label style="display:block;font-size:13px;font-weight:700;color:var(--dark);margin-bottom:6px;">Category</label>
+          <select id="va-category" style="width:100%;border:1.5px solid var(--border);border-radius:10px;padding:10px 12px;font-size:14px;outline:none;font-family:inherit;">
+            <option value="cars">Cars</option>
+            <option value="bikes">Motorcycles</option>
+            <option value="marine">Boats / Jet Skis</option>
+            <option value="heavy">Heavy Vehicles</option>
+          </select>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+          <div>
+            <label style="display:block;font-size:13px;font-weight:700;color:var(--dark);margin-bottom:6px;">Brand / Make *</label>
+            <input id="va-make" type="text" placeholder="e.g. Lamborghini" value="${f.make ? String(f.make).replace(/"/g,'&quot;') : ''}" style="width:100%;border:1.5px solid var(--border);border-radius:10px;padding:10px 12px;font-size:14px;outline:none;" />
+          </div>
+          <div>
+            <label style="display:block;font-size:13px;font-weight:700;color:var(--dark);margin-bottom:6px;">Model</label>
+            <input id="va-model" type="text" placeholder="e.g. Huracan" value="${f.model ? String(f.model).replace(/"/g,'&quot;') : ''}" style="width:100%;border:1.5px solid var(--border);border-radius:10px;padding:10px 12px;font-size:14px;outline:none;" />
+          </div>
+        </div>
+
+        <div class="dm-modal-form-group" style="margin-bottom:12px;">
+          <label style="display:block;font-size:13px;font-weight:700;color:var(--dark);margin-bottom:6px;">Variant / Trim</label>
+          <input id="va-trim" type="text" placeholder="e.g. STO, Evo, Performante" value="${f.trim ? String(f.trim).replace(/"/g,'&quot;') : ''}" style="width:100%;border:1.5px solid var(--border);border-radius:10px;padding:10px 12px;font-size:14px;outline:none;" />
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+          <div>
+            <label style="display:block;font-size:13px;font-weight:700;color:var(--dark);margin-bottom:6px;">From Year</label>
+            <input id="va-year-min" type="number" min="1900" max="2099" placeholder="e.g. 2021" value="${f.year_min || ''}" style="width:100%;border:1.5px solid var(--border);border-radius:10px;padding:10px 12px;font-size:14px;outline:none;" />
+          </div>
+          <div>
+            <label style="display:block;font-size:13px;font-weight:700;color:var(--dark);margin-bottom:6px;">To Year</label>
+            <input id="va-year-max" type="number" min="1900" max="2099" placeholder="e.g. 2024" value="${f.year_max || ''}" style="width:100%;border:1.5px solid var(--border);border-radius:10px;padding:10px 12px;font-size:14px;outline:none;" />
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+          <div>
+            <label style="display:block;font-size:13px;font-weight:700;color:var(--dark);margin-bottom:6px;">Max Price (AED)</label>
+            <input id="va-price-max" type="number" min="0" placeholder="e.g. 1500000" value="${f.price_max || ''}" style="width:100%;border:1.5px solid var(--border);border-radius:10px;padding:10px 12px;font-size:14px;outline:none;" />
+          </div>
+          <div>
+            <label style="display:block;font-size:13px;font-weight:700;color:var(--dark);margin-bottom:6px;">Emirate</label>
+            <select id="va-emirate" style="width:100%;border:1.5px solid var(--border);border-radius:10px;padding:10px 12px;font-size:14px;outline:none;font-family:inherit;">
+              <option value="">Any emirate</option>
+              ${ALERT_EMIRATES.map(e => `<option value="${e}"${f.location === e ? ' selected' : ''}>${e}</option>`).join('')}
+            </select>
+          </div>
+        </div>
+
+        <div class="dm-modal-form-group" style="margin-bottom:12px;">
+          <label style="display:block;font-size:13px;font-weight:700;color:var(--dark);margin-bottom:6px;">Alert Name (optional)</label>
+          <input id="va-name" type="text" placeholder="e.g. My Lambo hunt" maxlength="80" style="width:100%;border:1.5px solid var(--border);border-radius:10px;padding:10px 12px;font-size:14px;outline:none;" />
+        </div>
+
+        <div class="dm-modal-status" style="display:none;"></div>
+
+        <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:14px;">
+          <button class="btn-outline" onclick="dmCloseModal()" style="padding:10px 18px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;background:transparent;color:var(--dark);border:1.5px solid var(--border);">Cancel</button>
+          <button class="btn-save" onclick="saveAlert()" id="va-save-btn">Create Alert</button>
+        </div>
+      `);
+
+      // Preselect category if filter object provided
+      if (f.category) {
+        const sel = document.getElementById('va-category');
+        if (sel) sel.value = f.category;
+      }
+    }
+    window.openAlertModal = openAlertModal;
+
+    async function saveAlert() {
+      const user = await window.Auth.getUser();
+      if (!user) return;
+
+      const v = (id) => (document.getElementById(id).value || '').trim();
+      const filters = {
+        category: v('va-category') || 'cars',
+      };
+      if (v('va-make'))      filters.make      = v('va-make');
+      if (v('va-model'))     filters.model     = v('va-model');
+      if (v('va-trim'))      filters.trim      = v('va-trim');
+      if (v('va-year-min'))  filters.year_min  = Number(v('va-year-min'));
+      if (v('va-year-max'))  filters.year_max  = Number(v('va-year-max'));
+      if (v('va-price-max')) filters.price_max = Number(v('va-price-max'));
+      if (v('va-emirate'))   filters.location  = v('va-emirate');
+
+      // Require at least Make + one other criterion so the alert is useful
+      if (!filters.make) {
+        dmModalStatus('Please enter at least a Brand / Make.', 'err');
+        return;
+      }
+      const otherKeys = Object.keys(filters).filter(k => k !== 'category' && k !== 'make');
+      if (otherKeys.length === 0) {
+        dmModalStatus('Add at least one more criterion (model, year, price, or emirate) so the alert is specific.', 'err');
+        return;
+      }
+
+      const name = v('va-name') || null;
+
+      const btn = document.getElementById('va-save-btn');
+      btn.disabled = true;
+      btn.textContent = 'Saving…';
+      try {
+        const { error } = await window.supa.from('saved_searches').insert({
+          user_id: user.id,
+          name,
+          filters,
+          alerts_enabled: true,
+        });
+        if (error) throw error;
+        dmCloseModal();
+        showToast('Alert created. We\u2019ll let you know when a match is listed.');
+        loadVehicleAlertsPreview();
+      } catch (e) {
+        dmModalStatus('Could not save: ' + (e.message || ''), 'err');
+        btn.disabled = false;
+        btn.textContent = 'Create Alert';
+      }
+    }
+    window.saveAlert = saveAlert;
+
+    async function loadVehicleAlertsPreview() {
+      const wrap = document.getElementById('va-list');
+      if (!wrap) return;
+      const user = await window.Auth.getUser();
+      if (!user) { wrap.innerHTML = ''; return; }
+      try {
+        const { data, error } = await window.supa
+          .from('saved_searches')
+          .select('id, name, filters, created_at, alerts_enabled')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false })
+          .limit(5);
+        if (error) throw error;
+        const rows = data || [];
+        if (!rows.length) {
+          wrap.innerHTML = `<div style="font-size:13px;color:var(--grey);padding:12px;background:var(--light-grey);border-radius:10px;">You don't have any vehicle alerts yet. Click below to create one.</div>`;
+          return;
+        }
+        wrap.innerHTML = rows.map(r => {
+          const f = r.filters || {};
+          const parts = [];
+          if (f.make) parts.push(f.make);
+          if (f.model) parts.push(f.model);
+          if (f.trim) parts.push(f.trim);
+          if (f.year_min || f.year_max) parts.push((f.year_min || '') + (f.year_min && f.year_max ? '–' : (f.year_max ? '–' : '+')) + (f.year_max || ''));
+          if (f.price_max) parts.push('≤ AED ' + Number(f.price_max).toLocaleString());
+          if (f.location) parts.push(f.location);
+          const label = r.name || parts.join(' · ') || 'Vehicle alert';
+          return `
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border:1px solid var(--border);border-radius:10px;margin-bottom:8px;font-size:13px;">
+              <div>
+                <div style="font-weight:700;color:var(--dark);">${escapeHtml(label)}</div>
+                <div style="color:var(--grey);font-size:12px;margin-top:2px;">Alert ${r.alerts_enabled ? 'active' : 'paused'}</div>
+              </div>
+              <a href="saved-searches.html" style="color:var(--orange);font-weight:700;font-size:12px;text-decoration:none;">Manage</a>
+            </div>`;
+        }).join('');
+      } catch (e) {
+        console.warn('[alerts preview] load failed:', e.message);
+      }
+    }
+
+    // Tiny helper used in the alert preview render
+    function escapeHtml(s) {
+      return String(s == null ? '' : s)
+        .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+        .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    }
+
+    // Initialize preview when profile loads
+    if (typeof loadVehicleAlertsPreview === 'function') {
+      // Small delay so Auth is ready
+      setTimeout(loadVehicleAlertsPreview, 600);
+    }
 
     /* ──────────────────────────────────────────────────────────────
        DEACTIVATE / DELETE ACCOUNT
