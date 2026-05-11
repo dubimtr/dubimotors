@@ -73,15 +73,20 @@
     .pref-row-info { flex: 1; min-width: 0; }
     .pref-row-label { font-size: 14px; font-weight: 700; color: var(--dark); }
     .pref-row-sub { font-size: 12px; color: var(--grey); margin-top: 2px; }
-    .pref-row-toggles { display: flex; gap: 18px; flex-shrink: 0; }
-    .pref-toggle { display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 13px; color: var(--grey); user-select: none; }
-    .pref-toggle input { accent-color: var(--orange); width: 18px; height: 18px; cursor: pointer; }
-    /* Header row labeling the two toggle columns */
-    .pref-header { display: flex; align-items: center; justify-content: flex-end; gap: 18px; padding-bottom: 8px; font-size: 11px; font-weight: 700; color: var(--grey); text-transform: uppercase; letter-spacing: 0.5px; }
-    .pref-header-col { width: 56px; text-align: center; }
+    /* Toggle cells use the SAME fixed width as the header column labels, so the
+       email checkbox sits exactly under "EMAIL" and the in-app checkbox sits
+       exactly under "IN-APP". Without matching widths the columns drift apart. */
+    .pref-row-toggles { display: flex; gap: 0; flex-shrink: 0; }
+    .pref-toggle { width: 64px; display: flex; align-items: center; justify-content: center; cursor: pointer; user-select: none; }
+    .pref-toggle input { accent-color: var(--orange); width: 18px; height: 18px; cursor: pointer; margin: 0; }
+    /* Header row labeling the two toggle columns — column widths MUST match .pref-toggle */
+    .pref-header { display: flex; align-items: center; justify-content: flex-end; gap: 0; padding-bottom: 8px; font-size: 11px; font-weight: 700; color: var(--grey); text-transform: uppercase; letter-spacing: 0.5px; }
+    .pref-header-col { width: 64px; text-align: center; }
     @media (max-width: 520px) {
       .pref-row { flex-direction: column; align-items: flex-start; gap: 10px; }
-      .pref-row-toggles { width: 100%; justify-content: flex-start; }
+      .pref-row-toggles { width: 100%; justify-content: flex-start; gap: 16px; }
+      .pref-toggle { width: auto; gap: 6px; }
+      .pref-toggle::before { content: attr(data-label); font-size: 12px; color: var(--grey); font-weight: 600; }
       .pref-header { display: none; }
     }
     .security-status { display: flex; align-items: center; gap: 8px; }
@@ -306,8 +311,8 @@
               <div class="pref-row-sub">When a buyer messages you about a listing</div>
             </div>
             <div class="pref-row-toggles">
-              <label class="pref-toggle" title="Email"><input type="checkbox" id="pref-inquiries-email" /></label>
-              <label class="pref-toggle" title="In-app"><input type="checkbox" id="pref-inquiries-inapp" /></label>
+              <label class="pref-toggle" data-label="Email" title="Email"><input type="checkbox" id="pref-inquiries-email" /></label>
+              <label class="pref-toggle" data-label="In-app" title="In-app"><input type="checkbox" id="pref-inquiries-inapp" /></label>
             </div>
           </div>
 
@@ -317,8 +322,8 @@
               <div class="pref-row-sub">When new listings match your saved searches</div>
             </div>
             <div class="pref-row-toggles">
-              <label class="pref-toggle" title="Email"><input type="checkbox" id="pref-saved-email" /></label>
-              <label class="pref-toggle" title="In-app"><input type="checkbox" id="pref-saved-inapp" /></label>
+              <label class="pref-toggle" data-label="Email" title="Email"><input type="checkbox" id="pref-saved-email" /></label>
+              <label class="pref-toggle" data-label="In-app" title="In-app"><input type="checkbox" id="pref-saved-inapp" /></label>
             </div>
           </div>
 
@@ -328,8 +333,8 @@
               <div class="pref-row-sub">3 days before any of your listings expire</div>
             </div>
             <div class="pref-row-toggles">
-              <label class="pref-toggle" title="Email"><input type="checkbox" id="pref-expiry-email" /></label>
-              <label class="pref-toggle" title="In-app"><input type="checkbox" id="pref-expiry-inapp" /></label>
+              <label class="pref-toggle" data-label="Email" title="Email"><input type="checkbox" id="pref-expiry-email" /></label>
+              <label class="pref-toggle" data-label="In-app" title="In-app"><input type="checkbox" id="pref-expiry-inapp" /></label>
             </div>
           </div>
 
@@ -339,8 +344,8 @@
               <div class="pref-row-sub">When a saved listing drops in price</div>
             </div>
             <div class="pref-row-toggles">
-              <label class="pref-toggle" title="Email"><input type="checkbox" id="pref-price-email" /></label>
-              <label class="pref-toggle" title="In-app"><input type="checkbox" id="pref-price-inapp" /></label>
+              <label class="pref-toggle" data-label="Email" title="Email"><input type="checkbox" id="pref-price-email" /></label>
+              <label class="pref-toggle" data-label="In-app" title="In-app"><input type="checkbox" id="pref-price-inapp" /></label>
             </div>
           </div>
 
@@ -875,11 +880,31 @@
         const totp = data.totp || {};
         const qrEl = document.getElementById('2fa-qr-wrap');
         if (qrEl) {
-          qrEl.innerHTML = `
-            <img class="dm-qr-img" src="${totp.qr_code}" alt="2FA QR code" />
-            <div style="font-size:11px;color:var(--grey);text-align:center;">Or enter manually:</div>
-            <div class="dm-qr-secret">${totp.secret}</div>
-          `;
+          // IMPORTANT: build via DOM, not template literals.
+          //
+          // Supabase returns totp.qr_code as a data URL containing raw SVG markup,
+          // and that SVG has literal `"` characters inside (e.g. xmlns="...").
+          // If we use `src="${totp.qr_code}"` in an innerHTML template, those
+          // inner quotes terminate the src attribute and the rest of the SVG
+          // leaks into the page as visible text. (You can recognise the symptom:
+          // a broken-image icon at the top, the literal text `" alt="..."` next
+          // to it, and a working QR rendered from the leaked SVG below.)
+          //
+          // Setting `.src` directly via the DOM avoids HTML parsing entirely.
+          qrEl.innerHTML = '';
+          const img = document.createElement('img');
+          img.className = 'dm-qr-img';
+          img.alt = '2FA QR code';
+          img.src = totp.qr_code || '';
+          qrEl.appendChild(img);
+          const helper = document.createElement('div');
+          helper.style.cssText = 'font-size:11px;color:var(--grey);text-align:center;';
+          helper.textContent = 'Or enter manually:';
+          qrEl.appendChild(helper);
+          const secretEl = document.createElement('div');
+          secretEl.className = 'dm-qr-secret';
+          secretEl.textContent = totp.secret || '';
+          qrEl.appendChild(secretEl);
         }
       } catch (e) {
         // Surface a clearer message for the known "missing sub claim" case.

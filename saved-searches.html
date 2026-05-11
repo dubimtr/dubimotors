@@ -110,12 +110,20 @@
   <script src="auth-modal.js" defer></script>
   <script>
 
-  // Auth guard: redirect to login if not signed in
+  // Auth guard: redirect to login if not signed in, THEN render
+  //
+  // Why this matters: <script src="auth.js" defer> means auth.js loads after
+  // this inline block parses. If we called renderSavedSearches() at the bottom
+  // of the inline script directly, window.Auth would be undefined and
+  // `await window.Auth.getUser()` would throw a TypeError — leaving the page
+  // stuck on "Loading…" forever because the async function exits abnormally
+  // before reaching the render path.
   (async () => {
     let tries = 0;
     while (!window.Auth && tries < 50) { await new Promise(r => setTimeout(r, 50)); tries++; }
     if (!window.Auth) return;
     await window.Auth.requireAuth();
+    renderSavedSearches();
   })();
     renderNavbar('saved-searches');
     renderFooter();
@@ -131,8 +139,20 @@
       const list = document.getElementById('ss-list');
       list.innerHTML = '<div style="padding:30px;text-align:center;color:var(--grey);font-size:13px;">Loading…</div>';
 
-      const user = await window.Auth.getUser();
-      if (!user) { list.innerHTML = ''; return; }
+      // Defensive: if for any reason Auth still isn't ready, surface that
+      // instead of letting an exception leave the page on "Loading…".
+      if (!window.Auth || typeof window.Auth.getUser !== 'function') {
+        list.innerHTML = '<div style="padding:30px;text-align:center;color:var(--grey);font-size:13px;">Could not initialise. Please refresh the page.</div>';
+        return;
+      }
+
+      let user;
+      try { user = await window.Auth.getUser(); }
+      catch (e) { user = null; }
+      if (!user) {
+        list.innerHTML = '<div style="padding:30px;text-align:center;color:var(--grey);font-size:13px;">Please sign in to view saved searches.</div>';
+        return;
+      }
 
       try {
         const { data: rows, error } = await window.supa
@@ -232,8 +252,9 @@
       }
     }
 
-    renderSavedSearches();
-  
+    // renderSavedSearches() is called inside the auth guard at the top of
+    // this script — do NOT call it again here.
+
     // Fill the dashboard sidebar with real auth + listing data
     if (typeof dmFillDashboardSidebar === 'function') dmFillDashboardSidebar();
 
