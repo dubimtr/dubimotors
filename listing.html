@@ -691,10 +691,29 @@
       banner.innerHTML = `
         <span style="font-weight:800;background:${statusLabel.color};color:#fff;padding:3px 10px;border-radius:12px;font-size:12px;letter-spacing:0.3px;">${statusLabel.label.toUpperCase()}</span>
         <span style="flex:1;min-width:200px;">${statusLabel.msg}</span>
+        <a href="place-ad.html?edit=${encodeURIComponent(id)}" style="color:${statusLabel.color};font-weight:700;text-decoration:underline;">Edit Listing</a>
         <a href="my-ads.html" style="color:${statusLabel.color};font-weight:700;text-decoration:underline;">My Ads</a>
       `;
       const main = document.querySelector('main');
       if (main) main.insertBefore(banner, main.firstChild);
+    }
+
+    // ── OWNER TOOLBAR (for active listings) ──
+    // If the listing IS active and the viewer is the owner, show a small toolbar
+    // with Edit + Delete actions so they don't have to bounce to My Ads.
+    if (listing.status === 'active' && window.Auth) {
+      window.Auth.getUser().then((user) => {
+        if (!user || user.id !== listing.owner_id) return;
+        const bar = document.createElement('div');
+        bar.style.cssText = 'background:#E3F2FD;border:1px solid #90CAF9;color:#0D47A1;padding:10px 16px;margin:0 auto 16px;max-width:1200px;border-radius:10px;font-size:13px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;';
+        bar.innerHTML = `
+          <span style="flex:1;min-width:200px;">👋 This is your listing. Visitors see the public view below.</span>
+          <a href="place-ad.html?edit=${encodeURIComponent(id)}" style="color:#0D47A1;font-weight:700;text-decoration:underline;">Edit</a>
+          <a href="my-ads.html" style="color:#0D47A1;font-weight:700;text-decoration:underline;">My Ads</a>
+        `;
+        const main = document.querySelector('main');
+        if (main) main.insertBefore(bar, main.firstChild);
+      });
     }
 
     // ── DYNAMIC SEO META TAGS ──

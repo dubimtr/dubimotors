@@ -969,12 +969,25 @@
 <script src="shared.js"></script>
 <script src="components.js"></script>
   <script src="auth-modal.js" defer></script>
+<!-- Browser-side image compression for Place Ad photo uploads.
+     ~70KB, loaded once, cached forever. Shrinks 5-10MB phone photos to ~500KB
+     before they ever touch the network. -->
+<script src="https://cdn.jsdelivr.net/npm/browser-image-compression@2.0.2/dist/browser-image-compression.js"></script>
+<script src="image-compressor.js"></script>
 <script>
 
   // ─── State for the rest of the script ───
   let _currentUser = null;          // populated by the auth bootstrap below
   let _emailVerified = false;       // ditto
   const SUPABASE_BUCKET = 'vehicle-photos';
+
+  // ─── Edit-mode state ───
+  // The page also serves as the edit form when accessed with ?edit=<listing_id>.
+  // In create mode, _editMode === false and everything works exactly as before.
+  let _editMode = false;
+  let _editListingId = null;
+  let _editOriginalListing = null;       // original DB row, for diffing changes
+  let _editOriginalPhotoPaths = [];      // [storage_path, ...] photos that existed at load time
 
   // Auth bootstrap. Sets up _currentUser. We DON'T show a verification banner
   // upfront — verification is gated at the moment the user clicks Publish (and
@@ -988,7 +1001,171 @@
     if (!user) return; // requireAuth already redirected
     _currentUser = user;
     _emailVerified = await window.Auth.isEmailVerified();
+
+    // After auth is ready, check if we should enter edit mode.
+    const urlParams = new URLSearchParams(window.location.search);
+    const editId = urlParams.get('edit');
+    if (editId) {
+      await enterEditMode(editId);
+    }
   })();
+
+  /**
+   * Load an existing listing into the form for editing.
+   * Verifies ownership, fetches data + photos, prefills the form.
+   * Falls back to create mode (with a toast) on any failure.
+   */
+  async function enterEditMode(listingId) {
+    try {
+      // 1. Fetch listing — RLS ensures user can only read their own
+      const { data: listing, error: lErr } = await window.supa
+        .from('listings')
+        .select('*')
+        .eq('id', listingId)
+        .maybeSingle();
+
+      if (lErr || !listing) {
+        showToast('Could not load listing for editing.', 4000);
+        return;
+      }
+      if (listing.owner_id !== _currentUser.id) {
+        showToast('You can only edit your own listings.', 4000);
+        return;
+      }
+
+      // 2. Fetch its images
+      const { data: images } = await window.supa
+        .from('listing_images')
+        .select('id, url, storage_path, display_order')
+        .eq('listing_id', listingId)
+        .order('display_order', { ascending: true });
+
+      // 3. Set edit-mode state
+      _editMode = true;
+      _editListingId = listingId;
+      _editOriginalListing = listing;
+      _editOriginalPhotoPaths = (images || []).map(img => img.storage_path);
+
+      // 4. Update page chrome to reflect edit mode
+      document.title = 'Edit Listing — DUBIMOTORS';
+      const heroTitle = document.querySelector('.place-ad-hero-title');
+      const heroSub = document.querySelector('.place-ad-hero-sub');
+      if (heroTitle) heroTitle.innerHTML = 'Edit Your <span>Listing</span>';
+      if (heroSub) heroSub.textContent = 'Update the details below and save your changes.';
+      const submitBtn = document.querySelector('.btn-submit-ad');
+      if (submitBtn) submitBtn.innerHTML = 'Save Changes';
+
+      // 5. Skip the category-picker / mode-picker screens — jump straight
+      //    to the form for this listing's category.
+      const cat = (listing.category || '').toLowerCase();
+      const catKey = (cat === 'motorcycle') ? 'bikes'
+                  : (cat === 'boat' || cat === 'jet ski') ? 'marine'
+                  : (cat === 'heavy vehicle') ? 'heavy'
+                  : (cat === 'plate' || cat === 'number plate') ? 'plates'
+                  : (cat === 'accessory') ? 'accessories'
+                  : 'cars';
+      pickCategory(catKey);
+      // pickCategory shows the mode-select sub-screen; jump past it directly to the form
+      goToManualForm();
+
+      // 6. Prefill all the form fields from the loaded listing
+      prefillEditForm(listing);
+
+      // 7. Load existing photos into the photo grid as "existing" entries
+      manualPhotos = (images || []).map(img => ({
+        _existing: true,
+        url: img.url,
+        path: img.storage_path,
+        id: img.id,
+      }));
+      renderManualPhotoGrid();
+
+    } catch (e) {
+      console.error('[edit-mode] failed to enter edit mode:', e);
+      showToast('Could not load listing for editing.', 4000);
+      _editMode = false;
+      _editListingId = null;
+    }
+  }
+
+  /**
+   * Push all values from the DB row into the form inputs.
+   * Called once after we've routed to the right category form.
+   */
+  function prefillEditForm(L) {
+    function setVal(id, v) {
+      const el = document.getElementById(id);
+      if (el && v != null) el.value = v;
+    }
+    // Common
+    setVal('inp-price', L.price);
+    setVal('inp-name',  L.contact_name);
+    setVal('inp-phone', L.contact_phone);
+
+    if (currentCat === 'plates') {
+      setVal('sel-plate-emirate', L.emirate || L.location || '');
+      // Parse "Dubai A 1234" → emirate already set; code and number
+      const parts = (L.model || '').trim().split(/\s+/);
+      // We stored model as "Emirate Code Number"; recover code/number defensively
+      if (parts.length >= 2) {
+        const last = parts[parts.length - 1];
+        const isNumber = /^\d+$/.test(last);
+        if (isNumber) {
+          setVal('inp-plate-number', last);
+          if (parts.length === 3) setVal('inp-plate-code', parts[1]);
+        }
+      }
+      setVal('inp-plate-desc', L.description || '');
+    } else if (currentCat === 'accessories') {
+      setVal('inp-acc-name', L.model);
+      setVal('inp-acc-brand', L.make);
+      setVal('sel-acc-condition', L.condition || '');
+      setVal('inp-acc-desc', L.description || '');
+      setVal('sel-acc-location', L.location || L.emirate || '');
+    } else {
+      setVal('sel-brand', L.make);
+      // Need to populate the model dropdown for the brand, then set value
+      if (typeof onBrandChange === 'function') {
+        try { onBrandChange(); } catch {}
+      }
+      setVal('sel-model', L.model);
+      if (typeof onModelChange === 'function') {
+        try { onModelChange(); } catch {}
+      }
+      setVal('sel-trim', L.trim || '');
+      setVal('sel-year', L.year);
+      setVal('sel-condition', L.condition || '');
+      setVal('inp-km', L.km != null ? L.km : '');
+      setVal('inp-desc', L.description || '');
+      setVal('sel-location', L.location || L.emirate || '');
+      setVal('inp-lat', L.latitude != null ? L.latitude : '');
+      setVal('inp-lng', L.longitude != null ? L.longitude : '');
+      setVal('sel-body', L.body_type || '');
+      setVal('sel-doors', L.doors || '');
+      setVal('sel-seats', L.seats || '');
+      setVal('sel-ext-color', L.color || '');
+      setVal('sel-spec', L.regional_spec || '');
+      setVal('sel-trans', L.transmission || '');
+      setVal('sel-fuel', L.fuel_type || '');
+      setVal('inp-engine', L.engine || '');
+      setVal('inp-hp', L.hp || '');
+      setVal('sel-cyl', L.cylinders || '');
+    }
+
+    if (typeof updatePreview === 'function') {
+      try { updatePreview(); } catch {}
+    }
+  }
+
+  /**
+   * Jump from the category landing screen straight to the manual form,
+   * bypassing the mode-picker (AI vs VIN vs Manual). Used for edit mode.
+   */
+  function goToManualForm() {
+    if (typeof selectMode === 'function') {
+      try { selectMode('manual'); } catch {}
+    }
+  }
 
   // Show a modal asking the user to verify their email before publishing.
   // Resolves with true if user verifies during this session, false otherwise.
@@ -1360,11 +1537,14 @@
     const grid = document.getElementById('manual-photo-grid');
     const count = document.getElementById('manual-photo-count');
     grid.innerHTML = '';
-    manualPhotos.forEach((f, idx) => {
+    manualPhotos.forEach((entry, idx) => {
       const wrap = document.createElement('div');
       wrap.style.cssText = 'position:relative;width:90px;height:70px;border-radius:8px;overflow:hidden;border:2px solid var(--border);';
       const img = document.createElement('img');
-      img.src = URL.createObjectURL(f);
+      // Two possible entry shapes:
+      //   - A File (newly added) — use URL.createObjectURL
+      //   - { _existing: true, url, ... } — use the public URL directly
+      img.src = (entry && entry._existing) ? entry.url : URL.createObjectURL(entry);
       img.style.cssText = 'width:100%;height:100%;object-fit:cover;';
       const del = document.createElement('button');
       del.innerHTML = '&times;';
@@ -1732,6 +1912,12 @@
 
   // The main publish flow
   async function submitAd() {
+    // Edit mode forks to a separate save path — leaves the rest of submitAd
+    // untouched as the create-listing flow.
+    if (_editMode) {
+      return saveListingEdits();
+    }
+
     // ─── 1. Auth + verification gate ───
     if (!window.Auth) { showToast('Authentication not ready. Please refresh.'); return; }
     let user = await window.Auth.getUser();
@@ -1852,6 +2038,24 @@
     let uploadedPhotos = []; // [{ path, publicUrl }]
 
     try {
+      // ─── 4.5. Compress photos in the browser before upload ───
+      // Phone photos can be 5-10 MB each. We shrink to ~500 KB before sending
+      // anything over the network. Saves bandwidth, storage, and time.
+      // Silently falls back to the original file if compression isn't available.
+      if (typeof window.dmCompressImages === 'function') {
+        const needsCompression = photos.some(p => window.dmShouldCompress && window.dmShouldCompress(p));
+        if (needsCompression) {
+          setSubmitProgress('Preparing photos…', 0, photos.length);
+          const compressed = await window.dmCompressImages(photos, (done, total) => {
+            setSubmitProgress('Preparing photos…', done, total);
+          });
+          // Replace the originals with the compressed versions (same order)
+          for (let i = 0; i < photos.length; i++) {
+            if (compressed[i]) photos[i] = compressed[i];
+          }
+        }
+      }
+
       // ─── 5. Upload photos to Storage ───
       setSubmitProgress('Uploading photos…', 0, photos.length);
       for (let i = 0; i < photos.length; i++) {
@@ -1996,6 +2200,294 @@
       submitBtn.disabled = false;
       submitBtn.innerHTML = 'Publish Listing';
       showToast('Could not publish: ' + (e.message || 'unknown error'), 6000);
+    }
+  }
+
+  /**
+   * EDIT MODE — save changes to an existing listing.
+   *
+   * Computes the diff between the form state and the original listing, then:
+   *   - UPDATEs the listings row with new field values
+   *   - DELETEs removed photos (DB rows + Storage files)
+   *   - UPLOADs newly added photos (with compression)
+   *   - Updates display_order to match the user's current arrangement
+   *   - Re-runs AI moderation (listing stays active during; only flips to
+   *     pending_review if AI flags concerns)
+   *
+   * Returns nothing — redirects to the listing detail page on success.
+   */
+  async function saveListingEdits() {
+    if (!_currentUser || !_editListingId) {
+      showToast('Edit session lost. Please refresh the page.');
+      return;
+    }
+
+    // ─── A. Validate the form using the same logic as create mode ───
+    // We reuse the same field-extraction logic; we just won't INSERT a new row.
+    const price = parseInt(document.getElementById('inp-price').value, 10);
+    const name  = document.getElementById('inp-name').value.trim();
+    const phone = document.getElementById('inp-phone').value.trim();
+    if (!price || price <= 0) { showToast('Please enter a valid price.'); return; }
+    if (!name || !phone)      { showToast('Please fill in your Name and Phone Number.'); return; }
+
+    let brand='', model='', trim='', year=null, km=null, condition='', desc='';
+    let location='', emirate=null, lat=null, lng=null;
+    let bodyType=null, doors=null, seats=null, color=null, regionalSpec=null;
+    let transmission=null, fuelType=null, engine=null, hp=null, cylinders=null;
+
+    if (currentCat === 'plates') {
+      const e = document.getElementById('sel-plate-emirate').value;
+      const plateNum = document.getElementById('inp-plate-number').value;
+      if (!e || !plateNum) { showToast('Please fill in the Emirate and Plate Number.'); return; }
+      brand = 'Number Plate';
+      model = `${e} ${document.getElementById('inp-plate-code').value || ''} ${plateNum}`.trim();
+      desc = document.getElementById('inp-plate-desc').value;
+      location = e;
+      emirate = dbEmirate(e);
+      year = _editOriginalListing.year || new Date().getFullYear();
+    } else if (currentCat === 'accessories') {
+      const accName = document.getElementById('inp-acc-name').value;
+      if (!accName) { showToast('Please enter the item name.'); return; }
+      brand = document.getElementById('inp-acc-brand').value || 'Accessory';
+      model = accName;
+      condition = document.getElementById('sel-acc-condition').value;
+      desc = document.getElementById('inp-acc-desc').value;
+      location = document.getElementById('sel-acc-location').value;
+      emirate = dbEmirate(location);
+      year = _editOriginalListing.year || new Date().getFullYear();
+    } else {
+      brand        = document.getElementById('sel-brand').value;
+      model        = document.getElementById('sel-model').value;
+      trim         = document.getElementById('sel-trim').value || '';
+      year         = parseInt(document.getElementById('sel-year').value, 10) || null;
+      km           = parseInt(document.getElementById('inp-km').value, 10);
+      if (Number.isNaN(km)) km = null;
+      condition    = document.getElementById('sel-condition').value;
+      desc         = document.getElementById('inp-desc') ? document.getElementById('inp-desc').value : '';
+      location     = document.getElementById('sel-location').value;
+      emirate      = dbEmirate(location);
+      lat          = parseFloat(document.getElementById('inp-lat').value) || null;
+      lng          = parseFloat(document.getElementById('inp-lng').value) || null;
+      bodyType     = (document.getElementById('sel-body') || {}).value || null;
+      doors        = parseInt((document.getElementById('sel-doors') || {}).value, 10) || null;
+      seats        = parseInt((document.getElementById('sel-seats') || {}).value, 10) || null;
+      color        = (document.getElementById('sel-ext-color') || {}).value || null;
+      regionalSpec = (document.getElementById('sel-spec') || {}).value || null;
+      transmission = dbTransmission((document.getElementById('sel-trans') || {}).value);
+      fuelType     = dbFuel((document.getElementById('sel-fuel') || {}).value);
+      engine       = (document.getElementById('inp-engine') || {}).value || null;
+      hp           = parseInt((document.getElementById('inp-hp') || {}).value, 10) || null;
+      cylinders    = parseInt((document.getElementById('sel-cyl') || {}).value, 10) || null;
+      if (!brand || !model) { showToast('Please fill in Brand and Model.'); return; }
+      if (!year)            { showToast('Please select the year.'); return; }
+    }
+
+    // ─── B. Compute the photo diff ───
+    // manualPhotos now contains a mix of:
+    //   - { _existing: true, url, path, id }  → photos that already existed
+    //   - File objects                          → newly added photos
+    const photosKept = manualPhotos.filter(p => p && p._existing);
+    const photosToUpload = manualPhotos.filter(p => p && !p._existing); // Files
+    const keptPaths = new Set(photosKept.map(p => p.path));
+    const photosToRemove = _editOriginalPhotoPaths.filter(p => !keptPaths.has(p));
+
+    // Total resulting photo count (for validation)
+    const totalAfterSave = photosKept.length + photosToUpload.length;
+    if (currentCat !== 'plates' && totalAfterSave < 3) {
+      showToast(`At least 3 photos required. You currently have ${totalAfterSave}.`, 5000);
+      return;
+    }
+    if (totalAfterSave > 20) { showToast('Maximum 20 photos per listing.'); return; }
+
+    const title = (currentCat === 'plates' || currentCat === 'accessories')
+      ? model
+      : `${year} ${brand} ${model}${trim ? ' ' + trim : ''}`.trim();
+
+    const submitBtn = document.querySelector('.btn-submit-ad');
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = 'Saving…';
+
+    let newlyUploadedPaths = []; // for rollback if something downstream fails
+
+    try {
+      // ─── C. Compress + upload new photos ───
+      if (photosToUpload.length > 0) {
+        // Compress
+        let compressedNew = photosToUpload;
+        if (typeof window.dmCompressImages === 'function') {
+          const needsCompression = photosToUpload.some(p => window.dmShouldCompress && window.dmShouldCompress(p));
+          if (needsCompression) {
+            setSubmitProgress('Preparing new photos…', 0, photosToUpload.length);
+            compressedNew = await window.dmCompressImages(photosToUpload, (done, total) => {
+              setSubmitProgress('Preparing new photos…', done, total);
+            });
+          }
+        }
+        // Upload — reuse uploadOnePhoto; the index in the folder is offset by
+        // the number of kept photos so we don't collide with existing filenames.
+        setSubmitProgress('Uploading new photos…', 0, compressedNew.length);
+        // Use a stable subfolder for new uploads — listing's own ID
+        const folder = _editListingId;
+        for (let i = 0; i < compressedNew.length; i++) {
+          const indexInFolder = photosKept.length + i + Math.floor(Math.random() * 1000); // collision-resistant
+          const r = await uploadOnePhoto(compressedNew[i], _currentUser.id, folder, indexInFolder);
+          newlyUploadedPaths.push(r);
+          setSubmitProgress('Uploading new photos…', i + 1, compressedNew.length);
+        }
+      }
+
+      // ─── D. UPDATE the listing row ───
+      setSubmitProgress('Saving listing…', 0, 0);
+      const updateRow = {
+        title,
+        make: brand,
+        model: model,
+        trim: trim || null,
+        year: year || new Date().getFullYear(),
+        price,
+        km,
+        condition: dbCondition(condition),
+        engine,
+        hp,
+        cylinders,
+        transmission,
+        fuel_type: fuelType,
+        body_type: bodyType,
+        doors,
+        seats,
+        color,
+        regional_spec: regionalSpec,
+        description: desc || null,
+        emirate,
+        location: location || null,
+        latitude: lat,
+        longitude: lng,
+        contact_name: name,
+        contact_phone: phone,
+        contact_whatsapp: phone,
+        updated_at: new Date().toISOString(),
+      };
+      const { error: updErr } = await window.supa
+        .from('listings')
+        .update(updateRow)
+        .eq('id', _editListingId);
+      if (updErr) throw new Error('Could not update listing: ' + updErr.message);
+
+      // ─── E. Apply photo changes ───
+      // E1. Insert rows for newly uploaded photos
+      if (newlyUploadedPaths.length > 0) {
+        // We need to compute display_order. Photos kept go first (in order),
+        // then new ones at the end.
+        const startOrder = photosKept.length;
+        const newRows = newlyUploadedPaths.map((p, i) => ({
+          listing_id: _editListingId,
+          url: p.publicUrl,
+          storage_path: p.path,
+          is_primary: false,                // primary recalculated below
+          display_order: startOrder + i,
+        }));
+        const { error: insErr } = await window.supa
+          .from('listing_images')
+          .insert(newRows);
+        if (insErr) throw new Error('Could not save new photo references: ' + insErr.message);
+      }
+
+      // E2. Delete removed photos (DB rows + Storage)
+      if (photosToRemove.length > 0) {
+        // Delete DB rows first (RLS-protected)
+        await window.supa
+          .from('listing_images')
+          .delete()
+          .eq('listing_id', _editListingId)
+          .in('storage_path', photosToRemove);
+        // Then Storage objects (best effort — failure here just leaves orphans)
+        try {
+          await window.supa.storage.from(SUPABASE_BUCKET).remove(photosToRemove);
+        } catch (e) {
+          console.warn('[edit-mode] storage cleanup failed (non-fatal):', e);
+        }
+      }
+
+      // E3. Recompute display_order to match the user's current arrangement
+      //     and set the new cover (first photo).
+      const allInOrder = manualPhotos.map((entry) => {
+        if (entry._existing) {
+          return { path: entry.path };
+        }
+        // Find the just-uploaded record by index
+        const newIdx = photosToUpload.indexOf(entry);
+        return newlyUploadedPaths[newIdx] ? { path: newlyUploadedPaths[newIdx].path } : null;
+      }).filter(Boolean);
+
+      // Update display_order + is_primary for all photos
+      // (Could be done in a single SQL via CASE but keeping it simple)
+      for (let i = 0; i < allInOrder.length; i++) {
+        await window.supa
+          .from('listing_images')
+          .update({ display_order: i, is_primary: i === 0 })
+          .eq('listing_id', _editListingId)
+          .eq('storage_path', allInOrder[i].path);
+      }
+
+      // ─── F. Re-run AI moderation (non-blocking; listing stays active) ───
+      setSubmitProgress('AI re-reviewing your changes…', 0, 0);
+      let approved = true;
+      let reason = '';
+      try {
+        const ctrl = new AbortController();
+        const timer = setTimeout(() => ctrl.abort(), 20000);
+        const verifyRes = await fetch('/api/verify-listing', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ brand, model, trim, year, price, km, condition, desc, location, name, phone }),
+          signal: ctrl.signal,
+        });
+        clearTimeout(timer);
+        const verifyData = await verifyRes.json();
+        approved = !!verifyData.approved;
+        reason = verifyData.reason || verifyData.message || '';
+      } catch (e) {
+        // AI down or timed out — don't penalize the user; leave status unchanged
+        approved = true;
+      }
+
+      // Only flip to pending_review if AI flags issues. If it approves, leave
+      // the existing status alone (could be active, could be sold, etc.).
+      if (!approved) {
+        await window.supa
+          .from('listings')
+          .update({
+            status: 'pending_review',
+            moderation_reason: reason,
+            moderation_at: new Date().toISOString(),
+          })
+          .eq('id', _editListingId);
+      }
+
+      // ─── G. Done — redirect to the listing ───
+      clearSubmitProgress();
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = 'Save Changes';
+
+      if (!approved) {
+        showToast('Saved. Your changes are under review and will go live once approved.', 5000);
+        setTimeout(() => { window.location.href = 'my-ads.html'; }, 2000);
+      } else {
+        showToast('Saved!', 2000);
+        setTimeout(() => { window.location.href = `listing.html?id=${_editListingId}`; }, 800);
+      }
+    } catch (e) {
+      console.error('[edit-mode] save failed:', e);
+      // Best-effort cleanup of newly uploaded photos so we don't leave orphans
+      if (newlyUploadedPaths.length) {
+        try {
+          await window.supa.storage.from(SUPABASE_BUCKET).remove(newlyUploadedPaths.map(p => p.path));
+        } catch { /* non-fatal */ }
+      }
+      clearSubmitProgress();
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = 'Save Changes';
+      showToast('Could not save: ' + (e.message || 'unknown error'), 6000);
     }
   }
 

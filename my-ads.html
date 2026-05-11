@@ -335,6 +335,7 @@
           </div>
           <div class="ad-card-actions">
             <button class="btn-ad-action primary" onclick="window.location.href='listing.html?id=${ad.id}'">View</button>
+            <button class="btn-ad-action" onclick="window.location.href='place-ad.html?edit=${ad.id}'">Edit</button>
             ${ad.status === 'active'
               ? `<button class="btn-ad-action" onclick="markSold('${ad.id}')">Mark Sold</button>`
               : ad.status === 'sold' || ad.status === 'expired'
