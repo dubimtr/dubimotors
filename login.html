@@ -378,12 +378,17 @@
     e.preventDefault();
     const email = document.getElementById('login-email').value.trim();
     if (!email) { showFormError('login', 'Enter your email above first, then click "Forgot password?"'); return; }
-    if (!window.supa) { showToast('Authentication not ready.'); return; }
-    const { error } = await window.supa.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/login.html`,
-    });
-    if (error) { showFormError('login', error.message); return; }
-    showToast('Password reset email sent. Check your inbox.');
+    if (!email.includes('@')) { showFormError('login', 'That doesn\'t look like a valid email address.'); return; }
+    try {
+      await fetch('/api/send-password-reset-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+      showToast('If that email is registered with us, you\'ll receive reset instructions shortly.');
+    } catch {
+      showFormError('login', 'Could not reach our servers. Please try again.');
+    }
   }
 
   // ─── Already signed in? Skip the form entirely. ───

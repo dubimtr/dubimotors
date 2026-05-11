@@ -170,6 +170,23 @@ function listingApprovedEmail({ name, title, listingUrl }) {
   return { subject: `Your listing is LIVE on DubiMotors`, html, text };
 }
 
+function passwordResetEmail({ name, resetUrl }) {
+  const headline = `Reset your password`;
+  const intro = `Hi ${escapeHtml(name || 'there')},<br><br>
+    We received a request to reset the password on your DubiMotors account. Click the button below to choose a new one. This link is valid for <strong>1 hour</strong>.<br><br>
+    If you didn&rsquo;t request this, you can safely ignore this email. Your password won&rsquo;t change unless you click the link and pick a new one.`;
+  const html = emailLayout({
+    headline,
+    intro,
+    ctaLabel: 'Reset My Password',
+    ctaUrl: resetUrl,
+    postCta: `For your security, this link can only be used once and expires in 1 hour.`,
+    expiryNote: 'If you didn&rsquo;t request a password reset, no action is needed.',
+  });
+  const text = `Reset your DubiMotors password.\n\nHi ${name || 'there'},\n\nClick the link below to set a new password. This link expires in 1 hour.\n\n${resetUrl}\n\nIf you didn't request this, ignore this email — your password won't change.\n\nThe DubiMotors team`;
+  return { subject: `Reset your DubiMotors password`, html, text };
+}
+
 // HTML escape for user-controlled strings inside email templates
 function escapeHtml(s) {
   if (s == null) return '';
@@ -186,5 +203,6 @@ module.exports = {
   welcomeEmail,
   verificationEmail,
   listingApprovedEmail,
+  passwordResetEmail,
   SITE_URL,
 };

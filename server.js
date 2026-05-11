@@ -1130,6 +1130,191 @@ async function handleListingActivatedWebhook(req, res) {
   return jsonRes(res, { ok: true });
 }
 
+/* ── POST /api/send-password-reset-email — public, sends a reset link ──
+   Public endpoint (no auth required — by definition the user can't sign in).
+   Body: { email: "user@example.com" }
+
+   Security:
+   - ALWAYS returns { ok: true } regardless of whether the email exists. This
+     prevents an attacker from enumerating which emails have accounts.
+   - Rate-limited per email (1 token per 60 seconds). If a recent token exists,
+     we silently no-op rather than send a second email.
+   - Token is 32 random bytes, only the SHA-256 hash is stored.
+   - 1-hour expiry.
+*/
+async function handleSendPasswordResetEmail(req, res) {
+  const supa = getSupabaseAdmin();
+  if (!supa) return jsonRes(res, { error: 'Service unavailable' }, 503);
+
+  let body = {};
+  try { body = await parseBody(req); } catch {}
+  const email = String(body.email || '').trim().toLowerCase();
+
+  // Validate email shape (loose) — we don't want to spam the auth.users lookup
+  // for obvious garbage like " " or "asdf"
+  if (!email || !email.includes('@') || email.length < 5 || email.length > 254) {
+    // Pretend everything's fine — same response as success path
+    return jsonRes(res, { ok: true });
+  }
+
+  // ─── Look up the user. Always pretend success regardless of result. ───
+  let user = null;
+  try {
+    // auth.admin.listUsers supports filtering by email
+    const { data, error } = await supa.auth.admin.listUsers({ filter: `email.eq.${email}` });
+    if (!error && data && Array.isArray(data.users) && data.users.length > 0) {
+      user = data.users[0];
+    }
+  } catch (e) {
+    console.warn('[pwreset] user lookup threw:', e.message);
+    // Fall through — pretend everything's fine
+  }
+  if (!user) {
+    // Don't reveal that the email doesn't exist. Same response.
+    return jsonRes(res, { ok: true });
+  }
+
+  // ─── Rate limit: skip if a token was issued in the last 60 seconds. ───
+  try {
+    const sixtySecondsAgo = new Date(Date.now() - 60 * 1000).toISOString();
+    const { count } = await supa
+      .from('password_reset_tokens')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', user.id)
+      .gte('created_at', sixtySecondsAgo);
+    if (typeof count === 'number' && count > 0) {
+      console.log('[pwreset] rate-limited:', email);
+      return jsonRes(res, { ok: true }); // pretend success, no email sent
+    }
+  } catch (e) {
+    console.warn('[pwreset] rate-limit check failed:', e.message);
+    // Fall through — better to send the email than block legitimately
+  }
+
+  // ─── Generate token, store hash, send email ───
+  const { raw, hash } = newToken();
+  const expiresAt = new Date(Date.now() + 60 * 60 * 1000).toISOString(); // 1h
+
+  // Capture IP and UA for audit (truncated)
+  const ip = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').toString().split(',')[0].trim().slice(0, 64);
+  const ua = (req.headers['user-agent'] || '').toString().slice(0, 256);
+
+  const { error: insErr } = await supa
+    .from('password_reset_tokens')
+    .insert({
+      user_id: user.id,
+      token_hash: hash,
+      expires_at: expiresAt,
+      ip_address: ip || null,
+      user_agent: ua || null,
+    });
+  if (insErr) {
+    console.error('[pwreset] token insert failed:', insErr.message);
+    return jsonRes(res, { ok: true }); // still pretend success — don't leak info
+  }
+
+  // Look up display name (best-effort)
+  let displayName = '';
+  try {
+    const { data: profile } = await supa
+      .from('profiles')
+      .select('display_name')
+      .eq('id', user.id)
+      .maybeSingle();
+    displayName = (profile && profile.display_name) || (user.email && user.email.split('@')[0]) || '';
+  } catch {}
+
+  const resetUrl = `${emailModule.SITE_URL}/reset-password.html?token=${encodeURIComponent(raw)}`;
+  const tpl = emailModule.passwordResetEmail({ name: displayName, resetUrl });
+  const result = await emailModule.sendEmail({ to: user.email, ...tpl });
+
+  if (!result.ok) {
+    console.error('[pwreset] email send failed:', result.error);
+    // Still return ok to avoid leaking that the email exists
+  }
+  return jsonRes(res, { ok: true });
+}
+
+/* ── POST /api/reset-password — public, completes the reset ──
+   Body: { token: "...", password: "..." }
+
+   Security:
+   - Token must exist, be unused, and not expired.
+   - Password must be >= 6 chars.
+   - On success: updates user's password, marks token used, invalidates all
+     existing sessions (so an attacker with a stolen old session can't keep using it).
+*/
+async function handleResetPassword(req, res) {
+  const supa = getSupabaseAdmin();
+  if (!supa) return jsonRes(res, { error: 'Service unavailable' }, 503);
+
+  let body = {};
+  try { body = await parseBody(req); } catch {}
+  const rawToken = String(body.token || '').trim();
+  const newPassword = String(body.password || '');
+
+  if (!rawToken) return jsonRes(res, { ok: false, error: 'Missing token' }, 400);
+  if (!newPassword || newPassword.length < 6) {
+    return jsonRes(res, { ok: false, error: 'Password must be at least 6 characters' }, 400);
+  }
+  if (newPassword.length > 128) {
+    return jsonRes(res, { ok: false, error: 'Password is too long' }, 400);
+  }
+
+  const hash = sha256Hex(rawToken);
+  const { data: tokenRow, error: tErr } = await supa
+    .from('password_reset_tokens')
+    .select('id, user_id, expires_at, used_at')
+    .eq('token_hash', hash)
+    .maybeSingle();
+
+  if (tErr || !tokenRow) {
+    return jsonRes(res, { ok: false, error: 'This reset link is invalid or has already been used.' }, 400);
+  }
+  if (tokenRow.used_at) {
+    return jsonRes(res, { ok: false, error: 'This reset link has already been used.' }, 400);
+  }
+  if (new Date(tokenRow.expires_at).getTime() < Date.now()) {
+    return jsonRes(res, { ok: false, error: 'This reset link has expired. Please request a new one.' }, 400);
+  }
+
+  // ─── Update the password via admin API ───
+  try {
+    const { error: updErr } = await supa.auth.admin.updateUserById(
+      tokenRow.user_id,
+      { password: newPassword }
+    );
+    if (updErr) {
+      console.error('[pwreset] updateUserById failed:', updErr.message);
+      return jsonRes(res, { ok: false, error: 'Could not update password. Please try again.' }, 500);
+    }
+  } catch (e) {
+    console.error('[pwreset] updateUserById threw:', e.message);
+    return jsonRes(res, { ok: false, error: 'Could not update password. Please try again.' }, 500);
+  }
+
+  // ─── Mark token used (one-shot) ───
+  try {
+    await supa.from('password_reset_tokens')
+      .update({ used_at: new Date().toISOString() })
+      .eq('id', tokenRow.id);
+  } catch (e) {
+    console.warn('[pwreset] could not mark token used:', e.message);
+    // Password is updated; this is just bookkeeping.
+  }
+
+  // ─── Invalidate all existing sessions for this user ───
+  // After a password reset, any old session is suspect. signOut on the admin
+  // client kills every JWT for this user.
+  try {
+    await supa.auth.admin.signOut(tokenRow.user_id);
+  } catch (e) {
+    console.warn('[pwreset] sign-out-all failed:', e.message);
+  }
+
+  return jsonRes(res, { ok: true });
+}
+
 // ══════════════════════════════════════════════════════════════════════════
 // HTTP SERVER
 // ══════════════════════════════════════════════════════════════════════════
@@ -1154,6 +1339,8 @@ const server = http.createServer(async (req, res) => {
     if (url === '/api/send-verification-email') return handleSendVerificationEmail(req, res);
     if (url === '/api/send-listing-approved-email') return handleSendListingApprovedEmail(req, res);
     if (url === '/api/internal/listing-activated') return handleListingActivatedWebhook(req, res);
+    if (url === '/api/send-password-reset-email') return handleSendPasswordResetEmail(req, res);
+    if (url === '/api/reset-password') return handleResetPassword(req, res);
   }
   if (req.method === 'GET') {
     if (url === '/api/verify-email') return handleVerifyEmailToken(req, res);

@@ -275,11 +275,22 @@
     e.preventDefault();
     const email = document.getElementById('dm-auth-login-email').value.trim();
     if (!email) { setStatus('Enter your email above first, then click Forgot Password.'); return; }
-    if (!window.supa) { setStatus('Authentication not ready.'); return; }
-    const { error } = await window.supa.auth.resetPasswordForEmail(email, {
-      redirectTo: window.location.origin + '/reset-password.html',
-    });
-    if (error) setStatus(error.message); else setStatus('Password reset email sent. Check your inbox.', 'ok');
+    if (!email.includes('@')) { setStatus('That doesn\'t look like a valid email address.'); return; }
+
+    // Call our own endpoint — uses Resend + DubiMotors-branded template.
+    // The endpoint always returns ok regardless of whether the email exists
+    // (to prevent email enumeration), so we just show a generic success message.
+    try {
+      const res = await fetch('/api/send-password-reset-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+      // Even if status isn't 200, show success — don't leak info about which emails exist
+      setStatus('If that email is registered with us, you\'ll receive reset instructions shortly. Check your inbox.', 'ok');
+    } catch {
+      setStatus('Could not reach our servers. Please check your connection and try again.');
+    }
   }
 
   function closeWith(result) {
