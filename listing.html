@@ -219,6 +219,22 @@
       text-decoration: none;
     }
     .btn-whatsapp:hover { background: #1ebe5d; }
+    .btn-message {
+      background: var(--orange);
+      color: var(--white);
+      border: none;
+      border-radius: 10px;
+      padding: 14px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .btn-message:hover { background: var(--orange-hover); }
+    .btn-message:disabled { opacity: 0.5; cursor: not-allowed; }
     .btn-save {
       background: transparent;
       color: var(--dark);
@@ -478,6 +494,7 @@
         <div class="price-card-actions">
           <a class="btn-call" id="btn-call" href="#">📞 Call Seller</a>
           <a class="btn-whatsapp" id="btn-whatsapp" href="#" target="_blank">💬 WhatsApp</a>
+          <button class="btn-message" id="btn-message-seller" onclick="openMessageModal()" style="display:none;">✉️ Message Seller</button>
           <button class="btn-save" id="btn-save-listing" onclick="toggleFavourite()">🤍 Save Listing</button>
         </div>
       </div>
@@ -601,6 +618,35 @@
     </div>
 
     <button class="btn-submit-quote" onclick="submitFinanceQuote()">Submit Finance Request</button>
+  </div>
+</div>
+
+<!-- MESSAGE SELLER MODAL -->
+<div class="modal-overlay" id="message-modal">
+  <div class="modal-box" style="max-width:520px;">
+    <button class="modal-close" onclick="closeMessageModal()">✕</button>
+    <div class="modal-title">Message the Seller</div>
+    <div class="modal-sub" id="message-modal-sub">Send a message about this listing. The seller will get a notification.</div>
+
+    <div class="modal-autofill" id="message-modal-listing-info" style="margin-top:8px;">
+      <strong>Listing</strong>
+      <span id="message-modal-listing-text">—</span>
+    </div>
+
+    <div class="modal-form-group" style="margin-top:14px;">
+      <label>Your message *</label>
+      <textarea id="msg-body" rows="5" maxlength="2000"
+        style="width:100%;border:1.5px solid var(--border);border-radius:10px;padding:12px;font-family:inherit;font-size:14px;resize:vertical;min-height:120px;"
+        placeholder="Hi, I'm interested in your listing. Is it still available?"></textarea>
+      <div style="font-size:11px;color:var(--grey);margin-top:4px;text-align:right;"><span id="msg-char-count">0</span> / 2000</div>
+    </div>
+
+    <div id="msg-error" style="display:none;background:#FFEBEE;color:#C62828;border-radius:8px;padding:10px 12px;font-size:13px;margin-bottom:10px;"></div>
+
+    <button class="btn-submit-quote" id="msg-send-btn" onclick="sendMessageToSeller()">Send Message</button>
+    <div style="font-size:12px;color:var(--grey);margin-top:12px;text-align:center;">
+      Once sent, you can continue the conversation from <a href="chats.html" style="color:var(--orange);font-weight:700;">Chats</a>.
+    </div>
   </div>
 </div>
 
@@ -1289,7 +1335,189 @@
     let tries = 0;
     while (!window.Auth && tries < 50) { await new Promise(r => setTimeout(r, 50)); tries++; }
     if (window.Auth) loadFavouriteState();
+    if (window.Auth) initMessageButton();
   })();
+
+  // ──────────────────────────────────────────────────────────────────
+  // MESSAGE SELLER — open chat modal, send first message, navigate to chats
+  // ──────────────────────────────────────────────────────────────────
+  //
+  // Visibility rules for the Message Seller button:
+  //   • Hidden for demo listings (string IDs, no real owner in DB)
+  //   • Hidden if user is the listing's owner (can't message yourself)
+  //   • Hidden if not signed in is OK — clicking opens auth modal
+  // We don't pre-check the conversations table; first send creates the row.
+
+  async function initMessageButton() {
+    const btn = document.getElementById('btn-message-seller');
+    if (!btn) return;
+    // Demo listings don't get the button (string IDs, no real owner)
+    if (!_isRealListingId(id)) { btn.style.display = 'none'; return; }
+
+    // Wait until the listing data is available so we know the owner_id
+    let cur = (typeof listing !== 'undefined' && listing) ? listing : DM.getById(id);
+    if (!cur) {
+      // Listing not yet loaded — try again after dm:listings-loaded fires
+      window.addEventListener('dm:listings-loaded', () => initMessageButton(), { once: true });
+      return;
+    }
+
+    const user = await window.Auth.getUser();
+    const sellerId = cur.ownerId || cur.owner_id;
+    // Hide if user is the owner (self-messaging)
+    if (user && sellerId && user.id === sellerId) {
+      btn.style.display = 'none';
+      return;
+    }
+
+    // Check seller's chat_enabled — if they've disabled messaging, hide button
+    if (sellerId && window.supa) {
+      try {
+        const { data } = await window.supa
+          .from('profiles')
+          .select('chat_enabled')
+          .eq('id', sellerId)
+          .maybeSingle();
+        // Default true if column null or row missing
+        if (data && data.chat_enabled === false) {
+          btn.style.display = 'none';
+          return;
+        }
+      } catch (e) {
+        console.warn('[message-btn] could not check seller chat_enabled:', e);
+        // On error, leave button visible (fail-open is fine — server-side
+        // RLS will also reject if seller has chat disabled)
+      }
+    }
+
+    btn.style.display = '';
+  }
+
+  function openMessageModal() {
+    if (!_isRealListingId(id)) { if (typeof showToast === 'function') showToast('This is a demo listing — messaging the seller is not available.'); return; }
+    const modal = document.getElementById('message-modal');
+    if (!modal) return;
+    const cur = (typeof listing !== 'undefined' && listing) ? listing : DM.getById(id);
+    const txt = document.getElementById('message-modal-listing-text');
+    if (txt && cur) txt.textContent = `${cur.title || 'Listing'}${cur.price ? ' — AED ' + Number(cur.price).toLocaleString() : ''}`;
+    document.getElementById('msg-error').style.display = 'none';
+    modal.classList.add('open');
+    setTimeout(() => { const t = document.getElementById('msg-body'); if (t) t.focus(); }, 50);
+  }
+  window.openMessageModal = openMessageModal;
+
+  function closeMessageModal() {
+    const modal = document.getElementById('message-modal');
+    if (modal) modal.classList.remove('open');
+  }
+  window.closeMessageModal = closeMessageModal;
+
+  async function sendMessageToSeller() {
+    const errEl = document.getElementById('msg-error');
+    const showErr = (m) => { errEl.textContent = m; errEl.style.display = ''; };
+    errEl.style.display = 'none';
+
+    const textarea = document.getElementById('msg-body');
+    const body = (textarea.value || '').trim();
+    if (body.length < 1) { showErr('Please type a message before sending.'); return; }
+    if (body.length > 2000) { showErr('Message is too long (max 2,000 characters).'); return; }
+
+    if (!window.Auth || !window.supa) { showErr('Could not connect. Please refresh and try again.'); return; }
+
+    let user = await window.Auth.getUser();
+    if (!user) {
+      if (window.AuthModal) {
+        user = await window.AuthModal.open({ tab: 'login', reason: 'Sign in to message the seller.' });
+        if (!user) return;
+      } else {
+        window.location.href = 'login.html?next=' + encodeURIComponent(window.location.pathname + window.location.search);
+        return;
+      }
+    }
+
+    const cur = (typeof listing !== 'undefined' && listing) ? listing : DM.getById(id);
+    if (!cur || !(cur.ownerId || cur.owner_id)) { showErr('Could not identify the seller for this listing.'); return; }
+    if (user.id === (cur.ownerId || cur.owner_id)) { showErr("You can't message your own listing."); return; }
+
+    const sendBtn = document.getElementById('msg-send-btn');
+    sendBtn.disabled = true;
+    const origLabel = sendBtn.textContent;
+    sendBtn.textContent = 'Sending…';
+
+    try {
+      // Step 1: find existing conversation, or create one
+      // RLS lets us read only our own conversations, so this query will only
+      // return the row if it's ours
+      let conv = null;
+      {
+        const { data, error } = await window.supa
+          .from('conversations')
+          .select('id')
+          .eq('listing_id', id)
+          .eq('buyer_id', user.id)
+          .maybeSingle();
+        if (error && !/no rows|0 rows/i.test(error.message)) throw error;
+        conv = data;
+      }
+
+      if (!conv) {
+        const { data, error } = await window.supa
+          .from('conversations')
+          .insert({ listing_id: id, buyer_id: user.id, seller_id: (cur.ownerId || cur.owner_id) })
+          .select('id')
+          .single();
+        if (error) {
+          // If someone else created the row concurrently, we'll get a unique
+          // constraint error — re-fetch
+          if (/duplicate|unique/i.test(error.message)) {
+            const refetch = await window.supa
+              .from('conversations')
+              .select('id')
+              .eq('listing_id', id)
+              .eq('buyer_id', user.id)
+              .single();
+            if (refetch.error) throw refetch.error;
+            conv = refetch.data;
+          } else {
+            throw error;
+          }
+        } else {
+          conv = data;
+        }
+      }
+
+      // Step 2: insert the message
+      const { error: msgErr } = await window.supa
+        .from('messages')
+        .insert({ conversation_id: conv.id, sender_id: user.id, body });
+      if (msgErr) throw msgErr;
+
+      // Success → navigate to the conversation
+      closeMessageModal();
+      window.location.href = 'chats.html?c=' + encodeURIComponent(conv.id);
+    } catch (e) {
+      console.error('[message] send failed:', e);
+      showErr('Could not send message: ' + (e.message || 'unknown error'));
+    } finally {
+      sendBtn.disabled = false;
+      sendBtn.textContent = origLabel;
+    }
+  }
+  window.sendMessageToSeller = sendMessageToSeller;
+
+  // Live character count
+  document.addEventListener('input', (e) => {
+    if (e.target && e.target.id === 'msg-body') {
+      const cc = document.getElementById('msg-char-count');
+      if (cc) cc.textContent = String(e.target.value.length);
+    }
+  });
+
+  // Close modal on overlay click
+  const _msgModal = document.getElementById('message-modal');
+  if (_msgModal) _msgModal.addEventListener('click', (e) => {
+    if (e.target === _msgModal) closeMessageModal();
+  });
 
 </script>
 </main>

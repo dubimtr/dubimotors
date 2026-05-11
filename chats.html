@@ -4,7 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Chats — DUBIMOTORS</title>
-    <!-- Font preconnect + stylesheet (loaded in parallel with style.css) -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" />
@@ -31,60 +30,98 @@
     .dash-nav-item svg { width: 18px; height: 18px; flex-shrink: 0; }
     .dash-nav-badge { margin-left: auto; background: var(--orange); color: var(--white); font-size: 10px; font-weight: 800; padding: 2px 7px; border-radius: 20px; }
 
-    /* Chat layout */
-    .chat-container { background: var(--white); border-radius: 16px; box-shadow: var(--shadow); overflow: hidden; display: grid; grid-template-columns: 300px 1fr; min-height: 600px; }
-    @media (max-width: 700px) { .chat-container { grid-template-columns: 1fr; } .chat-panel { display: none; } .chat-panel.active { display: flex; } }
+    .chat-container { background: var(--white); border-radius: 16px; box-shadow: var(--shadow); overflow: hidden; display: grid; grid-template-columns: 320px 1fr; min-height: 640px; }
+    @media (max-width: 700px) {
+      .chat-container { grid-template-columns: 1fr; }
+      .chat-list-mobile-hidden { display: none; }
+    }
 
-    /* Chat list */
-    .chat-list { border-right: 1px solid var(--border); display: flex; flex-direction: column; }
-    .chat-list-header { padding: 20px; border-bottom: 1px solid var(--border); }
+    .chat-list { border-right: 1px solid var(--border); display: flex; flex-direction: column; max-height: 760px; }
+    .chat-list-header { padding: 18px 20px; border-bottom: 1px solid var(--border); }
     .chat-list-title { font-size: 16px; font-weight: 800; color: var(--dark); }
     .chat-list-sub { font-size: 12px; color: var(--grey); margin-top: 2px; }
-    .chat-item { display: flex; align-items: center; gap: 12px; padding: 14px 16px; cursor: pointer; border-bottom: 1px solid var(--border); transition: background 0.15s; }
+    .chat-list-scroll { flex: 1; overflow-y: auto; }
+    .chat-item { display: flex; align-items: flex-start; gap: 12px; padding: 14px 16px; cursor: pointer; border-bottom: 1px solid var(--border); transition: background 0.15s; }
     .chat-item:hover { background: var(--light-grey); }
     .chat-item.active { background: #FFF0EB; }
-    .chat-item-avatar { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 800; color: var(--white); flex-shrink: 0; }
+    .chat-item-thumb { width: 48px; height: 48px; border-radius: 8px; object-fit: cover; background: var(--light-grey); flex-shrink: 0; }
     .chat-item-body { flex: 1; min-width: 0; }
-    .chat-item-name { font-size: 14px; font-weight: 700; color: var(--dark); }
-    .chat-item-preview { font-size: 12px; color: var(--grey); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
-    .chat-item-meta { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex-shrink: 0; }
-    .chat-item-time { font-size: 11px; color: var(--grey); }
-    .chat-unread { background: var(--orange); color: var(--white); font-size: 10px; font-weight: 800; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+    .chat-item-name { font-size: 14px; font-weight: 700; color: var(--dark); display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+    .chat-item-listing { font-size: 11px; color: var(--grey); margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .chat-item-preview { font-size: 12px; color: var(--grey); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 3px; }
+    .chat-item-time { font-size: 10px; color: var(--grey); flex-shrink: 0; font-weight: 600; }
+    .chat-item-unread { background: var(--orange); color: var(--white); font-size: 10px; font-weight: 800; padding: 2px 7px; border-radius: 10px; margin-top: 4px; display: inline-block; }
+    .chat-item.unread .chat-item-name,
+    .chat-item.unread .chat-item-preview { color: var(--dark); font-weight: 800; }
 
-    /* Chat panel */
     .chat-panel { display: flex; flex-direction: column; }
     .chat-header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 12px; }
-    .chat-header-avatar { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 800; color: var(--white); flex-shrink: 0; }
+    .chat-header-avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--orange); display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 800; color: var(--white); flex-shrink: 0; }
     .chat-header-name { font-size: 15px; font-weight: 800; color: var(--dark); }
     .chat-header-listing { font-size: 12px; color: var(--grey); }
-    .chat-listing-bar { padding: 10px 20px; background: #FFF8F6; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; }
-    .chat-listing-img { width: 40px; height: 30px; border-radius: 6px; object-fit: cover; }
-    .chat-listing-title { font-size: 12px; font-weight: 700; color: var(--dark); }
+    .chat-header-back { background: transparent; border: 0; cursor: pointer; padding: 6px; color: var(--dark); display: none; font-size: 18px; }
+    @media (max-width: 700px) { .chat-header-back { display: inline-flex; } }
+    .chat-header-menu-wrap { position: relative; }
+    .chat-header-menu-btn { background: transparent; border: 0; cursor: pointer; padding: 8px; border-radius: 50%; transition: background 0.15s; color: var(--dark); }
+    .chat-header-menu-btn:hover { background: var(--light-grey); }
+    .chat-header-menu-btn svg { width: 18px; height: 18px; }
+    .chat-header-menu { position: absolute; top: 100%; right: 0; background: var(--white); border: 1px solid var(--border); border-radius: 10px; box-shadow: 0 6px 18px rgba(0,0,0,0.12); min-width: 180px; z-index: 10; display: none; padding: 6px; }
+    .chat-header-menu.open { display: block; }
+    .chat-header-menu-item { padding: 9px 12px; font-size: 14px; cursor: pointer; border-radius: 6px; display: flex; align-items: center; gap: 8px; color: var(--dark); }
+    .chat-header-menu-item:hover { background: var(--light-grey); }
+    .chat-header-menu-item.danger { color: #E53935; }
+
+    /* Modal overlay reused for block + report */
+    .dm-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 9000; }
+    .dm-modal-overlay.open { display: flex; }
+    .dm-modal-box { background: var(--white); border-radius: 16px; padding: 28px; max-width: 460px; width: calc(100% - 32px); position: relative; }
+    .dm-modal-title { font-size: 18px; font-weight: 800; color: var(--dark); margin-bottom: 8px; }
+    .dm-modal-sub { font-size: 13px; color: var(--grey); margin-bottom: 18px; line-height: 1.5; }
+    .dm-modal-close { position: absolute; top: 14px; right: 14px; background: transparent; border: 0; font-size: 20px; cursor: pointer; color: var(--grey); }
+    .dm-modal-form-group { margin-bottom: 14px; }
+    .dm-modal-form-group label { display: block; font-size: 13px; font-weight: 700; color: var(--dark); margin-bottom: 6px; }
+    .dm-modal-form-group select,
+    .dm-modal-form-group textarea { width: 100%; border: 1.5px solid var(--border); border-radius: 10px; padding: 10px 12px; font-size: 14px; font-family: inherit; outline: none; transition: border-color 0.2s; }
+    .dm-modal-form-group select:focus,
+    .dm-modal-form-group textarea:focus { border-color: var(--orange); }
+    .dm-modal-buttons { display: flex; gap: 10px; justify-content: flex-end; margin-top: 18px; }
+    .dm-modal-btn { padding: 10px 18px; border-radius: 10px; font-size: 14px; font-weight: 700; cursor: pointer; border: 1.5px solid transparent; }
+    .dm-modal-btn.primary { background: var(--orange); color: var(--white); border-color: var(--orange); }
+    .dm-modal-btn.primary:hover { background: var(--orange-hover); }
+    .dm-modal-btn.danger { background: #E53935; color: var(--white); border-color: #E53935; }
+    .dm-modal-btn.danger:hover { background: #C62828; }
+    .dm-modal-btn.outline { background: transparent; color: var(--dark); border-color: var(--border); }
+    .dm-modal-btn.outline:hover { background: var(--light-grey); }
+    .chat-listing-bar { padding: 10px 20px; background: #FFF8F6; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; text-decoration: none; color: inherit; }
+    .chat-listing-bar:hover { background: #FFEFE8; }
+    .chat-listing-img { width: 40px; height: 30px; border-radius: 6px; object-fit: cover; background: var(--light-grey); flex-shrink: 0; }
+    .chat-listing-info { flex: 1; min-width: 0; }
+    .chat-listing-title { font-size: 12px; font-weight: 700; color: var(--dark); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .chat-listing-price { font-size: 12px; color: var(--orange); font-weight: 700; }
 
-    .chat-messages { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 12px; background: #FAFAFA; }
-    .msg { display: flex; gap: 8px; max-width: 75%; }
-    .msg.me { align-self: flex-end; flex-direction: row-reverse; }
-    .msg-avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--light-grey); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; flex-shrink: 0; }
-    .msg-bubble { padding: 10px 14px; border-radius: 16px; font-size: 14px; line-height: 1.5; }
+    .chat-messages { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 10px; background: #FAFAFA; min-height: 380px; max-height: 540px; }
+    .msg { display: flex; flex-direction: column; max-width: 75%; }
+    .msg.me { align-self: flex-end; align-items: flex-end; }
+    .msg.them { align-self: flex-start; align-items: flex-start; }
+    .msg-bubble { padding: 10px 14px; border-radius: 16px; font-size: 14px; line-height: 1.5; word-wrap: break-word; white-space: pre-wrap; }
     .msg.them .msg-bubble { background: var(--white); border: 1px solid var(--border); color: var(--dark); border-radius: 4px 16px 16px 16px; }
     .msg.me .msg-bubble { background: var(--orange); color: var(--white); border-radius: 16px 4px 16px 16px; }
-    .msg-time { font-size: 10px; color: var(--grey); margin-top: 4px; text-align: right; }
-    .msg.them .msg-time { text-align: left; }
+    .msg-time { font-size: 10px; color: var(--grey); margin-top: 3px; padding: 0 4px; }
 
-    .chat-input-area { padding: 16px 20px; border-top: 1px solid var(--border); display: flex; gap: 10px; align-items: center; }
-    .chat-input { flex: 1; border: 1.5px solid var(--border); border-radius: 24px; padding: 10px 18px; font-size: 14px; outline: none; transition: border-color 0.2s; }
+    .chat-input-area { padding: 14px 20px; border-top: 1px solid var(--border); display: flex; gap: 10px; align-items: center; }
+    .chat-input { flex: 1; border: 1.5px solid var(--border); border-radius: 24px; padding: 10px 18px; font-size: 14px; outline: none; transition: border-color 0.2s; resize: none; max-height: 100px; min-height: 22px; font-family: inherit; }
     .chat-input:focus { border-color: var(--orange); }
     .btn-send { background: var(--orange); color: var(--white); border: none; border-radius: 50%; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; transition: background 0.2s; }
     .btn-send:hover { background: var(--orange-hover); }
+    .btn-send:disabled { opacity: 0.5; cursor: not-allowed; }
     .btn-send svg { width: 18px; height: 18px; }
 
     .chat-empty { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px; text-align: center; }
     .chat-empty-icon { font-size: 48px; margin-bottom: 16px; }
     .chat-empty-title { font-size: 18px; font-weight: 800; color: var(--dark); margin-bottom: 8px; }
-    .chat-empty-sub { font-size: 14px; color: var(--grey); }
+    .chat-empty-sub { font-size: 14px; color: var(--grey); max-width: 360px; }
 
-    /* Toast styles are defined globally in style.css — do NOT redefine here. */
+    /* Toast styles are defined globally in style.css */
   </style>
 </head>
 <body>
@@ -97,20 +134,16 @@
           <div class="dash-avatar"></div>
           <div class="dash-name"></div>
           <div class="dash-email"></div>
-          <div class="dash-verified-badge"><svg viewBox="0 0 16 16" width="12" fill="none"><path d="M8 1l1.8 2.6L13 4.5l-2.1 2.4.3 3.1L8 8.7l-3.2 1.3.3-3.1L3 4.5l3.2-.9L8 1z" fill="#2E7D32"/></svg>Verified</div>
+          <div class="dash-verified-badge" id="sidebar-verified-badge" style="display:none;"><svg viewBox="0 0 16 16" width="12" fill="none"><path d="M8 1l1.8 2.6L13 4.5l-2.1 2.4.3 3.1L8 8.7l-3.2 1.3.3-3.1L3 4.5l3.2-.9L8 1z" fill="#2E7D32"/></svg>Verified</div>
           <div class="dash-stats"><div class="dash-stat"><div class="dash-stat-num">0</div><div class="dash-stat-label">Active Ads</div></div><div class="dash-stat"><div class="dash-stat-num">0</div><div class="dash-stat-label">Saved</div></div></div>
         </div>
         <nav class="dash-nav">
           <a href="profile.html" class="dash-nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>My Profile</a>
           <a href="my-ads.html" class="dash-nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M3 9h18M9 21V9"/></svg>My Ads<span class="dash-nav-badge" style="display:none;">0</span></a>
-          <a href="favourites.html" class="dash-nav-item">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-            Favourites
-            <span class="dash-nav-badge" style="background:#E53935;display:none;">0</span>
-          </a>
+          <a href="favourites.html" class="dash-nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>Favourites<span class="dash-nav-badge" style="background:#E53935;display:none;">0</span></a>
           <a href="saved-searches.html" class="dash-nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/><path d="M11 8v6M8 11h6" stroke-linecap="round"/></svg>Saved Searches<span class="dash-nav-badge" style="background:#2196F3;display:none;">0</span></a>
           <a href="recent-searches.html" class="dash-nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>Recent Searches</a>
-          <a href="chats.html" class="dash-nav-item active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Chats<span class="dash-nav-badge" style="display:none;">0</span></a>
+          <a href="chats.html" class="dash-nav-item active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Chats<span class="dash-nav-badge" id="nav-chats-count" style="display:none;">0</span></a>
           <a href="notifications.html" class="dash-nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>Notifications<span class="dash-nav-badge" style="display:none;">0</span></a>
           <a href="login.html" class="dash-nav-item" style="color:#E53935;margin-top:8px;border-top:1px solid var(--border);border-radius:0 0 10px 10px;padding-top:16px;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>Log Out</a>
         </nav>
@@ -118,21 +151,18 @@
 
       <main>
         <div class="chat-container">
-          <!-- Chat list -->
-          <div class="chat-list">
+          <div class="chat-list" id="chat-list">
             <div class="chat-list-header">
               <div class="chat-list-title">Messages</div>
-              <div class="chat-list-sub" id="chat-list-sub">No conversations yet</div>
+              <div class="chat-list-sub" id="chat-list-sub">Loading conversations…</div>
             </div>
-            <div id="chat-list-items"></div>
+            <div class="chat-list-scroll" id="chat-list-items"></div>
           </div>
-
-          <!-- Chat panel -->
           <div class="chat-panel" id="chat-panel">
             <div class="chat-empty">
               <div class="chat-empty-icon">💬</div>
-              <div class="chat-empty-title">In-app messaging coming soon</div>
-              <div class="chat-empty-sub">We're building real-time chat so you can message sellers directly. For now, contact sellers via Call or WhatsApp from any listing.</div>
+              <div class="chat-empty-title">Select a conversation</div>
+              <div class="chat-empty-sub">Pick a conversation from the list to start chatting. To start a new one, message a seller from any listing page.</div>
             </div>
           </div>
         </div>
@@ -143,45 +173,583 @@
   <div id="footer-placeholder"></div>
   <div class="toast" id="toast"></div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js" defer></script>
+  <!-- Block User modal -->
+  <div class="dm-modal-overlay" id="block-modal">
+    <div class="dm-modal-box">
+      <button class="dm-modal-close" onclick="closeBlockModal()">&times;</button>
+      <div class="dm-modal-title">Block this user?</div>
+      <div class="dm-modal-sub" id="block-modal-sub">They won&rsquo;t be able to send you new messages. Your existing conversation stays visible. They won&rsquo;t be notified that you blocked them.</div>
+      <div class="dm-modal-buttons">
+        <button class="dm-modal-btn outline" onclick="closeBlockModal()">Cancel</button>
+        <button class="dm-modal-btn danger" id="block-confirm-btn" onclick="confirmBlock()">Block User</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Report modal -->
+  <div class="dm-modal-overlay" id="report-modal">
+    <div class="dm-modal-box">
+      <button class="dm-modal-close" onclick="closeReportModal()">&times;</button>
+      <div class="dm-modal-title">Report this conversation</div>
+      <div class="dm-modal-sub">We&rsquo;ll review the conversation and the other user&rsquo;s account. Thanks for helping keep DubiMotors safe.</div>
+
+      <div class="dm-modal-form-group">
+        <label>What&rsquo;s wrong?</label>
+        <select id="report-reason">
+          <option value="">Choose a reason…</option>
+          <option value="spam">Spam or promotional content</option>
+          <option value="harassment">Harassment or threats</option>
+          <option value="scam">Scam or fraud</option>
+          <option value="inappropriate">Inappropriate content</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+
+      <div class="dm-modal-form-group">
+        <label>Additional details (optional)</label>
+        <textarea id="report-details" rows="4" maxlength="2000" placeholder="Anything else we should know?"></textarea>
+      </div>
+
+      <div id="report-error" style="display:none;background:#FFEBEE;color:#C62828;border-radius:8px;padding:10px 12px;font-size:13px;margin-bottom:10px;"></div>
+
+      <div class="dm-modal-buttons">
+        <button class="dm-modal-btn outline" onclick="closeReportModal()">Cancel</button>
+        <button class="dm-modal-btn primary" id="report-submit-btn" onclick="submitReport()">Submit Report</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js" defer></script>
   <script src="supabase-client.js" defer></script>
   <script src="auth.js" defer></script>
   <script src="components.js"></script>
   <script src="auth-modal.js" defer></script>
   <script>
+  renderNavbar('chats');
+  renderFooter();
 
-  // Auth guard: redirect to login if not signed in
+  let _currentUser = null;
+  let _conversations = [];
+  let _activeConvId = null;
+  let _activeMessages = [];
+  let _msgChannel = null;
+  let _convChannel = null;
+
+  function escapeHtml(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  }
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    if (!t) return;
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3000);
+  }
+  function timeAgo(iso) {
+    const diff = Date.now() - new Date(iso).getTime();
+    const m = Math.floor(diff / 60000);
+    if (m < 1) return 'now';
+    if (m < 60) return m + 'm';
+    const h = Math.floor(m / 60);
+    if (h < 24) return h + 'h';
+    const d = Math.floor(h / 24);
+    if (d < 7) return d + 'd';
+    return new Date(iso).toLocaleDateString();
+  }
+  function formatMsgTime(iso) {
+    return new Date(iso).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+  }
+  function initials(name) {
+    return String(name || '?').trim().split(/\s+/).map(w => w[0]).slice(0, 2).join('').toUpperCase() || '?';
+  }
+  function formatPrice(n) {
+    if (n == null || isNaN(n)) return '';
+    return 'AED ' + Number(n).toLocaleString();
+  }
+
   (async () => {
     let tries = 0;
     while (!window.Auth && tries < 50) { await new Promise(r => setTimeout(r, 50)); tries++; }
     if (!window.Auth) return;
-    await window.Auth.requireAuth();
+    _currentUser = await window.Auth.requireAuth();
+    if (!_currentUser) return;
+
+    await loadConversations();
+    subscribeRealtime();
+
+    const url = new URLSearchParams(window.location.search);
+    const target = url.get('c');
+    if (target) openConversation(target);
+
+    if (typeof dmFillDashboardSidebar === 'function') dmFillDashboardSidebar();
   })();
-    renderNavbar('chats');
-    renderFooter();
 
-    function showToast(msg) {
-      const t = document.getElementById('toast');
-      t.textContent = msg;
-      t.classList.add('show');
-      setTimeout(() => t.classList.remove('show'), 3000);
+  async function loadConversations() {
+    const list = document.getElementById('chat-list-items');
+    const sub  = document.getElementById('chat-list-sub');
+    try {
+      const { data: convs, error } = await window.supa
+        .from('conversations')
+        .select(`
+          id, listing_id, buyer_id, seller_id, last_message_at,
+          buyer_unread_count, seller_unread_count, created_at,
+          listing:listings ( id, title, price,
+            listing_images ( url, is_primary, display_order ) )
+        `)
+        .order('last_message_at', { ascending: false });
+      if (error) throw error;
+
+      _conversations = convs || [];
+
+      const otherIds = [...new Set(_conversations.map(c =>
+        c.buyer_id === _currentUser.id ? c.seller_id : c.buyer_id
+      ))];
+      let profilesById = {};
+      if (otherIds.length) {
+        const { data: profs } = await window.supa
+          .from('profiles')
+          .select('id, display_name')
+          .in('id', otherIds);
+        (profs || []).forEach(p => { profilesById[p.id] = p; });
+      }
+
+      _conversations.forEach(c => {
+        c._isBuyer = (c.buyer_id === _currentUser.id);
+        c._otherId = c._isBuyer ? c.seller_id : c.buyer_id;
+        c._otherProfile = profilesById[c._otherId] || null;
+        c._unread = c._isBuyer ? c.buyer_unread_count : c.seller_unread_count;
+        const imgs = ((c.listing && c.listing.listing_images) || [])
+          .slice()
+          .sort((a,b) => (b.is_primary?1:0) - (a.is_primary?1:0) || (a.display_order||0) - (b.display_order||0));
+        c._listingImg = imgs[0] ? imgs[0].url : '';
+      });
+
+      if (_conversations.length) {
+        const convIds = _conversations.map(c => c.id);
+        const { data: msgs } = await window.supa
+          .from('messages')
+          .select('conversation_id, body, created_at, sender_id')
+          .in('conversation_id', convIds)
+          .order('created_at', { ascending: false });
+        const lastByConv = {};
+        (msgs || []).forEach(m => { if (!lastByConv[m.conversation_id]) lastByConv[m.conversation_id] = m; });
+        _conversations.forEach(c => { c._lastMessage = lastByConv[c.id] || null; });
+      }
+
+      renderConversationsList();
+      updateUnreadBadge();
+    } catch (e) {
+      console.error('[chats] load failed:', e);
+      sub.textContent = 'Could not load conversations';
+      list.innerHTML = `<div style="padding:30px 20px;color:var(--grey);font-size:13px;text-align:center;">${escapeHtml(e.message || 'Error')}</div>`;
     }
+  }
 
-    function renderChatList() {
-      // Real-time chat is a future build. Until then, show an honest empty state.
-      const list = document.getElementById('chat-list-items');
+  function renderConversationsList() {
+    const list = document.getElementById('chat-list-items');
+    const sub  = document.getElementById('chat-list-sub');
+
+    if (!_conversations.length) {
+      sub.textContent = 'No conversations yet';
       list.innerHTML = `
         <div style="text-align:center;padding:40px 20px;color:var(--grey);">
           <div style="font-size:40px;margin-bottom:10px;">&#x1F4AC;</div>
           <div style="font-size:15px;font-weight:800;color:var(--dark);margin-bottom:6px;">No conversations yet</div>
-          <div style="font-size:13px;line-height:1.6;">Once messaging launches, your conversations with sellers will appear here.</div>
+          <div style="font-size:13px;line-height:1.6;">Browse listings and message a seller to start.</div>
         </div>`;
+      return;
     }
 
-    renderChatList();
+    sub.textContent = _conversations.length + (_conversations.length === 1 ? ' conversation' : ' conversations');
+    list.innerHTML = _conversations.map(c => {
+      const isActive = c.id === _activeConvId;
+      const isUnread = (c._unread || 0) > 0;
+      const otherName = (c._otherProfile && c._otherProfile.display_name) || (c._isBuyer ? 'Seller' : 'Buyer');
+      const listingTitle = (c.listing && c.listing.title) || 'Listing';
+      const preview = (c._lastMessage && c._lastMessage.body)
+        ? (c._lastMessage.sender_id === _currentUser.id ? 'You: ' : '') + c._lastMessage.body
+        : 'Tap to view conversation';
+      return `
+        <div class="chat-item ${isActive ? 'active' : ''} ${isUnread ? 'unread' : ''}" onclick="openConversation('${c.id}')">
+          <img class="chat-item-thumb" src="${escapeHtml(c._listingImg)}" alt="" onerror="this.style.background='var(--light-grey)';this.removeAttribute('src');" />
+          <div class="chat-item-body">
+            <div class="chat-item-name">
+              <span>${escapeHtml(otherName)}</span>
+              <span class="chat-item-time">${timeAgo(c.last_message_at)}</span>
+            </div>
+            <div class="chat-item-listing">${escapeHtml(listingTitle)}</div>
+            <div class="chat-item-preview">${escapeHtml(preview).slice(0, 80)}</div>
+            ${isUnread ? `<div class="chat-item-unread">${c._unread} new</div>` : ''}
+          </div>
+        </div>`;
+    }).join('');
+  }
 
-    // Fill the dashboard sidebar with real auth + listing data
-    if (typeof dmFillDashboardSidebar === 'function') dmFillDashboardSidebar();
+  function updateUnreadBadge() {
+    const total = _conversations.reduce((sum, c) => sum + (c._unread || 0), 0);
+    const badge = document.getElementById('nav-chats-count');
+    if (badge) {
+      badge.textContent = total;
+      badge.style.display = total > 0 ? '' : 'none';
+    }
+  }
+
+  async function openConversation(convId) {
+    const conv = _conversations.find(c => c.id === convId);
+    if (!conv) {
+      console.warn('[chats] conversation not in list:', convId);
+      return;
+    }
+    _activeConvId = convId;
+
+    const u = new URL(window.location.href);
+    u.searchParams.set('c', convId);
+    window.history.replaceState({}, '', u.toString());
+
+    renderConversationsList();
+    renderChatHeader(conv);
+
+    if (window.innerWidth <= 700) {
+      document.getElementById('chat-list').classList.add('chat-list-mobile-hidden');
+    }
+
+    try {
+      const { data: msgs, error } = await window.supa
+        .from('messages')
+        .select('id, conversation_id, sender_id, body, created_at, read_at')
+        .eq('conversation_id', convId)
+        .order('created_at', { ascending: true });
+      if (error) throw error;
+      _activeMessages = msgs || [];
+      renderMessages();
+    } catch (e) {
+      console.error('[chats] messages load failed:', e);
+      showToast('Could not load messages');
+    }
+
+    await markConversationRead(convId, conv);
+    subscribeToConversation(convId);
+  }
+  window.openConversation = openConversation;
+
+  function renderChatHeader(conv) {
+    const panel = document.getElementById('chat-panel');
+    const otherName = (conv._otherProfile && conv._otherProfile.display_name) || (conv._isBuyer ? 'Seller' : 'Buyer');
+    const listingTitle = (conv.listing && conv.listing.title) || 'Listing';
+    const listingPrice = (conv.listing && conv.listing.price) ? formatPrice(conv.listing.price) : '';
+    panel.innerHTML = `
+      <div class="chat-header">
+        <button class="chat-header-back" onclick="backToList()">&larr;</button>
+        <div class="chat-header-avatar">${escapeHtml(initials(otherName))}</div>
+        <div style="flex:1;min-width:0;">
+          <div class="chat-header-name">${escapeHtml(otherName)}</div>
+          <div class="chat-header-listing">${conv._isBuyer ? 'Seller' : 'Buyer'} &middot; ${escapeHtml(listingTitle)}</div>
+        </div>
+        <div class="chat-header-menu-wrap">
+          <button class="chat-header-menu-btn" onclick="toggleHeaderMenu(event)" aria-label="More options">
+            <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>
+          </button>
+          <div class="chat-header-menu" id="chat-header-menu">
+            <div class="chat-header-menu-item" onclick="openReportModal()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+              Report this conversation
+            </div>
+            <div class="chat-header-menu-item danger" onclick="openBlockModal()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+              Block this user
+            </div>
+          </div>
+        </div>
+      </div>
+      <a class="chat-listing-bar" href="listing.html?id=${escapeHtml(conv.listing_id)}">
+        <img class="chat-listing-img" src="${escapeHtml(conv._listingImg)}" alt="" onerror="this.style.background='var(--light-grey)';this.removeAttribute('src');" />
+        <div class="chat-listing-info">
+          <div class="chat-listing-title">${escapeHtml(listingTitle)}</div>
+          <div class="chat-listing-price">${listingPrice}</div>
+        </div>
+      </a>
+      <div class="chat-messages" id="chat-messages-list"></div>
+      <div class="chat-input-area">
+        <textarea class="chat-input" id="chat-input" rows="1" placeholder="Type a message…" maxlength="2000"></textarea>
+        <button class="btn-send" id="chat-send-btn" onclick="sendMessage()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z" fill="currentColor"/></svg>
+        </button>
+      </div>`;
+
+    const input = document.getElementById('chat-input');
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+      }
+    });
+    input.focus();
+  }
+
+  function renderMessages() {
+    const c = document.getElementById('chat-messages-list');
+    if (!c) return;
+    c.innerHTML = _activeMessages.map(m => {
+      const mine = m.sender_id === _currentUser.id;
+      return `
+        <div class="msg ${mine ? 'me' : 'them'}">
+          <div class="msg-bubble">${escapeHtml(m.body)}</div>
+          <div class="msg-time">${formatMsgTime(m.created_at)}</div>
+        </div>`;
+    }).join('');
+    c.scrollTop = c.scrollHeight;
+  }
+
+  function backToList() {
+    document.getElementById('chat-list').classList.remove('chat-list-mobile-hidden');
+    document.getElementById('chat-panel').innerHTML = `
+      <div class="chat-empty">
+        <div class="chat-empty-icon">💬</div>
+        <div class="chat-empty-title">Select a conversation</div>
+        <div class="chat-empty-sub">Pick a conversation from the list.</div>
+      </div>`;
+    _activeConvId = null;
+    if (_msgChannel) {
+      window.supa.removeChannel(_msgChannel);
+      _msgChannel = null;
+    }
+    const u = new URL(window.location.href);
+    u.searchParams.delete('c');
+    window.history.replaceState({}, '', u.toString());
+    renderConversationsList();
+  }
+  window.backToList = backToList;
+
+  async function sendMessage() {
+    if (!_activeConvId) return;
+    const input = document.getElementById('chat-input');
+    if (!input) return;
+    const body = input.value.trim();
+    if (!body) return;
+    if (body.length > 2000) { showToast('Message is too long (max 2,000 chars).'); return; }
+
+    const sendBtn = document.getElementById('chat-send-btn');
+    sendBtn.disabled = true;
+    input.disabled = true;
+
+    try {
+      const { error } = await window.supa
+        .from('messages')
+        .insert({ conversation_id: _activeConvId, sender_id: _currentUser.id, body });
+      if (error) {
+        // Silent treatment: if the recipient blocked us or has chat disabled,
+        // the trigger raises 'dm_silent_block' or 'dm_silent_chat_disabled'.
+        // We CLEAR the input and pretend success — the recipient never finds
+        // out we tried, and we don't reveal that they blocked/disabled us.
+        if (/dm_silent_block|dm_silent_chat_disabled/.test(error.message || '')) {
+          input.value = '';
+          // Fake a local message bubble so the sender's UI feels normal — they
+          // won't see it on the recipient's side, but they don't know that.
+          _activeMessages.push({
+            id: 'local-' + Date.now(),
+            conversation_id: _activeConvId,
+            sender_id: _currentUser.id,
+            body,
+            created_at: new Date().toISOString(),
+            read_at: null
+          });
+          renderMessages();
+          return;
+        }
+        throw error;
+      }
+      input.value = '';
+      // Realtime subscription will push the new row back to us
+    } catch (e) {
+      console.error('[chats] send failed:', e);
+      showToast('Could not send: ' + (e.message || ''));
+    } finally {
+      sendBtn.disabled = false;
+      input.disabled = false;
+      input.focus();
+    }
+  }
+  window.sendMessage = sendMessage;
+
+  async function markConversationRead(convId, conv) {
+    if (!conv._unread) return;
+    const unreadCol = conv._isBuyer ? 'buyer_unread_count' : 'seller_unread_count';
+    try {
+      const patch = {};
+      patch[unreadCol] = 0;
+      await window.supa.from('conversations').update(patch).eq('id', convId);
+      conv._unread = 0;
+      conv[unreadCol] = 0;
+      renderConversationsList();
+      updateUnreadBadge();
+    } catch (e) {
+      console.warn('[chats] mark-read failed:', e.message);
+    }
+  }
+
+  function subscribeRealtime() {
+    if (!window.supa.channel) {
+      console.warn('[chats] Supabase Realtime not available');
+      return;
+    }
+    _convChannel = window.supa.channel('conv-updates-' + _currentUser.id)
+      .on('postgres_changes',
+          { event: '*', schema: 'public', table: 'conversations' },
+          () => { loadConversations(); })
+      .subscribe();
+  }
+
+  function subscribeToConversation(convId) {
+    if (_msgChannel) {
+      window.supa.removeChannel(_msgChannel);
+      _msgChannel = null;
+    }
+    _msgChannel = window.supa.channel('msg-conv-' + convId)
+      .on('postgres_changes',
+          { event: 'INSERT', schema: 'public', table: 'messages', filter: 'conversation_id=eq.' + convId },
+          (payload) => {
+            const m = payload.new;
+            if (_activeMessages.some(x => x.id === m.id)) return;
+            _activeMessages.push(m);
+            renderMessages();
+            if (m.sender_id !== _currentUser.id) {
+              const conv = _conversations.find(c => c.id === convId);
+              if (conv) markConversationRead(convId, conv);
+            }
+          })
+      .subscribe();
+  }
+
+  // ──────────────────────────────────────────────────────────────────
+  // HEADER MENU + BLOCK + REPORT
+  // ──────────────────────────────────────────────────────────────────
+  function toggleHeaderMenu(e) {
+    if (e) e.stopPropagation();
+    const m = document.getElementById('chat-header-menu');
+    if (m) m.classList.toggle('open');
+  }
+  window.toggleHeaderMenu = toggleHeaderMenu;
+
+  // Close menu when clicking outside
+  document.addEventListener('click', (e) => {
+    if (e.target.closest('.chat-header-menu-wrap')) return;
+    document.querySelectorAll('.chat-header-menu.open').forEach(m => m.classList.remove('open'));
+  });
+
+  function getActiveConv() {
+    return _conversations.find(c => c.id === _activeConvId);
+  }
+
+  // ─── BLOCK ───
+  function openBlockModal() {
+    document.getElementById('chat-header-menu')?.classList.remove('open');
+    const conv = getActiveConv();
+    if (!conv) return;
+    const otherName = (conv._otherProfile && conv._otherProfile.display_name) || (conv._isBuyer ? 'this seller' : 'this buyer');
+    document.getElementById('block-modal-sub').innerHTML =
+      `Block <strong>${escapeHtml(otherName)}</strong>? They won't be able to send you new messages. Your existing conversation stays visible. They won't be notified that you blocked them.`;
+    document.getElementById('block-modal').classList.add('open');
+  }
+  window.openBlockModal = openBlockModal;
+
+  function closeBlockModal() {
+    document.getElementById('block-modal').classList.remove('open');
+  }
+  window.closeBlockModal = closeBlockModal;
+
+  async function confirmBlock() {
+    const conv = getActiveConv();
+    if (!conv) { closeBlockModal(); return; }
+    const otherId = conv._otherId;
+    const btn = document.getElementById('block-confirm-btn');
+    btn.disabled = true;
+    const orig = btn.textContent;
+    btn.textContent = 'Blocking…';
+    try {
+      const { error } = await window.supa
+        .from('user_blocks')
+        .insert({ user_id: _currentUser.id, blocked_user_id: otherId });
+      // Duplicate block (already blocked) — treat as success
+      if (error && !/duplicate|unique/i.test(error.message)) throw error;
+      closeBlockModal();
+      showToast('User blocked. They can no longer message you.');
+    } catch (e) {
+      console.error('[block] failed:', e);
+      showToast('Could not block: ' + (e.message || ''));
+    } finally {
+      btn.disabled = false;
+      btn.textContent = orig;
+    }
+  }
+  window.confirmBlock = confirmBlock;
+
+  // ─── REPORT ───
+  function openReportModal() {
+    document.getElementById('chat-header-menu')?.classList.remove('open');
+    document.getElementById('report-reason').value = '';
+    document.getElementById('report-details').value = '';
+    document.getElementById('report-error').style.display = 'none';
+    document.getElementById('report-modal').classList.add('open');
+  }
+  window.openReportModal = openReportModal;
+
+  function closeReportModal() {
+    document.getElementById('report-modal').classList.remove('open');
+  }
+  window.closeReportModal = closeReportModal;
+
+  async function submitReport() {
+    const errEl = document.getElementById('report-error');
+    const showErr = (m) => { errEl.textContent = m; errEl.style.display = ''; };
+    errEl.style.display = 'none';
+    const conv = getActiveConv();
+    if (!conv) { closeReportModal(); return; }
+    const reason = document.getElementById('report-reason').value;
+    if (!reason) { showErr('Please choose a reason.'); return; }
+    const details = (document.getElementById('report-details').value || '').trim();
+    const btn = document.getElementById('report-submit-btn');
+    btn.disabled = true;
+    const orig = btn.textContent;
+    btn.textContent = 'Submitting…';
+    try {
+      const { error } = await window.supa
+        .from('reports')
+        .insert({
+          reporter_id: _currentUser.id,
+          reported_user_id: conv._otherId,
+          conversation_id: conv.id,
+          reason,
+          details: details || null,
+        });
+      if (error) throw error;
+      closeReportModal();
+      showToast('Report submitted. Thanks for helping keep DubiMotors safe.');
+    } catch (e) {
+      console.error('[report] failed:', e);
+      showErr('Could not submit: ' + (e.message || ''));
+    } finally {
+      btn.disabled = false;
+      btn.textContent = orig;
+    }
+  }
+  window.submitReport = submitReport;
+
+  // Close modals on overlay click
+  document.getElementById('block-modal')?.addEventListener('click', function (e) {
+    if (e.target === this) closeBlockModal();
+  });
+  document.getElementById('report-modal')?.addEventListener('click', function (e) {
+    if (e.target === this) closeReportModal();
+  });
+
+  window.addEventListener('beforeunload', () => {
+    try {
+      if (_msgChannel) window.supa.removeChannel(_msgChannel);
+      if (_convChannel) window.supa.removeChannel(_convChannel);
+    } catch {}
+  });
 
   </script>
 </body>

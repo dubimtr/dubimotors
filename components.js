@@ -344,6 +344,11 @@ async function updateNavbarAuthState() {
     try {
       await loadNavbarNotifications(user.id);
     } catch (e) { console.warn('[components] notif load failed:', e); }
+
+    // Chats: load unread count + recent conversations for the dropdown
+    try {
+      await loadNavbarChats(user.id);
+    } catch (e) { console.warn('[components] chats load failed:', e); }
   }
 
   // Update dropdown header (the rich card at the top)
@@ -503,6 +508,111 @@ window.dmRefreshNavbarNotifications = async function () {
   if (!window.Auth) return;
   const u = await window.Auth.getUser();
   if (u) await loadNavbarNotifications(u.id);
+};
+
+// ──────────────────────────────────────────────────────────────────
+// NAVBAR CHATS — load total unread + recent conversations for dropdown
+// ──────────────────────────────────────────────────────────────────
+async function loadNavbarChats(userId) {
+  if (!window.supa || !userId) return;
+  const badge = document.getElementById('nav-chat-count');
+  const dropdown = document.getElementById('chat-dropdown');
+
+  try {
+    // Fetch the user's conversations (RLS limits to ours). Pull listing summary
+    // + counterpart profile id in one query, then resolve names in a 2nd query.
+    const { data: convs, error } = await window.supa
+      .from('conversations')
+      .select(`
+        id, listing_id, buyer_id, seller_id, last_message_at,
+        buyer_unread_count, seller_unread_count,
+        listing:listings ( title,
+          listing_images ( url, is_primary, display_order ) )
+      `)
+      .order('last_message_at', { ascending: false })
+      .limit(5);
+    if (error) throw error;
+
+    const conversations = convs || [];
+
+    // Resolve "the other person's" display name
+    const otherIds = [...new Set(conversations.map(c =>
+      c.buyer_id === userId ? c.seller_id : c.buyer_id
+    ))];
+    let profilesById = {};
+    if (otherIds.length) {
+      const { data: profs } = await window.supa
+        .from('profiles')
+        .select('id, display_name')
+        .in('id', otherIds);
+      (profs || []).forEach(p => { profilesById[p.id] = p; });
+    }
+
+    // Sum total unread for this user across all conversations
+    let totalUnread = 0;
+    conversations.forEach(c => {
+      const isBuyer = c.buyer_id === userId;
+      totalUnread += isBuyer ? (c.buyer_unread_count || 0) : (c.seller_unread_count || 0);
+    });
+
+    if (badge) {
+      badge.textContent = totalUnread > 99 ? '99+' : String(totalUnread);
+      badge.style.display = totalUnread > 0 ? '' : 'none';
+    }
+
+    if (!dropdown) return;
+
+    if (!conversations.length) {
+      dropdown.innerHTML = `
+        <div class="nav-dropdown-header">Messages</div>
+        <div style="padding:30px 16px;text-align:center;color:var(--grey);font-size:13px;line-height:1.6;">
+          <div style="font-size:32px;margin-bottom:8px;">&#x1F4AC;</div>
+          <div style="font-weight:700;color:var(--dark);margin-bottom:4px;">No messages yet</div>
+          <div>Browse listings and message a seller to start.</div>
+        </div>
+        <a href="chats.html" style="display:block;padding:10px;text-align:center;font-size:12px;font-weight:700;color:var(--orange);text-decoration:none;border-top:1px solid var(--border);">Open Chats</a>`;
+      return;
+    }
+
+    const itemsHtml = conversations.map(c => {
+      const isBuyer = c.buyer_id === userId;
+      const otherId = isBuyer ? c.seller_id : c.buyer_id;
+      const otherProfile = profilesById[otherId];
+      const otherName = (otherProfile && otherProfile.display_name) || (isBuyer ? 'Seller' : 'Buyer');
+      const listingTitle = (c.listing && c.listing.title) || 'Listing';
+      const unread = isBuyer ? (c.buyer_unread_count || 0) : (c.seller_unread_count || 0);
+      // Primary image
+      const imgs = ((c.listing && c.listing.listing_images) || [])
+        .slice()
+        .sort((a,b) => (b.is_primary?1:0) - (a.is_primary?1:0) || (a.display_order||0) - (b.display_order||0));
+      const thumb = imgs[0] ? imgs[0].url : '';
+      return `
+        <a href="chats.html?c=${_navEscapeHtml(c.id)}" style="display:flex;gap:10px;padding:10px 14px;border-bottom:1px solid var(--border);text-decoration:none;color:inherit;${unread > 0 ? 'background:#FFF7F2;' : ''}">
+          <img src="${_navEscapeHtml(thumb)}" alt="" style="width:42px;height:42px;border-radius:8px;object-fit:cover;background:var(--light-grey);flex-shrink:0;" onerror="this.style.background='var(--light-grey)';this.removeAttribute('src');" />
+          <div style="flex:1;min-width:0;">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;">
+              <div style="font-size:13px;font-weight:${unread > 0 ? '800' : '700'};color:var(--dark);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${_navEscapeHtml(otherName)}</div>
+              <div style="font-size:10px;color:var(--grey);flex-shrink:0;">${_navTimeAgo(c.last_message_at)}</div>
+            </div>
+            <div style="font-size:11px;color:var(--grey);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${_navEscapeHtml(listingTitle)}</div>
+            ${unread > 0 ? `<div style="display:inline-block;background:var(--orange);color:#fff;font-size:10px;font-weight:800;padding:2px 7px;border-radius:10px;margin-top:3px;">${unread} new</div>` : ''}
+          </div>
+        </a>`;
+    }).join('');
+
+    dropdown.innerHTML = `
+      <div class="nav-dropdown-header">Messages</div>
+      <div style="max-height:360px;overflow-y:auto;">${itemsHtml}</div>
+      <a href="chats.html" style="display:block;padding:10px;text-align:center;font-size:12px;font-weight:700;color:var(--orange);text-decoration:none;border-top:1px solid var(--border);">Open All Conversations</a>`;
+  } catch (e) {
+    console.warn('[components] chats fetch failed:', e);
+  }
+}
+
+window.dmRefreshNavbarChats = async function () {
+  if (!window.Auth) return;
+  const u = await window.Auth.getUser();
+  if (u) await loadNavbarChats(u.id);
 };
 
 function renderDubiAgent() {

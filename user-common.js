@@ -344,6 +344,17 @@ function dmApplySidebarSnapshot(snap) {
   if (nameEl)   nameEl.textContent   = snap.displayName || '';
   if (emailEl)  emailEl.textContent  = snap.email || '';
 
+  // Verified badge — show/hide based on profile.email_verified_at
+  // Every dashboard page has a `.dash-verified-badge` element. We use the snap's
+  // isVerified flag (set by dmFillDashboardSidebar) to decide whether to show it.
+  // If isVerified is undefined (legacy cache without the field), default to
+  // showing it so we don't regress for verified users on first load after deploy.
+  const verifiedBadge = document.querySelector('.dash-verified-badge, #sidebar-verified-badge');
+  if (verifiedBadge) {
+    const shouldShow = (snap.isVerified === undefined) ? true : !!snap.isVerified;
+    verifiedBadge.style.display = shouldShow ? '' : 'none';
+  }
+
   const stats = document.querySelectorAll('.dash-stat-num');
   if (stats[0] && typeof snap.activeCount === 'number') stats[0].textContent = snap.activeCount;
   if (stats[1] && typeof snap.savedCount  === 'number') stats[1].textContent = snap.savedCount;
@@ -355,6 +366,25 @@ function dmApplySidebarSnapshot(snap) {
     const badge = myAdsLink.querySelector('.dash-nav-badge');
     if (badge && snap.activeCount > 0) {
       badge.textContent = snap.activeCount;
+      badge.style.display = '';
+    }
+  }
+  // Favourites count badge in sidebar
+  const favLink = document.querySelector('a[href="favourites.html"].dash-nav-item');
+  if (favLink) {
+    const badge = favLink.querySelector('.dash-nav-badge');
+    if (badge && snap.savedCount > 0) {
+      badge.textContent = snap.savedCount;
+      badge.style.display = '';
+    }
+  }
+  // Chats unread count badge in sidebar (don't overwrite if the current page
+  // managed its own count, e.g. chats.html updates it live)
+  const chatsLink = document.querySelector('a[href="chats.html"].dash-nav-item');
+  if (chatsLink && typeof snap.chatsUnread === 'number') {
+    const badge = chatsLink.querySelector('.dash-nav-badge');
+    if (badge && snap.chatsUnread > 0) {
+      badge.textContent = snap.chatsUnread;
       badge.style.display = '';
     }
   }
@@ -399,10 +429,11 @@ async function dmFillDashboardSidebar() {
 
   let activeCount = (cache && cache.activeCount) || 0;
   let savedCount  = (cache && cache.savedCount)  || 0;
+  let chatsUnread = (cache && cache.chatsUnread) || 0;
 
   if (window.supa) {
     try {
-      const [adsRes, favRes] = await Promise.all([
+      const [adsRes, favRes, convsRes] = await Promise.all([
         window.supa.from('listings')
           .select('id', { count: 'exact', head: true })
           .eq('owner_id', user.id)
@@ -410,9 +441,21 @@ async function dmFillDashboardSidebar() {
         window.supa.from('favourites')
           .select('listing_id', { count: 'exact', head: true })
           .eq('user_id', user.id),
+        // For chats unread count we need to sum the relevant column. There's no
+        // server-side SUM with the JS client, so pull all conversations (RLS
+        // scopes them to ours) and sum locally. A user typically has <100 convs
+        // so this is fine.
+        window.supa.from('conversations')
+          .select('buyer_id, buyer_unread_count, seller_unread_count'),
       ]);
       if (typeof adsRes.count === 'number') activeCount = adsRes.count;
       if (typeof favRes.count === 'number') savedCount  = favRes.count;
+      if (Array.isArray(convsRes.data)) {
+        chatsUnread = convsRes.data.reduce((sum, c) => {
+          const isBuyer = c.buyer_id === user.id;
+          return sum + (isBuyer ? (c.buyer_unread_count || 0) : (c.seller_unread_count || 0));
+        }, 0);
+      }
     } catch (e) {
       console.warn('[dmFillDashboardSidebar] count fetch failed:', e);
     }
@@ -423,8 +466,10 @@ async function dmFillDashboardSidebar() {
     displayName,
     email,
     initials,
+    isVerified: !!(profile && profile.email_verified_at),
     activeCount,
     savedCount,
+    chatsUnread,
     cachedAt: Date.now(),
   };
 
@@ -486,5 +531,140 @@ if (typeof window !== 'undefined') {
       arr = arr.slice(0, 8);
       localStorage.setItem(KEY, JSON.stringify(arr));
     } catch {}
+  };
+
+  // ─── Universal filter collector ───
+  //
+  // Each category page (cars/bikes/boats/etc) has its own filter inputs but
+  // they follow consistent ID/class conventions. This helper scans the current
+  // page's DOM for every known filter widget and returns a single `filters`
+  // object that can be saved into saved_searches.filters jsonb or appended
+  // to a URL.
+  //
+  // Returns an object like:
+  //   { category, location, make, model, condition, price_min, price_max,
+  //     year_min, year_max, km_min, km_max, verified, warranty, service_contract,
+  //     owner, dealer, body_types: [...], transmissions: [...], doors: [...],
+  //     cylinders: [...], fuels: [...], colors: [...], q }
+  //
+  // Only includes keys that have a non-default value (i.e. the user actually
+  // set them). This lets us count "did the user filter anything" by checking
+  // Object.keys(filters).length > 1 (more than just category).
+  window.dmBuildCategoryFilters = function (category) {
+    const f = { category: category || 'cars' };
+    const v = (id) => { const e = document.getElementById(id); return e ? e.value : ''; };
+    const chk = (id) => { const e = document.getElementById(id); return !!(e && e.checked); };
+    const multi = (sel) => Array.from(document.querySelectorAll(sel)).map(x => x.value);
+
+    // Dropdowns
+    const city = v('filterCity');        if (city)  f.location  = city;
+    const make = v('filterMake');        if (make)  f.make      = make;
+    const model = v('filterModel');      if (model) f.model     = model;
+    const trim = v('filterTrim');        if (trim)  f.trim      = trim;
+    const cond = v('filterCondition');   if (cond)  f.condition = cond;
+    const type = v('filterType');        if (type)  f.type      = type;       // marine
+    const compat = v('filterCompat');    if (compat) f.compatibility = compat; // accessories
+
+    // Numeric ranges
+    const pMin = parseFloat(v('priceMin')); if (!isNaN(pMin) && pMin > 0) f.price_min = pMin;
+    const pMax = parseFloat(v('priceMax')); if (!isNaN(pMax) && pMax > 0) f.price_max = pMax;
+    const yMin = parseInt(v('yearMin'));    if (!isNaN(yMin) && yMin > 0) f.year_min  = yMin;
+    const yMax = parseInt(v('yearMax'));    if (!isNaN(yMax) && yMax > 0) f.year_max  = yMax;
+    const kMin = parseFloat(v('kmMin'));    if (!isNaN(kMin) && kMin > 0) f.km_min    = kMin;
+    const kMax = parseFloat(v('kmMax'));    if (!isNaN(kMax) && kMax > 0) f.km_max    = kMax;
+
+    // Boolean flags (only include if checked — unchecked is the default)
+    if (chk('cb-verified')) f.verified         = true;
+    if (chk('cb-warranty')) f.warranty         = true;
+    if (chk('cb-service'))  f.service_contract = true;
+    if (chk('cb-transfer')) f.transfer         = true;   // plates
+    if (chk('cb-owner') && !chk('cb-dealer')) f.seller_type = 'owner';
+    else if (chk('cb-dealer') && !chk('cb-owner')) f.seller_type = 'dealer';
+
+    // Multi-select checkboxes (omit when empty)
+    const bodies = multi('.cb-body:checked');
+    if (bodies.length) f.body_types = bodies;
+    const trans = multi('.cb-trans:checked');
+    if (trans.length) f.transmissions = trans;
+    const doors = multi('.cb-doors:checked');
+    if (doors.length) f.doors = doors;
+    const cyls = multi('.cb-cyl:checked');
+    if (cyls.length) f.cylinders = cyls;
+    const fuels = multi('.cb-fuel:checked');
+    if (fuels.length) f.fuels = fuels;
+    const engs = multi('.cb-engine:checked');
+    if (engs.length) f.engine_types = engs;
+
+    // Active colour chips (page-level state, exposed as window.activeColors)
+    if (window.activeColors && window.activeColors.size) {
+      f.colors = Array.from(window.activeColors);
+    }
+
+    // Search query, if present and non-empty
+    const q = v('searchInput') || v('topSearch');
+    if (q) f.q = q;
+
+    return f;
+  };
+
+  // ─── Universal saveCurrentSearch ───
+  //
+  // Single implementation used by all 8 category pages. Each page just calls
+  // window.dmSaveCurrentSearch(<category>) from its Save Search button.
+  //
+  // Flow:
+  //   1. Build the filter snapshot from the current page's DOM
+  //   2. Reject if no real filters set (just category)
+  //   3. Require auth (open modal or redirect)
+  //   4. Insert into saved_searches with a readable auto-generated name
+  //   5. Briefly flip the button to "✓ Saved"
+  window.dmSaveCurrentSearch = async function (category, btnEl) {
+    const filters = window.dmBuildCategoryFilters(category || 'cars');
+    const filterCount = Object.keys(filters).length - 1; // subtract category
+    if (filterCount === 0) {
+      alert('Set at least one filter before saving the search.');
+      return;
+    }
+
+    if (!window.Auth) { alert('Please sign in to save searches.'); return; }
+    let user = await window.Auth.getUser();
+    if (!user) {
+      if (window.AuthModal) {
+        user = await window.AuthModal.open({ tab: 'login', reason: 'Sign in to save searches.' });
+        if (!user) return;
+      } else {
+        window.location.href = 'login.html?next=' + encodeURIComponent(window.location.pathname + window.location.search);
+        return;
+      }
+    }
+
+    // Build a readable name from the most distinctive filters
+    const parts = [];
+    if (filters.make)     parts.push(filters.make);
+    if (filters.model)    parts.push(filters.model);
+    if (filters.type)     parts.push(filters.type);
+    if (filters.location) parts.push('in ' + filters.location);
+    const name = parts.join(' ') || (filters.q || (category || 'Search') + ' search');
+
+    const btn = btnEl || (typeof event !== 'undefined' && event && event.target ? event.target.closest('button') : null);
+    if (btn) btn.disabled = true;
+
+    try {
+      const { error } = await window.supa.from('saved_searches').insert({
+        user_id: user.id,
+        name,
+        filters,
+      });
+      if (error) throw error;
+      // Brief visual confirmation
+      if (btn) {
+        const orig = btn.innerHTML;
+        btn.innerHTML = '✓ Saved';
+        setTimeout(() => { btn.innerHTML = orig; btn.disabled = false; }, 2200);
+      }
+    } catch (e) {
+      if (btn) btn.disabled = false;
+      alert('Could not save search: ' + (e.message || 'unknown error'));
+    }
   };
 }
