@@ -1106,27 +1106,47 @@
   renderNavbar('home');
   renderFooter();
 
-  // Populate counts from real data
-  const counts = DM.getCounts();
-  document.getElementById('stat-total').textContent = counts.total;
-  document.getElementById('stat-cars').textContent = counts.cars;
-  document.getElementById('stat-boats').textContent = counts.boats;
-  document.getElementById('stat-bikes').textContent = counts.bikes;
-  document.getElementById('count-cars').textContent = counts.cars + ' listings';
-  const marineCount = counts.boats || 0;
-  const heavyCount = counts.heavy || 0;
-  document.getElementById('count-marine').textContent = marineCount + ' listings';
-  document.getElementById('count-bikes').textContent = counts.bikes + ' listings';
-  if (document.getElementById('count-heavy')) document.getElementById('count-heavy').textContent = heavyCount + ' listings';
-  document.getElementById('sc-cars').textContent = counts.cars + ' listings';
-  document.getElementById('sc-marine').textContent = marineCount + ' listings';
-  document.getElementById('sc-bikes').textContent = counts.bikes + ' listings';
+  // Render all data-driven UI from the current DM.listings state. Called once
+  // at startup (renders zeros if Supabase hasn't responded yet) and again when
+  // the dm:listings-loaded event fires with the real data.
+  function renderHomeData() {
+    const counts = DM.getCounts();
+    const safeSet = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
 
-  // Render hot deals (first 4 listings)
-  const hotGrid = document.getElementById('hot-deals-grid');
-  DM.listings.slice(0, 4).forEach(l => {
-    hotGrid.innerHTML += DM.renderCard(l);
-  });
+    // Hero stats
+    safeSet('stat-total', counts.total);
+    safeSet('stat-cars',  counts.cars);
+    safeSet('stat-boats', counts.boats);
+    safeSet('stat-bikes', counts.bikes);
+
+    // Desktop category strip
+    const marineCount = counts.boats || 0;
+    const heavyCount  = counts.heavy || 0;
+    safeSet('count-cars',        counts.cars + ' listings');
+    safeSet('count-marine',      marineCount + ' listings');
+    safeSet('count-bikes',       counts.bikes + ' listings');
+    safeSet('count-heavy',       heavyCount + ' listings');
+    safeSet('sc-cars',           counts.cars + ' listings');
+    safeSet('sc-marine',         marineCount + ' listings');
+    safeSet('sc-bikes',          counts.bikes + ' listings');
+
+    // Mobile category grid
+    safeSet('mcount-cars',       counts.cars + ' listings');
+    safeSet('mcount-marine',     marineCount + ' listings');
+    safeSet('mcount-bikes',      counts.bikes + ' listings');
+    safeSet('mcount-heavy',      heavyCount > 0 ? heavyCount + ' listings' : 'Browse');
+
+    // Hot deals (first 4 listings) — re-render in place
+    const hotGrid = document.getElementById('hot-deals-grid');
+    if (hotGrid) {
+      hotGrid.innerHTML = '';
+      DM.listings.slice(0, 4).forEach(l => { hotGrid.innerHTML += DM.renderCard(l); });
+    }
+  }
+
+  // Initial render — DM.listings may still be empty at this point.
+  // The dm:listings-loaded listener below will re-render once Supabase replies.
+  renderHomeData();
 
   // Search tab state
   let activeTab = 'cars';
@@ -1173,23 +1193,18 @@
     });
   }
 
-  // Populate mobile category counts
-  const mc = DM.getCounts();
-  const mCounts = {
-    'mcount-cars': mc.cars + ' listings',
-    'mcount-marine': (mc.boats || 0) + ' listings',
-    'mcount-bikes': mc.bikes + ' listings',
-    'mcount-heavy': (mc.heavy || 0) > 0 ? mc.heavy + ' listings' : 'Browse',
-    'mcount-plates': 'Browse',
-    'mcount-accessories': 'Browse',
-  };
-  Object.entries(mCounts).forEach(([id, val]) => {
-    const el = document.getElementById(id);
-    if (el) el.textContent = val;
-  });
+  // Populate mobile category counts — placeholder text for plates/accessories
+  // (no DB counts for those yet). The real counts for cars/marine/bikes/heavy
+  // are handled by renderHomeData() above.
+  document.getElementById('mcount-plates')?.replaceChildren(document.createTextNode('Browse'));
+  document.getElementById('mcount-accessories')?.replaceChildren(document.createTextNode('Browse'));
 
-  // Re-render when live Supabase data arrives (replaces the embedded fallback)
+  // Re-render when live Supabase data arrives (replaces the embedded fallback).
+  // On index.html the only data-driven UI is counts + hot deals — renderHomeData
+  // refreshes both. The legacy applyFilters/renderPage/render checks below are
+  // kept for compatibility but won't fire on this page (they don't exist here).
   window.addEventListener('dm:listings-loaded', () => {
+    try { renderHomeData(); } catch (e) { console.warn('[DubiMotors] home refresh failed:', e); }
     try {
       if (typeof allListings !== 'undefined') {
         if (typeof currentCat !== 'undefined') {
