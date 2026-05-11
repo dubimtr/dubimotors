@@ -197,7 +197,8 @@
             title: l.title,
             price: l.price,
             year: l.year,
-            kilometers: l.kilometers,
+            kilometers: l.km,
+            km: l.km,
             location: l.location,
             mainImg,
             images: imgs.map(i => i.url),
@@ -283,19 +284,22 @@
 
         if (profile && profile.is_deactivated) { renderNotFound(); return; }
 
-        // Fetch this user's listings + primary images
+        // Fetch this user's listings + primary images. We use select('*') —
+        // same as shared.js — so we never fail on a missing column. We don't
+        // need every column; the renderer picks what it needs.
         const { data: listings, error: lErr } = await window.supa
           .from('listings')
-          .select('id, title, price, year, kilometers, location, status, verified, warranty, service_history, featured, contact_name, created_at, listing_images ( url, is_primary, display_order )')
+          .select('*, listing_images(url, is_primary, display_order)')
           .eq('owner_id', userId)
           .eq('status', 'active')
           .order('created_at', { ascending: false });
-        if (lErr) throw lErr;
+        if (lErr) {
+          console.error('[user] listings query failed:', lErr);
+          // Don't throw — we can still render the profile without listings
+        }
 
         // If no profile row, but listings exist, synthesize a minimal profile
-        // from the most recent listing's contact_name. Better than 404'ing the
-        // page entirely when public_profiles view is missing the user but they
-        // have public listings.
+        // from the most recent listing's contact_name.
         if (!profile) {
           if (listings && listings.length > 0) {
             const recent = listings[0];
