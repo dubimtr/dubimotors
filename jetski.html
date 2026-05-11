@@ -106,6 +106,7 @@
     </select>
     <div class="filter-count" id="filter-count"></div>
     <button class="btn-filter-reset" onclick="resetFilters()">Clear</button>
+    <button class="btn-filter-reset" onclick="saveCurrentSearch()" style="margin-left:6px;color:var(--orange);border-color:var(--orange);">💾 Save Search</button>
   </div>
 </div>
 
@@ -252,6 +253,26 @@
 
   let allListings = DM.getByCategory('jetski'), filtered = [...allListings], PER_PAGE = 9, currentPage = 1;
 
+
+  // ─── Save Search + recent-search recording (round 5 add-on) ───
+  // Defined BEFORE applyFilters so the wrapping below can reach it. The actual
+  // filter collection lives in user-common.js's dmBuildCategoryFilters helper,
+  // which scans the DOM for all known filter widgets uniformly across pages.
+  async function saveCurrentSearch() {
+    const btn = (typeof event !== 'undefined' && event && event.target)
+      ? event.target.closest('button') : null;
+    if (typeof window.dmSaveCurrentSearch === 'function') {
+      return window.dmSaveCurrentSearch('jetski', btn);
+    }
+    alert('Save Search helper not loaded. Refresh the page and try again.');
+  }
+  window.saveCurrentSearch = saveCurrentSearch;
+
+  // Expose activeColors on window (if the page has it) so the helper can read it
+  if (typeof activeColors !== 'undefined' && typeof window !== 'undefined') {
+    window.activeColors = activeColors;
+  }
+
   function applyFilters() {
     const city = document.getElementById('filterCity').value;
     const make = document.getElementById('filterMake') ? document.getElementById('filterMake').value.toLowerCase() : '';
@@ -344,6 +365,34 @@
     } catch (e) { console.warn('[DubiMotors] re-render after live data failed:', e); }
   });
 
+
+  // ─── Recent search recorder hook (round 5 add-on) ───
+  // Wrap applyFilters so each invocation (whenever user changes a filter)
+  // records the current search in localStorage. Only fires when filters
+  // beyond the bare category are set.
+  (function () {
+    if (typeof applyFilters !== 'function') return;
+    const _origApplyFilters = applyFilters;
+    applyFilters = function () {
+      const result = _origApplyFilters.apply(this, arguments);
+      try {
+        if (typeof window.dmRecordRecentSearch === 'function' && typeof window.dmBuildCategoryFilters === 'function') {
+          const f = window.dmBuildCategoryFilters('jetski');
+          if (Object.keys(f).length > 1) {  // more than just category
+            const parts = [];
+            if (f.make)     parts.push(f.make);
+            if (f.model)    parts.push(f.model);
+            if (f.type)     parts.push(f.type);
+            if (f.location) parts.push('in ' + f.location);
+            const query = parts.join(' ') || (f.q || 'jetski search');
+            window.dmRecordRecentSearch({ query, filters: f });
+          }
+        }
+      } catch (e) {}
+      return result;
+    };
+    window.applyFilters = applyFilters;
+  })();
 </script>
 </main>
 
