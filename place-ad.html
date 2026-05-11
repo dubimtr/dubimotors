@@ -84,7 +84,7 @@
     .form-group { display: flex; flex-direction: column; gap: 5px; }
     .form-label { font-size: 12px; font-weight: 700; color: var(--dark); text-transform: uppercase; letter-spacing: 0.4px; }
     .form-input {
-      border: 1.5px solid var(--border); border-radius: 9px; padding: 10px 13px;
+      border: 1.5px solid var(--border); border-radius: 10px; padding: 10px 13px;
       font-size: 13px; font-family: 'Inter',sans-serif; outline: none;
       background: var(--white); transition: border-color 0.2s;
     }
@@ -124,7 +124,7 @@
     .ai-upload-icon { font-size: 48px; margin-bottom: 14px; }
     .ai-upload-title { font-size: 18px; font-weight: 800; color: var(--dark); margin-bottom: 6px; }
     .ai-upload-sub { font-size: 13px; color: var(--grey); margin-bottom: 16px; }
-    .ai-upload-btn { background: var(--orange); color: #fff; border: none; border-radius: 9px; padding: 11px 24px; font-size: 13px; font-weight: 700; cursor: pointer; }
+    .ai-upload-btn { background: var(--orange); color: #fff; border: none; border-radius: 10px; padding: 11px 24px; font-size: 13px; font-weight: 700; cursor: pointer; }
     .ai-preview-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; margin-top: 16px; }
     .ai-preview-thumb { width: 100%; aspect-ratio: 4/3; object-fit: cover; border-radius: 8px; border: 2px solid var(--border); }
     .ai-analyzing {
@@ -148,9 +148,9 @@
 
     /* ── VIN lookup ── */
     .vin-row { display: flex; gap: 10px; }
-    .vin-input { flex: 1; border: 1.5px solid var(--border); border-radius: 9px; padding: 12px 14px; font-size: 14px; font-family: 'Inter',sans-serif; outline: none; text-transform: uppercase; letter-spacing: 1px; }
+    .vin-input { flex: 1; border: 1.5px solid var(--border); border-radius: 10px; padding: 12px 14px; font-size: 14px; font-family: 'Inter',sans-serif; outline: none; text-transform: uppercase; letter-spacing: 1px; }
     .vin-input:focus { border-color: var(--orange); }
-    .vin-btn { background: var(--orange); color: #fff; border: none; border-radius: 9px; padding: 12px 20px; font-size: 13px; font-weight: 700; cursor: pointer; white-space: nowrap; }
+    .vin-btn { background: var(--orange); color: #fff; border: none; border-radius: 10px; padding: 12px 20px; font-size: 13px; font-weight: 700; cursor: pointer; white-space: nowrap; }
     .vin-btn:hover { background: var(--orange-hover); }
     .vin-status { font-size: 13px; margin-top: 10px; min-height: 20px; }
     .vin-status.loading { color: var(--grey); }
@@ -168,7 +168,7 @@
     .pe-sub { font-size: 11px; color: #666; margin-bottom: 16px; }
     .pe-estimate-btn {
       width: 100%; background: var(--orange); color: #fff; border: none;
-      border-radius: 9px; padding: 11px; font-size: 13px; font-weight: 700;
+      border-radius: 10px; padding: 11px; font-size: 13px; font-weight: 700;
       cursor: pointer; transition: background 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px;
     }
     .pe-estimate-btn:hover { background: var(--orange-hover); }
@@ -224,6 +224,23 @@
       .ai-preview-grid { grid-template-columns: repeat(3,1fr); }
       .place-ad-hero-title { font-size: 26px; }
     }
+
+    /* ── Photo drag-to-reorder ── */
+    .dm-photo-item { transition: transform 0.15s ease, box-shadow 0.15s ease; }
+    .dm-photo-item:hover { border-color: var(--orange) !important; }
+    .dm-photo-ghost {
+      opacity: 0.3;
+      background: var(--light-grey);
+    }
+    .dm-photo-chosen {
+      transform: scale(1.06);
+      box-shadow: 0 6px 18px rgba(0,0,0,0.18);
+    }
+    .dm-photo-drag {
+      opacity: 0.95;
+      cursor: grabbing !important;
+    }
+    .dm-photo-item:active { cursor: grabbing; }
   </style>
 </head>
 <body>
@@ -974,6 +991,9 @@
      before they ever touch the network. -->
 <script src="https://cdn.jsdelivr.net/npm/browser-image-compression@2.0.2/dist/browser-image-compression.js"></script>
 <script src="image-compressor.js"></script>
+<!-- SortableJS for drag-to-reorder photos. Works on desktop AND touch devices.
+     ~25KB minified, loaded once, cached forever. -->
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
 <script>
 
   // ─── State for the rest of the script ───
@@ -1539,21 +1559,30 @@
     grid.innerHTML = '';
     manualPhotos.forEach((entry, idx) => {
       const wrap = document.createElement('div');
-      wrap.style.cssText = 'position:relative;width:90px;height:70px;border-radius:8px;overflow:hidden;border:2px solid var(--border);';
+      // .dm-photo-item is the SortableJS draggable class — see init below
+      wrap.className = 'dm-photo-item';
+      wrap.style.cssText = 'position:relative;width:90px;height:70px;border-radius:8px;overflow:hidden;border:2px solid var(--border);cursor:grab;touch-action:none;';
       const img = document.createElement('img');
       // Two possible entry shapes:
       //   - A File (newly added) — use URL.createObjectURL
       //   - { _existing: true, url, ... } — use the public URL directly
       img.src = (entry && entry._existing) ? entry.url : URL.createObjectURL(entry);
-      img.style.cssText = 'width:100%;height:100%;object-fit:cover;';
+      img.style.cssText = 'width:100%;height:100%;object-fit:cover;pointer-events:none;';
+      // Prevent the image being dragged independently by the browser
+      img.draggable = false;
       const del = document.createElement('button');
       del.innerHTML = '&times;';
-      del.style.cssText = 'position:absolute;top:2px;right:2px;background:rgba(0,0,0,0.7);color:#fff;border:none;border-radius:50%;width:20px;height:20px;cursor:pointer;font-size:13px;line-height:1;padding:0;';
-      del.onclick = () => { manualPhotos.splice(idx, 1); renderManualPhotoGrid(); };
+      del.style.cssText = 'position:absolute;top:2px;right:2px;background:rgba(0,0,0,0.7);color:#fff;border:none;border-radius:50%;width:20px;height:20px;cursor:pointer;font-size:13px;line-height:1;padding:0;z-index:2;';
+      // Use mousedown rather than onclick to ensure click fires even with Sortable active
+      del.onclick = (e) => {
+        e.stopPropagation();
+        manualPhotos.splice(idx, 1);
+        renderManualPhotoGrid();
+      };
       if (idx === 0) {
         const badge = document.createElement('div');
         badge.textContent = 'Cover';
-        badge.style.cssText = 'position:absolute;bottom:0;left:0;right:0;background:var(--orange);color:#fff;font-size:10px;font-weight:700;text-align:center;padding:2px 0;';
+        badge.style.cssText = 'position:absolute;bottom:0;left:0;right:0;background:var(--orange);color:#fff;font-size:10px;font-weight:700;text-align:center;padding:2px 0;pointer-events:none;';
         wrap.appendChild(badge);
         updatePreviewImage(img.src);
       }
@@ -1561,16 +1590,57 @@
       wrap.appendChild(del);
       grid.appendChild(wrap);
     });
-    // Add more button if < 20
+    // Add more button if < 20 (NOT draggable — .dm-photo-static excludes it)
     if (manualPhotos.length < 20) {
       const addBtn = document.createElement('div');
+      addBtn.className = 'dm-photo-static';
       addBtn.style.cssText = 'width:90px;height:70px;border-radius:8px;border:2px dashed var(--border);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;background:var(--light-grey);';
       addBtn.innerHTML = '<span style="font-size:22px;color:var(--grey);">+</span><span style="font-size:10px;color:var(--grey);">Add more</span>';
       addBtn.onclick = () => document.getElementById('manual-file-input').click();
       grid.appendChild(addBtn);
     }
-    count.textContent = manualPhotos.length > 0 ? manualPhotos.length + ' photo' + (manualPhotos.length !== 1 ? 's' : '') + ' uploaded' + (manualPhotos.length < 3 ? ' (minimum 3 required)' : ' ✓') : '';
+    // Photo count + reorder hint
+    let countText = '';
+    if (manualPhotos.length > 0) {
+      countText = manualPhotos.length + ' photo' + (manualPhotos.length !== 1 ? 's' : '') +
+                  (manualPhotos.length < 3 ? ' (minimum 3 required)' : ' ✓');
+      if (manualPhotos.length >= 2) {
+        countText += '  ·  Drag to reorder. First photo is the cover.';
+      }
+    }
+    count.textContent = countText;
     count.style.color = manualPhotos.length > 0 && manualPhotos.length < 3 ? '#E8450A' : 'var(--grey)';
+
+    // Initialize SortableJS on the grid. Re-initialized on every render since
+    // the grid is wiped and rebuilt each time. SortableJS handles its own cleanup.
+    if (typeof window.Sortable !== 'undefined' && manualPhotos.length >= 2) {
+      window.Sortable.create(grid, {
+        animation: 150,
+        filter: '.dm-photo-static',         // "+ Add more" stays put
+        preventOnFilter: false,
+        draggable: '.dm-photo-item',        // only photo tiles drag
+        ghostClass: 'dm-photo-ghost',       // placeholder while dragging
+        chosenClass: 'dm-photo-chosen',     // styled when picked up
+        dragClass: 'dm-photo-drag',         // styled while in flight
+        delay: 100,                         // short delay prevents accidental drags during scroll
+        delayOnTouchOnly: true,             // only delay on touch — desktop is instant
+        touchStartThreshold: 4,             // require slight movement to start touch drag
+        onEnd: (evt) => {
+          const oldIdx = evt.oldIndex;
+          const newIdx = evt.newIndex;
+          if (oldIdx == null || newIdx == null || oldIdx === newIdx) return;
+          // Sortable doesn't include filtered items in the index, but we built
+          // the grid with photo tiles first followed by the add-button. So the
+          // index from Sortable maps directly to the manualPhotos array.
+          if (oldIdx >= manualPhotos.length || newIdx >= manualPhotos.length) return;
+          // Move the entry within manualPhotos
+          const [moved] = manualPhotos.splice(oldIdx, 1);
+          manualPhotos.splice(newIdx, 0, moved);
+          // Re-render to update cover badge + preview image
+          renderManualPhotoGrid();
+        },
+      });
+    }
   }
 
   /* ══════════════════════════════════════════════════════════════
