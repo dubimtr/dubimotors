@@ -137,7 +137,7 @@
     function renderProfile(profile, listings) {
       const root = document.getElementById('up-content');
       const isVerified = !!profile.is_verified;
-      const memberSinceStr = memberSince(profile.created_at);
+      const memberSinceStr = memberSince(profile.joined_at);
       const activeCount = (listings || []).filter(l => l.status === 'active').length;
 
       const avatarHtml = profile.avatar_url
@@ -270,7 +270,7 @@
         // Fetch profile via public_profiles view (created by 15_round6 SQL)
         const { data: profile, error: pErr } = await window.supa
           .from('public_profiles')
-          .select('id, display_name, avatar_url, created_at, is_verified, is_deactivated')
+          .select('id, display_name, avatar_url, joined_at, is_verified, is_deactivated')
           .eq('id', userId)
           .maybeSingle();
         if (pErr) throw pErr;
