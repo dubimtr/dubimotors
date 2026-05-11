@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Favourites — DUBIMOTORS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" />
+  <link rel="stylesheet" href="style.css" />
+  <script src="user-common.js"></script>
+  <style>
+    body { background: var(--light-grey); }
+    .dashboard-layout { display: grid; grid-template-columns: 260px 1fr; gap: 28px; padding: 36px 0 60px; }
+    @media (max-width: 860px) { .dashboard-layout { grid-template-columns: 1fr; } .dash-sidebar { display: none; } }
+    .dash-sidebar { display: flex; flex-direction: column; gap: 8px; }
+    .dash-profile-card { background: var(--white); border-radius: 16px; padding: 24px; text-align: center; box-shadow: var(--shadow); margin-bottom: 8px; }
+    .dash-avatar { width: 72px; height: 72px; border-radius: 50%; background: var(--orange); color: var(--white); font-size: 26px; font-weight: 800; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; }
+    .dash-name { font-size: 16px; font-weight: 800; color: var(--dark); }
+    .dash-email { font-size: 12px; color: var(--grey); margin-top: 2px; }
+    .dash-verified-badge { display: inline-flex; align-items: center; gap: 4px; background: #E8F5E9; color: #2E7D32; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 20px; margin-top: 8px; }
+    .dash-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 16px; }
+    .dash-stat { background: var(--light-grey); border-radius: 10px; padding: 10px; text-align: center; }
+    .dash-stat-num { font-size: 20px; font-weight: 900; color: var(--dark); }
+    .dash-stat-label { font-size: 10px; color: var(--grey); font-weight: 600; margin-top: 2px; }
+    .dash-nav { background: var(--white); border-radius: 16px; padding: 8px; box-shadow: var(--shadow); }
+    .dash-nav-item { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 10px; font-size: 14px; font-weight: 600; color: var(--dark); cursor: pointer; text-decoration: none; transition: background 0.15s; }
+    .dash-nav-item:hover { background: var(--light-grey); }
+    .dash-nav-item.active { background: #FFF0EB; color: var(--orange); }
+    .dash-nav-item svg { width: 18px; height: 18px; flex-shrink: 0; }
+    .dash-nav-badge { margin-left: auto; background: var(--orange); color: var(--white); font-size: 10px; font-weight: 800; padding: 2px 7px; border-radius: 20px; }
+    .dash-main { display: flex; flex-direction: column; gap: 24px; }
+    .dash-card { background: var(--white); border-radius: 16px; padding: 28px; box-shadow: var(--shadow); }
+    .dash-card-title { font-size: 18px; font-weight: 800; color: var(--dark); margin-bottom: 4px; }
+    .dash-card-sub { font-size: 13px; color: var(--grey); margin-bottom: 24px; }
+
+    /* Favourite card — same look as my-ads */
+    .fav-card {
+      display: grid; grid-template-columns: 180px 1fr; gap: 20px;
+      padding: 16px; border: 1.5px solid var(--border); border-radius: 14px;
+      margin-bottom: 14px; transition: box-shadow 0.2s, border-color 0.2s;
+    }
+    .fav-card:hover { box-shadow: var(--shadow-hover); border-color: #DCDCDC; }
+    @media (max-width: 700px) { .fav-card { grid-template-columns: 1fr; gap: 14px; } }
+    .fav-card-img { width: 100%; height: 130px; border-radius: 10px; object-fit: cover; background: var(--light-grey); display: block; }
+    @media (max-width: 700px) { .fav-card-img { height: 180px; } }
+    .fav-card-body { display: flex; flex-direction: column; min-width: 0; }
+    .fav-card-title { font-size: 16px; font-weight: 800; color: var(--dark); margin-bottom: 4px; line-height: 1.3; overflow: hidden; text-overflow: ellipsis; }
+    .fav-card-price { font-size: 18px; font-weight: 900; color: var(--orange); margin-bottom: 10px; }
+    .fav-card-meta { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 14px; }
+    .fav-meta-item { font-size: 12px; color: var(--grey); display: flex; align-items: center; gap: 5px; }
+    .fav-card-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: auto; padding-top: 4px; }
+    .btn-fav { padding: 8px 14px; border-radius: 8px; font-size: 13px; font-weight: 700; border: 1.5px solid var(--border); background: var(--white); color: var(--dark); cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; }
+    .btn-fav.primary { background: var(--orange); color: #fff; border-color: var(--orange); }
+    .btn-fav.danger { color: #E53935; border-color: #FFCDD2; }
+    .btn-fav:hover { box-shadow: var(--shadow-hover); }
+    .empty-state { padding: 60px 20px; text-align: center; }
+    .empty-state-icon { font-size: 48px; margin-bottom: 16px; }
+    .empty-state-title { font-size: 20px; font-weight: 800; color: var(--dark); margin-bottom: 8px; }
+    .empty-state-sub { font-size: 14px; color: var(--grey); margin-bottom: 20px; }
+    .btn-browse-cta { display: inline-block; padding: 12px 24px; background: var(--orange); color: #fff; border-radius: 10px; text-decoration: none; font-weight: 800; font-size: 14px; }
+    .btn-browse-cta:hover { background: var(--orange-hover); }
+  </style>
+</head>
+<body>
+  <div id="navbar-placeholder"></div>
+
+  <div class="container">
+    <div class="dashboard-layout">
+
+      <!-- Sidebar -->
+      <aside class="dash-sidebar">
+        <div class="dash-profile-card">
+          <div class="dash-avatar" id="sidebar-avatar">U</div>
+          <div class="dash-name" id="sidebar-name">User</div>
+          <div class="dash-email" id="sidebar-email">—</div>
+          <div class="dash-verified-badge" id="sidebar-verified-badge" style="display:none;">
+            <svg viewBox="0 0 24 24" fill="currentColor" width="11" height="11"><path d="M12 2L4 6v6c0 5 3.5 9.4 8 10 4.5-.6 8-5 8-10V6l-8-4z"/><path d="M9 12l2 2 4-4" stroke="#fff" stroke-width="2" fill="none"/></svg>
+            Verified
+          </div>
+          <div class="dash-stats">
+            <div class="dash-stat"><div class="dash-stat-num" id="sidebar-active-count">0</div><div class="dash-stat-label">Active Ads</div></div>
+            <div class="dash-stat"><div class="dash-stat-num" id="sidebar-saved-count">0</div><div class="dash-stat-label">Saved</div></div>
+          </div>
+        </div>
+
+        <nav class="dash-nav">
+          <a href="profile.html" class="dash-nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+            My Profile
+          </a>
+          <a href="my-ads.html" class="dash-nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M3 9h18M9 21V9"/></svg>
+            My Ads
+            <span class="dash-nav-badge" style="display:none;">0</span>
+          </a>
+          <a href="favourites.html" class="dash-nav-item active">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            Favourites
+            <span class="dash-nav-badge" id="nav-favourites-count" style="display:none;">0</span>
+          </a>
+          <a href="saved-searches.html" class="dash-nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/><path d="M11 8v6M8 11h6" stroke-linecap="round"/></svg>
+            Saved Searches
+            <span class="dash-nav-badge" style="background:#2196F3;display:none;">0</span>
+          </a>
+          <a href="recent-searches.html" class="dash-nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>
+            Recent Searches
+          </a>
+          <a href="chats.html" class="dash-nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            Chats
+            <span class="dash-nav-badge" style="display:none;">0</span>
+          </a>
+          <a href="notifications.html" class="dash-nav-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            Notifications
+            <span class="dash-nav-badge" style="display:none;">0</span>
+          </a>
+          <a href="login.html" class="dash-nav-item" style="color:#E53935;margin-top:8px;border-top:1px solid var(--border);border-radius:0 0 10px 10px;padding-top:16px;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            Log Out
+          </a>
+        </nav>
+      </aside>
+
+      <main class="dash-main">
+        <div class="dash-card">
+          <div class="dash-card-title">Favourites</div>
+          <div class="dash-card-sub">Listings you've saved with the ❤️ button. Click a listing to view it, or remove from favourites here.</div>
+          <div id="fav-list"></div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <div id="footer-placeholder"></div>
+  <div class="toast" id="toast"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js" defer></script>
+  <script src="supabase-client.js" defer></script>
+  <script src="auth.js" defer></script>
+  <script src="components.js"></script>
+  <script src="auth-modal.js" defer></script>
+  <script>
+
+  // Auth guard + main render kicked off after Auth is ready
+  (async () => {
+    let tries = 0;
+    while (!window.Auth && tries < 50) { await new Promise(r => setTimeout(r, 50)); tries++; }
+    if (!window.Auth) return;
+    await window.Auth.requireAuth();
+    renderFavourites();
+  })();
+
+  renderNavbar('favourites');
+  renderFooter();
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3000);
+  }
+
+  function escapeHtml(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  }
+
+  function formatPrice(n) {
+    if (n == null || isNaN(n)) return 'Price on request';
+    return 'AED ' + Number(n).toLocaleString();
+  }
+
+  async function renderFavourites() {
+    const list = document.getElementById('fav-list');
+    list.innerHTML = '<div style="padding:30px;text-align:center;color:var(--grey);font-size:13px;">Loading…</div>';
+
+    if (!window.Auth || typeof window.Auth.getUser !== 'function') {
+      list.innerHTML = '<div style="padding:30px;text-align:center;color:var(--grey);font-size:13px;">Could not initialise. Please refresh the page.</div>';
+      return;
+    }
+
+    let user;
+    try { user = await window.Auth.getUser(); } catch { user = null; }
+    if (!user) {
+      list.innerHTML = '<div style="padding:30px;text-align:center;color:var(--grey);font-size:13px;">Please sign in to view favourites.</div>';
+      return;
+    }
+
+    try {
+      // Join favourites → listings → listing_images. Only show favourites whose
+      // underlying listing is still active (don't surface deleted/expired ones).
+      const { data: favs, error } = await window.supa
+        .from('favourites')
+        .select(`
+          created_at,
+          listing:listings!inner (
+            id, title, price, year, location, emirate, status, condition,
+            km, contact_name,
+            listing_images ( url, is_primary, display_order )
+          )
+        `)
+        .eq('user_id', user.id)
+        .eq('listing.status', 'active')
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+
+      const rows = (favs || []).filter(f => f.listing);  // drop any orphans
+
+      // Update sidebar Saved count + nav badge
+      const navBadge = document.getElementById('nav-favourites-count');
+      if (navBadge) {
+        navBadge.textContent = rows.length;
+        navBadge.style.display = rows.length > 0 ? '' : 'none';
+      }
+
+      if (rows.length === 0) {
+        list.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-icon">❤️</div>
+            <div class="empty-state-title">No favourites yet</div>
+            <div class="empty-state-sub">Browse listings and tap the heart on any you want to come back to.</div>
+            <a class="btn-browse-cta" href="cars.html">Browse Listings</a>
+          </div>`;
+        return;
+      }
+
+      list.innerHTML = rows.map(f => {
+        const l = f.listing;
+        const imgs = (l.listing_images || [])
+          .slice()
+          .sort((a, b) => {
+            if (a.is_primary && !b.is_primary) return -1;
+            if (!a.is_primary && b.is_primary) return 1;
+            return (a.display_order || 0) - (b.display_order || 0);
+          });
+        const primaryUrl = imgs[0] ? imgs[0].url : '';
+        return `
+          <div class="fav-card" id="fav-${l.id}">
+            <a href="listing.html?id=${l.id}">
+              <img class="fav-card-img" src="${escapeHtml(primaryUrl)}" alt="${escapeHtml(l.title || '')}" onerror="this.style.background='var(--light-grey)';this.removeAttribute('src');" />
+            </a>
+            <div class="fav-card-body">
+              <a href="listing.html?id=${l.id}" style="text-decoration:none;color:inherit;">
+                <div class="fav-card-title">${escapeHtml(l.title || 'Untitled')}</div>
+              </a>
+              <div class="fav-card-price">${formatPrice(l.price)}</div>
+              <div class="fav-card-meta">
+                ${l.year ? `<div class="fav-meta-item">📅 ${escapeHtml(l.year)}</div>` : ''}
+                ${l.location ? `<div class="fav-meta-item">📍 ${escapeHtml(l.location)}</div>` : ''}
+                ${l.km != null ? `<div class="fav-meta-item">🛣 ${Number(l.km).toLocaleString()} km</div>` : ''}
+                ${l.condition ? `<div class="fav-meta-item">⚙ ${escapeHtml(l.condition)}</div>` : ''}
+                ${l.contact_name ? `<div class="fav-meta-item">🏷 ${escapeHtml(l.contact_name)}</div>` : ''}
+              </div>
+              <div class="fav-card-actions">
+                <a class="btn-fav primary" href="listing.html?id=${l.id}">View Listing</a>
+                <button class="btn-fav danger" onclick="removeFavourite('${l.id}')">Remove</button>
+              </div>
+            </div>
+          </div>`;
+      }).join('');
+    } catch (e) {
+      console.error('[favourites] load failed:', e);
+      list.innerHTML = `<div class="empty-state"><div class="empty-state-icon">⚠️</div><div class="empty-state-title">Could not load favourites</div><div class="empty-state-sub">${escapeHtml(e.message || 'Unknown error')}</div></div>`;
+    }
+  }
+
+  async function removeFavourite(listingId) {
+    if (!confirm('Remove this listing from your favourites?')) return;
+    const el = document.getElementById('fav-' + listingId);
+    if (el) { el.style.opacity = '0.3'; el.style.pointerEvents = 'none'; }
+    try {
+      const user = await window.Auth.getUser();
+      if (!user) return;
+      const { error } = await window.supa
+        .from('favourites')
+        .delete()
+        .eq('user_id', user.id)
+        .eq('listing_id', listingId);
+      if (error) throw error;
+      showToast('Removed from favourites.');
+      renderFavourites();
+    } catch (e) {
+      if (el) { el.style.opacity = '1'; el.style.pointerEvents = ''; }
+      showToast('Could not remove: ' + (e.message || ''));
+    }
+  }
+  window.removeFavourite = removeFavourite;
+
+  // Fill the dashboard sidebar with real auth + listing counts
+  if (typeof dmFillDashboardSidebar === 'function') dmFillDashboardSidebar();
+
+  </script>
+</body>
+</html>

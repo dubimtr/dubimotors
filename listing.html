@@ -1191,11 +1191,25 @@
     }
   }
 
+  // UUID v4-ish detector — accepts any standard UUID format. Demo listings
+  // in shared.js use string IDs like 'gta-001' which aren't UUIDs and can't
+  // be inserted into the favourites table (the foreign key references
+  // listings.id which is type uuid).
+  const _UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  function _isRealListingId(x) { return typeof x === 'string' && _UUID_RE.test(x); }
+
   async function loadFavouriteState() {
     if (!window.Auth || !window.supa) return;
     const user = await window.Auth.getUser();
     if (!user) { _isFavourited = false; updateFavouriteButtonUI(); return; }
     if (!id) return;
+    // Demo listings — skip the DB query entirely (would error with "invalid
+    // input syntax for type uuid"). Hide the Save button instead.
+    if (!_isRealListingId(id)) {
+      const btn = document.getElementById('btn-save-listing');
+      if (btn) btn.style.display = 'none';
+      return;
+    }
     try {
       const { data, error } = await window.supa
         .from('favourites')
@@ -1217,6 +1231,11 @@
   async function toggleFavourite() {
     if (!window.Auth || !window.supa) {
       if (typeof showToast === 'function') showToast('Please try again in a moment.');
+      return;
+    }
+    // Demo listings can't be favourited — short-circuit before hitting the DB
+    if (!_isRealListingId(id)) {
+      if (typeof showToast === 'function') showToast('This is a demo listing — saving will work on real listings.');
       return;
     }
     const user = await window.Auth.getUser();
