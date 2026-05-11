@@ -268,22 +268,50 @@
 
       try {
         // Fetch profile via public_profiles view (created by 15_round6 SQL)
-        const { data: profile, error: pErr } = await window.supa
-          .from('public_profiles')
-          .select('id, display_name, avatar_url, joined_at, is_verified, is_deactivated')
-          .eq('id', userId)
-          .maybeSingle();
-        if (pErr) throw pErr;
-        if (!profile || profile.is_deactivated) { renderNotFound(); return; }
+        let profile = null;
+        try {
+          const { data, error: pErr } = await window.supa
+            .from('public_profiles')
+            .select('id, display_name, avatar_url, joined_at, is_verified, is_deactivated')
+            .eq('id', userId)
+            .maybeSingle();
+          if (pErr) throw pErr;
+          profile = data;
+        } catch (e) {
+          console.warn('[user] public_profiles fetch failed (continuing with listings-only):', e.message);
+        }
+
+        if (profile && profile.is_deactivated) { renderNotFound(); return; }
 
         // Fetch this user's listings + primary images
         const { data: listings, error: lErr } = await window.supa
           .from('listings')
-          .select('id, title, price, year, kilometers, location, status, verified, warranty, service_history, featured, created_at, listing_images ( url, is_primary, display_order )')
+          .select('id, title, price, year, kilometers, location, status, verified, warranty, service_history, featured, contact_name, created_at, listing_images ( url, is_primary, display_order )')
           .eq('owner_id', userId)
           .eq('status', 'active')
           .order('created_at', { ascending: false });
         if (lErr) throw lErr;
+
+        // If no profile row, but listings exist, synthesize a minimal profile
+        // from the most recent listing's contact_name. Better than 404'ing the
+        // page entirely when public_profiles view is missing the user but they
+        // have public listings.
+        if (!profile) {
+          if (listings && listings.length > 0) {
+            const recent = listings[0];
+            profile = {
+              id: userId,
+              display_name: recent.contact_name || 'DubiMotors User',
+              avatar_url: null,
+              joined_at: null,
+              is_verified: false,
+              is_deactivated: false,
+            };
+          } else {
+            renderNotFound();
+            return;
+          }
+        }
 
         // Stash for attachActions
         window._upListings = listings || [];

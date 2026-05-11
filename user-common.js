@@ -461,12 +461,21 @@ async function dmFillDashboardSidebar() {
     }
   }
 
+  // Verified status — primary source is auth.users.email_confirmed_at (Supabase
+  // sets this on email confirmation, always authoritative). Fall back to the
+  // profile column if for some reason the auth-level flag isn't set.
+  // We treat user as verified if EITHER source is non-null.
+  const authConfirmed = !!(user.email_confirmed_at || (user.confirmed_at) ||
+                          (user.user_metadata && user.user_metadata.email_verified));
+  const profileVerified = !!(profile && profile.email_verified_at);
+  const isVerified = authConfirmed || profileVerified;
+
   const fresh = {
     userId: user.id,
     displayName,
     email,
     initials,
-    isVerified: !!(profile && profile.email_verified_at),
+    isVerified,
     activeCount,
     savedCount,
     chatsUnread,
