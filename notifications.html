@@ -248,16 +248,20 @@
     async function openNotif(id) {
       const n = notifs.find(x => x.id === id);
       if (!n) return;
-      // Mark read on click
+      // Mark read on click (in place — no navigation per UX decision round 5)
       if (!n.read_at) {
         try {
           await window.supa.from('notifications').update({ read_at: new Date().toISOString() }).eq('id', id);
           n.read_at = new Date().toISOString();
           if (typeof window.dmRefreshNavbarNotifications === 'function') window.dmRefreshNavbarNotifications();
         } catch {}
+        // Update the row's visual state without re-rendering the whole list
+        // (so the user's scroll position doesn't jump)
+        const rowEl = document.getElementById('n-' + id);
+        if (rowEl) rowEl.classList.remove('unread');
+        // Update counts in the chrome (All / Unread tab labels, Mark all button)
+        updateChrome();
       }
-      if (n.link_url) window.location.href = n.link_url;
-      else { updateChrome(); renderNotifs(); }
     }
     window.openNotif = openNotif;
 
@@ -282,7 +286,7 @@
         const t = TYPE_ICONS[n.type] || TYPE_ICONS.system;
         const isUnread = !n.read_at;
         return `
-        <div class="notif-item ${isUnread ? 'unread' : ''}" onclick="openNotif('${n.id}')">
+        <div id="n-${n.id}" class="notif-item ${isUnread ? 'unread' : ''}" onclick="openNotif('${n.id}')">
           <div class="notif-icon" style="background:${t.color}22;">${t.icon}</div>
           <div class="notif-body">
             <div class="notif-title">${escapeHtml(n.title)}</div>
@@ -292,6 +296,20 @@
           ${isUnread ? '<div class="notif-unread-dot"></div>' : ''}
         </div>`;
       }).join('');
+
+      // If we arrived via #n-<id> from the navbar bell, scroll the matching
+      // row into view and briefly highlight it.
+      const hash = window.location.hash;
+      if (hash && hash.startsWith('#n-')) {
+        const targetId = hash.slice(1); // "n-<uuid>"
+        const target = document.getElementById(targetId);
+        if (target) {
+          target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          target.style.transition = 'box-shadow 0.4s';
+          target.style.boxShadow = '0 0 0 3px var(--orange)';
+          setTimeout(() => { target.style.boxShadow = ''; }, 1500);
+        }
+      }
     }
 
     // Fill the dashboard sidebar with real auth + listing data
