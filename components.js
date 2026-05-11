@@ -339,6 +339,11 @@ async function updateNavbarAuthState() {
         }
       }
     } catch { /* non-fatal */ }
+
+    // Notifications: load unread count + last 5 for the dropdown panel
+    try {
+      await loadNavbarNotifications(user.id);
+    } catch (e) { console.warn('[components] notif load failed:', e); }
   }
 
   // Update dropdown header (the rich card at the top)
@@ -386,6 +391,115 @@ function _toggleNavDD(id) {
   const el = document.getElementById(id);
   if (el) el.classList.toggle('open');
 }
+
+// ──────────────────────────────────────────────────────────────────
+// NAVBAR NOTIFICATIONS — load unread count + last 5 for dropdown
+// ──────────────────────────────────────────────────────────────────
+const NAV_NOTIF_ICONS = {
+  inquiry:           '💬',
+  listing_approved:  '✅',
+  listing_rejected:  '⚠️',
+  saved_search:      '🔍',
+  price_drop:        '💰',
+  expiry_reminder:   '⏰',
+  system:            '🔔',
+};
+
+function _navTimeAgo(ts) {
+  const diff = Date.now() - new Date(ts).getTime();
+  const m = Math.floor(diff / 60000);
+  if (m < 1) return 'just now';
+  if (m < 60) return m + 'm';
+  const h = Math.floor(m / 60);
+  if (h < 24) return h + 'h';
+  const d = Math.floor(h / 24);
+  if (d < 7) return d + 'd';
+  return new Date(ts).toLocaleDateString();
+}
+
+function _navEscapeHtml(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+async function loadNavbarNotifications(userId) {
+  if (!window.supa || !userId) return;
+  const badge = document.getElementById('nav-notif-count');
+  const ddBadge = document.getElementById('dd-notif-count');
+  const dropdown = document.getElementById('notif-dropdown');
+
+  // Unread count
+  try {
+    const { count, error } = await window.supa
+      .from('notifications')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', userId)
+      .is('read_at', null);
+    const n = (!error && typeof count === 'number') ? count : 0;
+    if (badge) {
+      badge.textContent = n > 99 ? '99+' : String(n);
+      badge.style.display = n > 0 ? '' : 'none';
+    }
+    if (ddBadge) {
+      ddBadge.textContent = String(n);
+      ddBadge.style.display = n > 0 ? '' : 'none';
+    }
+  } catch (e) {
+    console.warn('[components] notif unread count failed:', e);
+  }
+
+  // Recent 5 for dropdown
+  if (!dropdown) return;
+  try {
+    const { data: recent, error } = await window.supa
+      .from('notifications')
+      .select('id, type, title, body, link_url, read_at, created_at')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+      .limit(5);
+    if (error) throw error;
+
+    const itemsHtml = (recent || []).map(n => {
+      const icon = NAV_NOTIF_ICONS[n.type] || NAV_NOTIF_ICONS.system;
+      const unread = !n.read_at;
+      const href = n.link_url ? _navEscapeHtml(n.link_url) : 'notifications.html';
+      return `
+        <a href="${href}" style="display:flex;gap:10px;padding:10px 14px;border-bottom:1px solid var(--border);text-decoration:none;color:inherit;${unread ? 'background:#FFF7F2;' : ''}">
+          <div style="font-size:18px;flex-shrink:0;">${icon}</div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:13px;font-weight:${unread ? '800' : '600'};color:var(--dark);line-height:1.3;">${_navEscapeHtml(n.title)}</div>
+            ${n.body ? `<div style="font-size:12px;color:var(--grey);margin-top:2px;line-height:1.4;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;">${_navEscapeHtml(n.body)}</div>` : ''}
+            <div style="font-size:11px;color:var(--grey);margin-top:3px;">${_navTimeAgo(n.created_at)}</div>
+          </div>
+          ${unread ? '<div style="width:8px;height:8px;border-radius:50%;background:var(--orange);flex-shrink:0;margin-top:6px;"></div>' : ''}
+        </a>`;
+    }).join('');
+
+    const header = `<div class="nav-dropdown-header">Notifications</div>`;
+    const footer = `<a href="notifications.html" style="display:block;padding:10px;text-align:center;font-size:12px;font-weight:700;color:var(--orange);text-decoration:none;border-top:1px solid var(--border);">View all notifications</a>`;
+
+    if (!recent || recent.length === 0) {
+      dropdown.innerHTML = `${header}
+        <div style="padding:30px 16px;text-align:center;color:var(--grey);font-size:13px;line-height:1.6;">
+          <div style="font-size:32px;margin-bottom:8px;">&#x1F514;</div>
+          <div style="font-weight:700;color:var(--dark);margin-bottom:4px;">No notifications yet</div>
+          <div>We&rsquo;ll let you know when something happens with your listings.</div>
+        </div>${footer}`;
+    } else {
+      dropdown.innerHTML = `${header}<div style="max-height:360px;overflow-y:auto;">${itemsHtml}</div>${footer}`;
+    }
+  } catch (e) {
+    console.warn('[components] notif recent fetch failed:', e);
+  }
+}
+
+// Expose so other pages can refresh the badge after marking-read actions
+window.dmRefreshNavbarNotifications = async function () {
+  if (!window.Auth) return;
+  const u = await window.Auth.getUser();
+  if (u) await loadNavbarNotifications(u.id);
+};
 
 function renderDubiAgent() {
   const s = document.createElement('script');

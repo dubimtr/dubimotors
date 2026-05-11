@@ -187,6 +187,92 @@ function passwordResetEmail({ name, resetUrl }) {
   return { subject: `Reset your DubiMotors password`, html, text };
 }
 
+/* ─── STAGE 1 NOTIFICATION TEMPLATES ─────────────────────────────────────── */
+
+/**
+ * Saved-search match alert — bundles all matches for a single saved search into
+ * one email. Pass `matches` as an array of {title, price, year, url} so we can
+ * list each new listing.
+ */
+function savedSearchAlertEmail({ name, searchName, matches }) {
+  const headline = `${matches.length} new ${matches.length === 1 ? 'match' : 'matches'} for your saved search`;
+  const intro = `Hi ${escapeHtml(name || 'there')},<br><br>
+    New listings just went live that match your saved search <strong>&ldquo;${escapeHtml(searchName || 'Saved search')}&rdquo;</strong>. Take a look:`;
+  // Build a list of matches — keep it simple, table-based for email-client safety
+  const itemsHtml = matches.slice(0, 8).map(m => {
+    const priceStr = (typeof m.price === 'number')
+      ? `AED ${m.price.toLocaleString()}`
+      : 'Price on request';
+    const titleStr = [m.year, m.title].filter(Boolean).join(' ');
+    return `
+      <tr><td style="padding:14px 0;border-bottom:1px solid #eee;">
+        <a href="${m.url}" style="color:#1a1a1a;text-decoration:none;font-weight:700;font-size:15px;">${escapeHtml(titleStr)}</a><br>
+        <span style="color:#E8450A;font-weight:700;font-size:14px;">${priceStr}</span>
+      </td></tr>`;
+  }).join('');
+  const moreNote = matches.length > 8
+    ? `<div style="font-size:13px;color:#666;margin-top:12px;">…and ${matches.length - 8} more. View them all on DubiMotors.</div>`
+    : '';
+  const viewAllUrl = `${SITE_URL}/saved-searches.html`;
+  const html = emailLayout({
+    headline,
+    intro: `${intro}<br><br><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">${itemsHtml}</table>${moreNote}`,
+    ctaLabel: 'View All Matches',
+    ctaUrl: viewAllUrl,
+    postCta: `You're receiving this because you saved this search. You can manage or delete it from your DubiMotors dashboard.`,
+  });
+  const text = `${matches.length} new matches for your saved search "${searchName}" on DubiMotors:\n\n` +
+    matches.slice(0, 8).map(m => `• ${[m.year, m.title].filter(Boolean).join(' ')} — ${m.price ? 'AED ' + m.price.toLocaleString() : 'Price on request'}\n  ${m.url}`).join('\n\n') +
+    `\n\nView all: ${viewAllUrl}\n\nThe DubiMotors team`;
+  return { subject: `${matches.length} new ${matches.length === 1 ? 'match' : 'matches'}: ${searchName || 'your saved search'}`, html, text };
+}
+
+/**
+ * Price drop on a favourited listing.
+ */
+function priceDropEmail({ name, listingTitle, oldPrice, newPrice, listingUrl }) {
+  const drop = oldPrice - newPrice;
+  const pct = Math.round((drop / oldPrice) * 100);
+  const headline = `Price drop on a listing you saved`;
+  const intro = `Hi ${escapeHtml(name || 'there')},<br><br>
+    A listing in your favourites just dropped in price.<br><br>
+    <strong>${escapeHtml(listingTitle || 'Saved listing')}</strong><br>
+    <span style="color:#888;text-decoration:line-through;">AED ${oldPrice.toLocaleString()}</span>
+    &nbsp;→&nbsp;
+    <span style="color:#E8450A;font-weight:800;font-size:18px;">AED ${newPrice.toLocaleString()}</span>
+    &nbsp;<span style="background:#E8F5E9;color:#2E7D32;font-weight:700;font-size:12px;padding:2px 8px;border-radius:12px;">−${pct}%</span>`;
+  const html = emailLayout({
+    headline,
+    intro,
+    ctaLabel: 'View Listing',
+    ctaUrl: listingUrl,
+    postCta: `Prices can move fast on DubiMotors. If you're interested, contact the seller before someone else does.`,
+  });
+  const text = `Price drop on DubiMotors!\n\n"${listingTitle}" dropped from AED ${oldPrice.toLocaleString()} to AED ${newPrice.toLocaleString()} (-${pct}%).\n\n${listingUrl}\n\nThe DubiMotors team`;
+  return { subject: `Price drop: ${listingTitle || 'a saved listing'} (−${pct}%)`, html, text };
+}
+
+/**
+ * Listing about to expire in 3 days.
+ */
+function expiryReminderEmail({ name, listingTitle, expiresAt, listingUrl, editUrl }) {
+  const daysLeft = Math.max(0, Math.ceil((new Date(expiresAt).getTime() - Date.now()) / 86400000));
+  const headline = `Your listing expires in ${daysLeft} ${daysLeft === 1 ? 'day' : 'days'}`;
+  const intro = `Hi ${escapeHtml(name || 'there')},<br><br>
+    Your listing <strong>&ldquo;${escapeHtml(listingTitle || 'your listing')}&rdquo;</strong> will expire on
+    <strong>${new Date(expiresAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</strong>.<br><br>
+    Still selling? You can renew it for another 60 days from your dashboard. Already sold? Mark it as sold to keep your dashboard tidy.`;
+  const html = emailLayout({
+    headline,
+    intro,
+    ctaLabel: 'Manage My Listing',
+    ctaUrl: editUrl || listingUrl,
+    postCta: `Listings on DubiMotors stay active for 60 days. Renew anytime before they expire.`,
+  });
+  const text = `Your DubiMotors listing expires in ${daysLeft} days.\n\n"${listingTitle}" — ${listingUrl}\n\nRenew or update: ${editUrl || listingUrl}\n\nThe DubiMotors team`;
+  return { subject: `Your DubiMotors listing expires in ${daysLeft} ${daysLeft === 1 ? 'day' : 'days'}`, html, text };
+}
+
 // HTML escape for user-controlled strings inside email templates
 function escapeHtml(s) {
   if (s == null) return '';
@@ -204,5 +290,8 @@ module.exports = {
   verificationEmail,
   listingApprovedEmail,
   passwordResetEmail,
+  savedSearchAlertEmail,
+  priceDropEmail,
+  expiryReminderEmail,
   SITE_URL,
 };

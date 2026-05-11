@@ -231,6 +231,7 @@
         notifs.forEach(n => { if (!n.read_at) n.read_at = new Date().toISOString(); });
         updateChrome();
         renderNotifs();
+        if (typeof window.dmRefreshNavbarNotifications === 'function') window.dmRefreshNavbarNotifications();
         showToast('All marked as read.');
       } catch (e) {
         showToast('Could not update: ' + (e.message || ''));
@@ -247,6 +248,7 @@
         try {
           await window.supa.from('notifications').update({ read_at: new Date().toISOString() }).eq('id', id);
           n.read_at = new Date().toISOString();
+          if (typeof window.dmRefreshNavbarNotifications === 'function') window.dmRefreshNavbarNotifications();
         } catch {}
       }
       if (n.link_url) window.location.href = n.link_url;

@@ -478,7 +478,7 @@
         <div class="price-card-actions">
           <a class="btn-call" id="btn-call" href="#">📞 Call Seller</a>
           <a class="btn-whatsapp" id="btn-whatsapp" href="#" target="_blank">💬 WhatsApp</a>
-          <button class="btn-save" onclick="showToast('Saved to your favourites!')">🤍 Save Listing</button>
+          <button class="btn-save" id="btn-save-listing" onclick="toggleFavourite()">🤍 Save Listing</button>
         </div>
       </div>
 
@@ -1168,6 +1168,109 @@
       if (typeof render === 'function') return render();
     } catch (e) { console.warn('[DubiMotors] re-render after live data failed:', e); }
   });
+
+  // ──────────────────────────────────────────────────────────────────
+  // FAVOURITES — Save Listing button
+  // ──────────────────────────────────────────────────────────────────
+  // The button is a heart toggle. State is read once on load (so refreshes
+  // show the current state) and on click we insert / delete the favourites
+  // row. RLS allows users to manage only their own rows.
+  let _isFavourited = false;
+
+  function updateFavouriteButtonUI() {
+    const btn = document.getElementById('btn-save-listing');
+    if (!btn) return;
+    if (_isFavourited) {
+      btn.innerHTML = '❤️ Saved';
+      btn.style.background = '#FFE4E1';
+      btn.style.color = '#E53935';
+    } else {
+      btn.innerHTML = '🤍 Save Listing';
+      btn.style.background = '';
+      btn.style.color = '';
+    }
+  }
+
+  async function loadFavouriteState() {
+    if (!window.Auth || !window.supa) return;
+    const user = await window.Auth.getUser();
+    if (!user) { _isFavourited = false; updateFavouriteButtonUI(); return; }
+    if (!id) return;
+    try {
+      const { data, error } = await window.supa
+        .from('favourites')
+        .select('listing_id')
+        .eq('user_id', user.id)
+        .eq('listing_id', id)
+        .maybeSingle();
+      if (error) {
+        console.warn('[favourites] load state error:', error.message);
+        return;
+      }
+      _isFavourited = !!data;
+      updateFavouriteButtonUI();
+    } catch (e) {
+      console.warn('[favourites] load state threw:', e);
+    }
+  }
+
+  async function toggleFavourite() {
+    if (!window.Auth || !window.supa) {
+      if (typeof showToast === 'function') showToast('Please try again in a moment.');
+      return;
+    }
+    const user = await window.Auth.getUser();
+    if (!user) {
+      // Open auth modal if available, else redirect to login
+      if (window.AuthModal && typeof window.AuthModal.open === 'function') {
+        const u = await window.AuthModal.open({ tab: 'login', reason: 'Sign in to save listings to your favourites.' });
+        if (!u) return;
+      } else {
+        window.location.href = 'login.html?next=' + encodeURIComponent(window.location.pathname + window.location.search);
+        return;
+      }
+    }
+    const u = await window.Auth.getUser();
+    if (!u) return;
+    if (!id) return;
+
+    const btn = document.getElementById('btn-save-listing');
+    if (btn) btn.disabled = true;
+
+    try {
+      if (_isFavourited) {
+        const { error } = await window.supa
+          .from('favourites')
+          .delete()
+          .eq('user_id', u.id)
+          .eq('listing_id', id);
+        if (error) throw error;
+        _isFavourited = false;
+        if (typeof showToast === 'function') showToast('Removed from favourites.');
+      } else {
+        const { error } = await window.supa
+          .from('favourites')
+          .insert({ user_id: u.id, listing_id: id });
+        // Duplicate-key error means someone clicked twice fast — treat as success
+        if (error && !/duplicate|unique/i.test(error.message)) throw error;
+        _isFavourited = true;
+        if (typeof showToast === 'function') showToast('Saved to your favourites.');
+      }
+      updateFavouriteButtonUI();
+    } catch (e) {
+      console.warn('[favourites] toggle failed:', e);
+      if (typeof showToast === 'function') showToast('Could not update favourites. Please try again.');
+    } finally {
+      if (btn) btn.disabled = false;
+    }
+  }
+
+  // Load initial state once Auth is ready
+  (async () => {
+    let tries = 0;
+    while (!window.Auth && tries < 50) { await new Promise(r => setTimeout(r, 50)); tries++; }
+    if (window.Auth) loadFavouriteState();
+  })();
 
 </script>
 </main>
