@@ -20,14 +20,58 @@ window.Auth = (() => {
   let _profile = null;
   let _profileLoadedFor = null; // user ID we loaded the profile for
 
-  /** Get the current authenticated user, or null. */
+  /**
+   * Get the current authenticated user, or null.
+   *
+   * Prefers getSession() over getUser() because:
+   *   - getSession() reads from localStorage (no network round trip)
+   *   - getSession() auto-refreshes a stale access token via the refresh token
+   *   - getUser() makes a network call to /auth/v1/user and returns null on
+   *     ANY hiccup (network blip, mid-refresh, brief server slowness), which
+   *     causes a false "not signed in" and an unwanted redirect to /login.
+   *
+   * We only fall back to a network getUser() if the session looks malformed
+   * (has access_token but no user object — should never happen but defensive).
+   */
   async function getUser() {
     if (!window.supa) return null;
     try {
-      const { data: { user } } = await window.supa.auth.getUser();
-      return user || null;
+      const { data: { session }, error: sessErr } = await window.supa.auth.getSession();
+      if (sessErr) {
+        console.warn('[Auth] getSession failed:', sessErr.message);
+        return null;
+      }
+      if (session && session.user) return session.user;
+      if (session && session.access_token) {
+        // Have a token but no user object — fall back to a network fetch.
+        try {
+          const { data: { user } } = await window.supa.auth.getUser();
+          return user || null;
+        } catch { return null; }
+      }
+      return null;
     } catch (e) {
       console.warn('[Auth] getUser failed:', e);
+      return null;
+    }
+  }
+
+  /**
+   * Force-refresh the current session and return the fresh access_token.
+   * Used before sensitive operations (MFA enroll, password change) to make
+   * sure the token isn't stale. Returns null if no session.
+   */
+  async function refreshSession() {
+    if (!window.supa) return null;
+    try {
+      const { data, error } = await window.supa.auth.refreshSession();
+      if (error) {
+        console.warn('[Auth] refreshSession failed:', error.message);
+        return null;
+      }
+      return data.session || null;
+    } catch (e) {
+      console.warn('[Auth] refreshSession threw:', e);
       return null;
     }
   }
@@ -303,6 +347,7 @@ window.Auth = (() => {
   return {
     getUser,
     getProfile,
+    refreshSession,
     signIn,
     signUp,
     signInWithGoogle,
