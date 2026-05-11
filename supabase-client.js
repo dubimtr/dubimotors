@@ -12,7 +12,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 (function () {
-  const SUPABASE_URL = 'https://jfwxkmtsmsnbsduxdzow.supabase.co'
+  const SUPABASE_URL = 'https://auth.dubimotors.ae';
   const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impmd3hrbXRzbXNuYnNkdXhkem93Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgzODg2MjQsImV4cCI6MjA5Mzk2NDYyNH0.mJ8krarTZ8YlrXkaxVZmYOMW6fuhDvfEthtPXsp4qbI';
 
   if (!window.supabase || !window.supabase.createClient) {
