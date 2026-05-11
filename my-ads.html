@@ -51,24 +51,68 @@
     .ads-tab.active { background: var(--orange); color: var(--white); border-color: var(--orange); }
     .ads-tab:hover:not(.active) { border-color: var(--orange); color: var(--orange); }
 
-    /* Ad card */
-    .ad-card { display: grid; grid-template-columns: 120px 1fr auto; gap: 16px; align-items: start; padding: 20px; border: 1.5px solid var(--border); border-radius: 14px; margin-bottom: 12px; transition: box-shadow 0.2s; }
-    .ad-card:hover { box-shadow: var(--shadow-hover); }
-    @media (max-width: 600px) { .ad-card { grid-template-columns: 80px 1fr; } .ad-card-actions { grid-column: 1 / -1; } }
-    .ad-card-img { width: 120px; height: 80px; border-radius: 10px; object-fit: cover; background: var(--light-grey); flex-shrink: 0; }
-    @media (max-width: 600px) { .ad-card-img { width: 80px; height: 56px; } }
-    .ad-card-title { font-size: 15px; font-weight: 800; color: var(--dark); margin-bottom: 4px; }
-    .ad-card-price { font-size: 17px; font-weight: 900; color: var(--orange); margin-bottom: 8px; }
-    .ad-card-meta { display: flex; gap: 16px; flex-wrap: wrap; }
-    .ad-meta-item { font-size: 12px; color: var(--grey); display: flex; align-items: center; gap: 4px; }
-    .ad-meta-item svg { width: 13px; height: 13px; }
-    .ad-status-badge { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 20px; margin-bottom: 8px; }
-    .ad-status-badge.active { background: #E8F5E9; color: #2E7D32; }
-    .ad-status-badge.expired { background: #FFEBEE; color: #C62828; }
-    .ad-status-badge.pending { background: #FFF8E1; color: #F57F17; }
-    .verified-ai-badge { display: inline-flex; align-items: center; gap: 4px; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 20px; background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; margin-left: 6px; }
-    .ad-card-actions { display: flex; flex-direction: column; gap: 8px; align-items: flex-end; }
-    .btn-ad-action { padding: 8px 16px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; border: 1.5px solid var(--border); background: var(--white); color: var(--dark); transition: all 0.15s; white-space: nowrap; }
+    /* Ad card — redesigned with bigger image, better badge alignment, horizontal actions */
+    .ad-card {
+      display: grid;
+      grid-template-columns: 180px 1fr;
+      gap: 20px;
+      padding: 16px;
+      border: 1.5px solid var(--border);
+      border-radius: 14px;
+      margin-bottom: 14px;
+      transition: box-shadow 0.2s, border-color 0.2s;
+    }
+    .ad-card:hover { box-shadow: var(--shadow-hover); border-color: #DCDCDC; }
+    @media (max-width: 700px) {
+      .ad-card { grid-template-columns: 1fr; gap: 14px; }
+    }
+    .ad-card-img-wrap { position: relative; }
+    .ad-card-img {
+      width: 100%; height: 130px; border-radius: 10px; object-fit: cover;
+      background: var(--light-grey); display: block;
+    }
+    @media (max-width: 700px) { .ad-card-img { height: 180px; } }
+    .ad-card-body { display: flex; flex-direction: column; min-width: 0; }
+    .ad-card-badges {
+      display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-bottom: 6px;
+    }
+    .ad-card-title {
+      font-size: 16px; font-weight: 800; color: var(--dark);
+      margin-bottom: 4px; line-height: 1.3;
+      overflow: hidden; text-overflow: ellipsis;
+    }
+    .ad-card-price { font-size: 18px; font-weight: 900; color: var(--orange); margin-bottom: 10px; }
+    .ad-card-meta { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 14px; }
+    .ad-meta-item { font-size: 12px; color: var(--grey); display: flex; align-items: center; gap: 5px; }
+    .ad-meta-item svg { width: 13px; height: 13px; flex-shrink: 0; }
+    .ad-status-badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 20px;
+      line-height: 1;
+    }
+    .ad-status-badge.active     { background: #E8F5E9; color: #2E7D32; }
+    .ad-status-badge.expired    { background: #FFEBEE; color: #C62828; }
+    .ad-status-badge.pending    { background: #FFF8E1; color: #F57F17; }
+    .ad-status-badge.sold       { background: #ECEFF1; color: #455A64; }
+    .ad-status-badge.rejected   { background: #FFEBEE; color: #C62828; }
+    .ad-status-badge::before {
+      content: ''; display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: currentColor; opacity: 0.85;
+    }
+    .verified-ai-badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: 10px; font-weight: 700; padding: 3px 10px; border-radius: 20px;
+      background: linear-gradient(135deg, #667eea, #764ba2); color: #fff;
+      line-height: 1;
+    }
+    /* Action row at bottom of card body — horizontal, even spacing */
+    .ad-card-actions {
+      display: flex; gap: 8px; flex-wrap: wrap; margin-top: auto; padding-top: 4px;
+    }
+    .btn-ad-action {
+      padding: 8px 16px; border-radius: 8px; font-size: 12px; font-weight: 700;
+      cursor: pointer; border: 1.5px solid var(--border); background: var(--white);
+      color: var(--dark); transition: all 0.15s; white-space: nowrap;
+    }
     .btn-ad-action:hover { border-color: var(--orange); color: var(--orange); }
     .btn-ad-action.danger:hover { border-color: #E53935; color: #E53935; }
     .btn-ad-action.primary { background: var(--orange); color: var(--white); border-color: var(--orange); }
@@ -281,11 +325,11 @@
 
     function statusLabel(s) {
       switch (s) {
-        case 'active':         return '● Active';
-        case 'pending_review': return '● Pending Review';
-        case 'sold':           return '● Sold';
-        case 'expired':        return '● Expired';
-        case 'rejected':       return '● Rejected';
+        case 'active':         return 'Active';
+        case 'pending_review': return 'Pending Review';
+        case 'sold':           return 'Sold';
+        case 'expired':        return 'Expired';
+        case 'rejected':       return 'Rejected';
         default:               return s;
       }
     }
@@ -306,9 +350,11 @@
 
       list.innerHTML = ads.map(ad => `
         <div class="ad-card" id="ad-${ad.id}">
-          <img class="ad-card-img" src="${ad.img}" alt="${ad.title}" loading="lazy" onerror="this.style.background='#eee'; this.style.minHeight='100px'"/>
-          <div>
-            <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:4px;">
+          <div class="ad-card-img-wrap">
+            <img class="ad-card-img" src="${ad.img}" alt="${ad.title}" loading="lazy" onerror="this.style.background='#eee'" />
+          </div>
+          <div class="ad-card-body">
+            <div class="ad-card-badges">
               <span class="ad-status-badge ${ad.status}">${statusLabel(ad.status)}</span>
               ${ad.verified ? '<span class="verified-ai-badge">🤖 Verified by AI</span>' : ''}
             </div>
@@ -317,32 +363,32 @@
             <div class="ad-card-meta">
               <span class="ad-meta-item">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                ${ad.views.toLocaleString()} views
+                ${ad.views.toLocaleString()} ${ad.views === 1 ? 'view' : 'views'}
               </span>
               <span class="ad-meta-item">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                ${ad.inquiries} inquiries
+                ${ad.inquiries} ${ad.inquiries === 1 ? 'inquiry' : 'inquiries'}
               </span>
               <span class="ad-meta-item">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                 Posted ${dmTimeAgo(ad.postedDate)}
               </span>
-              <span class="ad-meta-item">
+              ${ad.location ? `<span class="ad-meta-item">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
                 ${ad.location}
-              </span>
+              </span>` : ''}
             </div>
-          </div>
-          <div class="ad-card-actions">
-            <button class="btn-ad-action primary" onclick="window.location.href='listing.html?id=${ad.id}'">View</button>
-            <button class="btn-ad-action" onclick="window.location.href='place-ad.html?edit=${ad.id}'">Edit</button>
-            ${ad.status === 'active'
-              ? `<button class="btn-ad-action" onclick="markSold('${ad.id}')">Mark Sold</button>`
-              : ad.status === 'sold' || ad.status === 'expired'
-                ? `<button class="btn-ad-action primary" onclick="showToast('Renew flow coming soon.')">Renew</button>`
-                : ''
-            }
-            <button class="btn-ad-action danger" onclick="deleteAd('${ad.id}')">Delete</button>
+            <div class="ad-card-actions">
+              <button class="btn-ad-action primary" onclick="window.location.href='listing.html?id=${ad.id}'">View</button>
+              <button class="btn-ad-action" onclick="window.location.href='place-ad.html?edit=${ad.id}'">Edit</button>
+              ${ad.status === 'active'
+                ? `<button class="btn-ad-action" onclick="markSold('${ad.id}')">Mark Sold</button>`
+                : ad.status === 'sold' || ad.status === 'expired'
+                  ? `<button class="btn-ad-action primary" onclick="showToast('Renew flow coming soon.')">Renew</button>`
+                  : ''
+              }
+              <button class="btn-ad-action danger" onclick="deleteAd('${ad.id}')">Delete</button>
+            </div>
           </div>
         </div>
       `).join('');

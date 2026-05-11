@@ -118,7 +118,7 @@
           <div class="chat-list">
             <div class="chat-list-header">
               <div class="chat-list-title">Messages</div>
-              <div class="chat-list-sub">3 conversations</div>
+              <div class="chat-list-sub" id="chat-list-sub">No conversations yet</div>
             </div>
             <div id="chat-list-items"></div>
           </div>
@@ -127,8 +127,8 @@
           <div class="chat-panel" id="chat-panel">
             <div class="chat-empty">
               <div class="chat-empty-icon">💬</div>
-              <div class="chat-empty-title">Coming soon</div>
-              <div class="chat-empty-sub">In-app messaging is launching soon. For now, contact sellers directly via Call or WhatsApp from any listing.</div>
+              <div class="chat-empty-title">In-app messaging coming soon</div>
+              <div class="chat-empty-sub">We're building real-time chat so you can message sellers directly. For now, contact sellers via Call or WhatsApp from any listing.</div>
             </div>
           </div>
         </div>
@@ -156,8 +156,6 @@
     renderNavbar('chats');
     renderFooter();
 
-    let activeChat = null;
-
     function showToast(msg) {
       const t = document.getElementById('toast');
       t.textContent = msg;
@@ -166,95 +164,18 @@
     }
 
     function renderChatList() {
+      // Real-time chat is a future build. Until then, show an honest empty state.
       const list = document.getElementById('chat-list-items');
-      // Real-time chat is a Phase 4 feature. For now, show an empty state.
       list.innerHTML = `
         <div style="text-align:center;padding:40px 20px;color:var(--grey);">
           <div style="font-size:40px;margin-bottom:10px;">&#x1F4AC;</div>
-          <div style="font-size:16px;font-weight:800;color:var(--dark);margin-bottom:6px;">No messages yet</div>
-          <div style="font-size:13px;line-height:1.6;">Start by browsing listings and contacting sellers via WhatsApp or call.</div>
+          <div style="font-size:15px;font-weight:800;color:var(--dark);margin-bottom:6px;">No conversations yet</div>
+          <div style="font-size:13px;line-height:1.6;">Once messaging launches, your conversations with sellers will appear here.</div>
         </div>`;
     }
 
-    function openChat(id) {
-      activeChat = id;
-      const chat = DM_CHATS.find(c => c.id === id);
-      if (!chat) return;
-      chat.unread = 0;
-      renderChatList();
-
-      const panel = document.getElementById('chat-panel');
-      panel.innerHTML = `
-        <div class="chat-header">
-          <div class="chat-header-avatar" style="background:${chat.avatarColor}">${chat.initials}</div>
-          <div>
-            <div class="chat-header-name">${chat.with}</div>
-            <div class="chat-header-listing">Re: ${chat.listing}</div>
-          </div>
-        </div>
-        <div class="chat-listing-bar">
-          <img class="chat-listing-img" src="${chat.listingImg}" alt="${chat.listing}" />
-          <div>
-            <div class="chat-listing-title">${chat.listing}</div>
-          </div>
-        </div>
-        <div class="chat-messages" id="messages-${id}">
-          ${chat.messages.map(m => `
-            <div class="msg ${m.from}">
-              <div class="msg-avatar" style="background:${m.from === 'me' ? 'var(--orange)' : chat.avatarColor};color:#fff;">
-                ${m.from === 'me' ? 'AR' : chat.initials}
-              </div>
-              <div>
-                <div class="msg-bubble">${m.text}</div>
-                <div class="msg-time">${m.time}</div>
-              </div>
-            </div>
-          `).join('')}
-        </div>
-        <div class="chat-input-area">
-          <input class="chat-input" id="chat-input-${id}" placeholder="Type a message..." onkeydown="if(event.key==='Enter') sendMessage('${id}')" />
-          <button class="btn-send" onclick="sendMessage('${id}')">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-          </button>
-        </div>
-      `;
-
-      // Scroll to bottom
-      const msgs = document.getElementById('messages-' + id);
-      if (msgs) msgs.scrollTop = msgs.scrollHeight;
-    }
-
-    function sendMessage(chatId) {
-      const input = document.getElementById('chat-input-' + chatId);
-      const text = input.value.trim();
-      if (!text) return;
-
-      const chat = DM_CHATS.find(c => c.id === chatId);
-      if (!chat) return;
-
-      const now = new Date();
-      const timeStr = now.getHours() + ':' + String(now.getMinutes()).padStart(2, '0') + ' ' + (now.getHours() >= 12 ? 'PM' : 'AM');
-      chat.messages.push({ from: 'me', text, time: timeStr });
-      chat.lastMessage = text;
-      input.value = '';
-
-      const msgs = document.getElementById('messages-' + chatId);
-      const newMsg = document.createElement('div');
-      newMsg.className = 'msg me';
-      newMsg.innerHTML = `
-        <div class="msg-avatar" style="background:var(--orange);color:#fff;">AR</div>
-        <div>
-          <div class="msg-bubble">${text}</div>
-          <div class="msg-time">${timeStr}</div>
-        </div>
-      `;
-      msgs.appendChild(newMsg);
-      msgs.scrollTop = msgs.scrollHeight;
-      renderChatList();
-    }
-
     renderChatList();
-  
+
     // Fill the dashboard sidebar with real auth + listing data
     if (typeof dmFillDashboardSidebar === 'function') dmFillDashboardSidebar();
 

@@ -88,16 +88,14 @@
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
             <div>
               <div class="dash-card-title">Notifications</div>
-              <div class="dash-card-sub" style="margin-bottom:0;">5 unread notifications</div>
+              <div class="dash-card-sub" id="notif-subtitle" style="margin-bottom:0;">&nbsp;</div>
             </div>
-            <button class="btn-mark-all" onclick="markAllRead()">Mark all as read</button>
+            <button class="btn-mark-all" id="btn-mark-all" onclick="markAllRead()" style="display:none;">Mark all as read</button>
           </div>
 
-          <div class="notif-filter-tabs">
-            <button class="notif-tab active" onclick="filterNotifs('all', this)">All (7)</button>
-            <button class="notif-tab" onclick="filterNotifs('unread', this)">Unread (5)</button>
-            <button class="notif-tab" onclick="filterNotifs('inquiry', this)">Inquiries</button>
-            <button class="notif-tab" onclick="filterNotifs('saved_search', this)">Saved Searches</button>
+          <div class="notif-filter-tabs" id="notif-tabs" style="display:none;">
+            <button class="notif-tab active" onclick="filterNotifs('all', this)">All <span id="tab-count-all">0</span></button>
+            <button class="notif-tab" onclick="filterNotifs('unread', this)">Unread <span id="tab-count-unread">0</span></button>
           </div>
 
           <div id="notif-list"></div>
@@ -122,12 +120,11 @@
     while (!window.Auth && tries < 50) { await new Promise(r => setTimeout(r, 50)); tries++; }
     if (!window.Auth) return;
     await window.Auth.requireAuth();
+    loadNotifications();
   })();
     renderNavbar('notifications');
     renderFooter();
 
-    // Notifications feature not yet built — Phase 4 will populate from a real
-    // notifications table. For now, the page shows an empty state.
     let notifs = [];
     let currentFilter = 'all';
 
@@ -137,6 +134,82 @@
       t.classList.add('show');
       setTimeout(() => t.classList.remove('show'), 3000);
     }
+    function escapeHtml(s) {
+      return String(s == null ? '' : s)
+        .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+        .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    }
+    function timeAgo(ts) {
+      const diff = Date.now() - new Date(ts).getTime();
+      const m = Math.floor(diff / 60000);
+      if (m < 1) return 'just now';
+      if (m < 60) return m + ' min ago';
+      const h = Math.floor(m / 60);
+      if (h < 24) return h + ' hour' + (h !== 1 ? 's' : '') + ' ago';
+      const d = Math.floor(h / 24);
+      if (d < 7) return d + ' day' + (d !== 1 ? 's' : '') + ' ago';
+      return new Date(ts).toLocaleDateString();
+    }
+
+    const TYPE_ICONS = {
+      inquiry:           { icon: '💬', color: '#2196F3' },
+      listing_approved:  { icon: '✅', color: '#4CAF50' },
+      listing_rejected:  { icon: '⚠️', color: '#F57C00' },
+      saved_search:      { icon: '🔍', color: '#9C27B0' },
+      price_drop:        { icon: '💰', color: '#FF9800' },
+      expiry_reminder:   { icon: '⏰', color: '#E91E63' },
+      system:            { icon: '🔔', color: '#666' },
+    };
+
+    async function loadNotifications() {
+      const list = document.getElementById('notif-list');
+      list.innerHTML = '<div style="text-align:center;padding:30px;color:var(--grey);font-size:13px;">Loading…</div>';
+
+      const user = await window.Auth.getUser();
+      if (!user) return;
+
+      try {
+        const { data, error } = await window.supa
+          .from('notifications')
+          .select('id, type, title, body, link_url, read_at, created_at')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false })
+          .limit(100);
+        if (error) throw error;
+        notifs = data || [];
+        updateChrome();
+        renderNotifs();
+      } catch (e) {
+        // Table not present yet, or some other issue — show empty state
+        notifs = [];
+        updateChrome();
+        renderNotifs();
+      }
+    }
+
+    function updateChrome() {
+      const total = notifs.length;
+      const unread = notifs.filter(n => !n.read_at).length;
+      const sub = document.getElementById('notif-subtitle');
+      const tabs = document.getElementById('notif-tabs');
+      const markBtn = document.getElementById('btn-mark-all');
+      const allCount = document.getElementById('tab-count-all');
+      const unreadCount = document.getElementById('tab-count-unread');
+
+      if (total === 0) {
+        if (sub) sub.textContent = "You're all caught up — no notifications yet.";
+        if (tabs) tabs.style.display = 'none';
+        if (markBtn) markBtn.style.display = 'none';
+      } else {
+        if (sub) sub.textContent = unread === 0
+          ? `${total} notification${total !== 1 ? 's' : ''}`
+          : `${unread} unread notification${unread !== 1 ? 's' : ''}`;
+        if (tabs) tabs.style.display = '';
+        if (markBtn) markBtn.style.display = unread > 0 ? '' : 'none';
+        if (allCount) allCount.textContent = `(${total})`;
+        if (unreadCount) unreadCount.textContent = `(${unread})`;
+      }
+    }
 
     function filterNotifs(filter, btn) {
       currentFilter = filter;
@@ -145,44 +218,76 @@
       renderNotifs();
     }
 
-    function markAllRead() {
-      notifs.forEach(n => n.read = true);
-      renderNotifs();
-      showToast('All notifications marked as read.');
+    async function markAllRead() {
+      const user = await window.Auth.getUser();
+      if (!user) return;
+      const ids = notifs.filter(n => !n.read_at).map(n => n.id);
+      if (!ids.length) return;
+      try {
+        const { error } = await window.supa
+          .from('notifications')
+          .update({ read_at: new Date().toISOString() })
+          .in('id', ids);
+        if (error) throw error;
+        notifs.forEach(n => { if (!n.read_at) n.read_at = new Date().toISOString(); });
+        updateChrome();
+        renderNotifs();
+        showToast('All marked as read.');
+      } catch (e) {
+        showToast('Could not update: ' + (e.message || ''));
+      }
     }
+    window.markAllRead = markAllRead;
+    window.filterNotifs = filterNotifs;
 
-    function markRead(id) {
-      const n = notifs.find(n => n.id === id);
-      if (n) n.read = true;
-      renderNotifs();
+    async function openNotif(id) {
+      const n = notifs.find(x => x.id === id);
+      if (!n) return;
+      // Mark read on click
+      if (!n.read_at) {
+        try {
+          await window.supa.from('notifications').update({ read_at: new Date().toISOString() }).eq('id', id);
+          n.read_at = new Date().toISOString();
+        } catch {}
+      }
+      if (n.link_url) window.location.href = n.link_url;
+      else { updateChrome(); renderNotifs(); }
     }
+    window.openNotif = openNotif;
 
     function renderNotifs() {
       const list = document.getElementById('notif-list');
       let filtered = notifs;
-      if (currentFilter === 'unread') filtered = notifs.filter(n => !n.read);
-      else if (currentFilter !== 'all') filtered = notifs.filter(n => n.type === currentFilter);
+      if (currentFilter === 'unread') filtered = notifs.filter(n => !n.read_at);
 
       if (!filtered.length) {
-        list.innerHTML = `<div style="text-align:center;padding:40px 20px;"><div style="font-size:40px;margin-bottom:12px;">🔔</div><div style="font-size:18px;font-weight:800;color:var(--dark);margin-bottom:8px;">No notifications</div><div style="font-size:14px;color:var(--grey);">You're all caught up!</div></div>`;
+        const msg = notifs.length === 0
+          ? `You haven't received any notifications yet. We'll let you know when something happens.`
+          : (currentFilter === 'unread' ? `You've read everything. Nothing unread.` : `No notifications match this filter.`);
+        list.innerHTML = `<div style="text-align:center;padding:40px 20px;">
+          <div style="font-size:40px;margin-bottom:12px;">🔔</div>
+          <div style="font-size:18px;font-weight:800;color:var(--dark);margin-bottom:8px;">${notifs.length === 0 ? 'No notifications' : "You're all caught up"}</div>
+          <div style="font-size:14px;color:var(--grey);max-width:380px;margin:0 auto;">${msg}</div>
+        </div>`;
         return;
       }
 
-      list.innerHTML = filtered.map(n => `
-        <div class="notif-item ${n.read ? '' : 'unread'}" onclick="markRead('${n.id}'); window.location.href='${n.link}'">
-          <div class="notif-icon" style="background:${n.iconColor}22;">${n.icon}</div>
+      list.innerHTML = filtered.map(n => {
+        const t = TYPE_ICONS[n.type] || TYPE_ICONS.system;
+        const isUnread = !n.read_at;
+        return `
+        <div class="notif-item ${isUnread ? 'unread' : ''}" onclick="openNotif('${n.id}')">
+          <div class="notif-icon" style="background:${t.color}22;">${t.icon}</div>
           <div class="notif-body">
-            <div class="notif-title">${n.title}</div>
-            <div class="notif-text">${n.body}</div>
-            <div class="notif-time">${n.time}</div>
+            <div class="notif-title">${escapeHtml(n.title)}</div>
+            ${n.body ? `<div class="notif-text">${escapeHtml(n.body)}</div>` : ''}
+            <div class="notif-time">${timeAgo(n.created_at)}</div>
           </div>
-          ${!n.read ? '<div class="notif-unread-dot"></div>' : ''}
-        </div>
-      `).join('');
+          ${isUnread ? '<div class="notif-unread-dot"></div>' : ''}
+        </div>`;
+      }).join('');
     }
 
-    renderNotifs();
-  
     // Fill the dashboard sidebar with real auth + listing data
     if (typeof dmFillDashboardSidebar === 'function') dmFillDashboardSidebar();
 

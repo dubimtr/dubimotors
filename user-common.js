@@ -459,4 +459,32 @@ if (typeof window !== 'undefined') {
   window.dmGetInitials = dmGetInitials;
   window.dmFillDashboardSidebar = dmFillDashboardSidebar;
   window.dmClearSidebarCache = dmClearSidebarCache;
+
+  // ─── Recent search recorder (localStorage-backed) ───
+  // Call from category pages with the user's query + filter state.
+  // De-dupes consecutive identical queries, caps at 8 entries.
+  window.dmRecordRecentSearch = function (entry) {
+    try {
+      if (!entry || (!entry.query && !entry.filters)) return;
+      const KEY = 'dm_recent_searches_v1';
+      let arr = [];
+      try { arr = JSON.parse(localStorage.getItem(KEY) || '[]'); } catch {}
+      if (!Array.isArray(arr)) arr = [];
+      const newEntry = {
+        id: (window.crypto && window.crypto.randomUUID && window.crypto.randomUUID()) || (Date.now() + '-' + Math.random()),
+        query: entry.query || 'Search',
+        filters: entry.filters || {},
+        url: entry.url || window.location.pathname + window.location.search,
+        ts: Date.now(),
+      };
+      // De-dupe: if last entry has identical query+url, just bump its timestamp
+      if (arr.length && arr[0].query === newEntry.query && arr[0].url === newEntry.url) {
+        arr[0].ts = newEntry.ts;
+      } else {
+        arr.unshift(newEntry);
+      }
+      arr = arr.slice(0, 8);
+      localStorage.setItem(KEY, JSON.stringify(arr));
+    } catch {}
+  };
 }

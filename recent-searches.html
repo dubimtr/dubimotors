@@ -109,9 +109,22 @@
     renderNavbar('recent-searches');
     renderFooter();
 
-    // Recent searches: Phase 4 will track these via localStorage and/or
-    // a recent_searches table. For now, always show empty state.
-    let searches = [];
+    const RS_STORAGE_KEY = 'dm_recent_searches_v1';
+    const RS_LIMIT = 8;
+
+    function loadRecent() {
+      try {
+        const raw = localStorage.getItem(RS_STORAGE_KEY);
+        if (!raw) return [];
+        const arr = JSON.parse(raw);
+        return Array.isArray(arr) ? arr : [];
+      } catch { return []; }
+    }
+    function saveRecent(arr) {
+      try { localStorage.setItem(RS_STORAGE_KEY, JSON.stringify(arr.slice(0, RS_LIMIT))); } catch {}
+    }
+
+    let searches = loadRecent();
 
     function showToast(msg) {
       const t = document.getElementById('toast');
@@ -120,10 +133,31 @@
       setTimeout(() => t.classList.remove('show'), 3000);
     }
 
+    function escapeHtml(s) {
+      return String(s == null ? '' : s)
+        .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+        .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    }
+    function timeAgo(ts) {
+      const diff = Date.now() - ts;
+      const m = Math.floor(diff / 60000);
+      if (m < 1) return 'just now';
+      if (m < 60) return m + ' min ago';
+      const h = Math.floor(m / 60);
+      if (h < 24) return h + ' hour' + (h !== 1 ? 's' : '') + ' ago';
+      const d = Math.floor(h / 24);
+      if (d < 7) return d + ' day' + (d !== 1 ? 's' : '') + ' ago';
+      return new Date(ts).toLocaleDateString();
+    }
+
     function renderRecent() {
       const list = document.getElementById('rs-list');
       if (!searches.length) {
-        list.innerHTML = `<div style="text-align:center;padding:40px 20px;"><div style="font-size:40px;margin-bottom:12px;">🔍</div><div style="font-size:18px;font-weight:800;color:var(--dark);margin-bottom:8px;">No recent searches</div><div style="font-size:14px;color:var(--grey);">Your search history will appear here.</div></div>`;
+        list.innerHTML = `<div style="text-align:center;padding:40px 20px;">
+          <div style="font-size:40px;margin-bottom:12px;">🔍</div>
+          <div style="font-size:18px;font-weight:800;color:var(--dark);margin-bottom:8px;">No recent searches</div>
+          <div style="font-size:14px;color:var(--grey);">Your search history will appear here as you browse.</div>
+        </div>`;
         return;
       }
       list.innerHTML = searches.map(s => `
@@ -131,10 +165,10 @@
           <div class="rs-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>
           </div>
-          <a href="${s.url}" class="rs-query">${s.query}</a>
-          <span class="rs-time">${s.time}</span>
+          <a href="${escapeHtml(s.url)}" class="rs-query">${escapeHtml(s.query)}</a>
+          <span class="rs-time">${timeAgo(s.ts)}</span>
           <div class="rs-actions">
-            <button class="btn-rs save" title="Save this search" onclick="saveSearch('${s.id}', '${s.query.replace(/'/g, "\\'")}')">Save</button>
+            <button class="btn-rs save" title="Save this search" onclick="saveSearchFromRecent('${s.id}')">Save</button>
             <button class="btn-rs" title="Remove" onclick="removeSearch('${s.id}')">✕</button>
           </div>
         </div>
@@ -143,19 +177,36 @@
 
     function removeSearch(id) {
       searches = searches.filter(s => s.id !== id);
+      saveRecent(searches);
       renderRecent();
     }
 
     function clearAll() {
       if (!confirm('Clear all recent searches?')) return;
       searches = [];
+      saveRecent(searches);
       renderRecent();
       showToast('Recent search history cleared.');
     }
 
-    function saveSearch(id, query) {
-      showToast(`"${query}" saved to your saved searches!`);
+    async function saveSearchFromRecent(id) {
+      const s = searches.find(x => x.id === id);
+      if (!s) return;
+      const user = await window.Auth.getUser();
+      if (!user) { showToast('Please sign in first.'); return; }
+      try {
+        const { error } = await window.supa.from('saved_searches').insert({
+          user_id: user.id,
+          name: s.query,
+          filters: s.filters || {},
+        });
+        if (error) throw error;
+        showToast(`"${s.query}" saved to your saved searches.`);
+      } catch (e) {
+        showToast('Could not save: ' + (e.message || ''));
+      }
     }
+    window.saveSearchFromRecent = saveSearchFromRecent;
 
     renderRecent();
   

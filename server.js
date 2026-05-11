@@ -1315,6 +1315,196 @@ async function handleResetPassword(req, res) {
   return jsonRes(res, { ok: true });
 }
 
+/* ── POST /api/change-password — authenticated, requires current password ──
+   Body: { currentPassword, newPassword }
+
+   Unlike reset-password (which uses an email-link token), this requires the
+   user to be signed in and prove they know their current password. This is
+   the "change password from settings" flow, not "forgot password."
+*/
+async function handleChangePassword(req, res) {
+  const supa = getSupabaseAdmin();
+  if (!supa) return jsonRes(res, { error: 'Service unavailable' }, 503);
+
+  const user = await getUserFromRequest(req);
+  if (!user) return jsonRes(res, { ok: false, error: 'Not authenticated' }, 401);
+
+  let body = {};
+  try { body = await parseBody(req); } catch {}
+  const currentPassword = String(body.currentPassword || '');
+  const newPassword     = String(body.newPassword || '');
+
+  if (!currentPassword || !newPassword) {
+    return jsonRes(res, { ok: false, error: 'Both current and new password are required' }, 400);
+  }
+  if (newPassword.length < 6) {
+    return jsonRes(res, { ok: false, error: 'New password must be at least 6 characters' }, 400);
+  }
+  if (newPassword.length > 128) {
+    return jsonRes(res, { ok: false, error: 'New password is too long' }, 400);
+  }
+  if (currentPassword === newPassword) {
+    return jsonRes(res, { ok: false, error: 'New password must be different from the current one' }, 400);
+  }
+
+  // ─── Verify current password by attempting to sign in ───
+  // We use a fresh anon client (not the admin one) so we get the standard
+  // password-verification flow without bypassing it.
+  try {
+    const { createClient } = require('@supabase/supabase-js');
+    const verifyClient = createClient(
+      process.env.SUPABASE_URL,
+      process.env.SUPABASE_ANON_KEY,
+      { auth: { persistSession: false, autoRefreshToken: false } }
+    );
+    const { error: signInErr } = await verifyClient.auth.signInWithPassword({
+      email: user.email,
+      password: currentPassword,
+    });
+    if (signInErr) {
+      return jsonRes(res, { ok: false, error: 'Current password is incorrect' }, 400);
+    }
+  } catch (e) {
+    console.error('[change-password] verify failed:', e.message);
+    return jsonRes(res, { ok: false, error: 'Could not verify current password' }, 500);
+  }
+
+  // ─── Update password ───
+  try {
+    const { error: updErr } = await supa.auth.admin.updateUserById(user.id, {
+      password: newPassword,
+    });
+    if (updErr) {
+      console.error('[change-password] update failed:', updErr.message);
+      return jsonRes(res, { ok: false, error: 'Could not update password' }, 500);
+    }
+  } catch (e) {
+    console.error('[change-password] update threw:', e.message);
+    return jsonRes(res, { ok: false, error: 'Could not update password' }, 500);
+  }
+
+  // ─── Bookkeeping: record when password was changed ───
+  try {
+    await supa.from('profiles')
+      .update({ password_changed_at: new Date().toISOString() })
+      .eq('id', user.id);
+  } catch (e) {
+    console.warn('[change-password] could not update profiles.password_changed_at:', e.message);
+  }
+
+  // Note: we do NOT sign out other sessions here. The user knows the new
+  // password and is actively using the app — kicking them out of other
+  // devices would be a more aggressive policy than necessary.
+
+  return jsonRes(res, { ok: true });
+}
+
+/* ── POST /api/deactivate-account — authenticated ──
+   Body: {}
+
+   Soft-disables the account. User is signed out and can't sign back in until
+   support re-enables it (which we'll do manually for now — a reactivation
+   email-link flow can come later).
+
+   This DOES NOT delete data. Listings stay. Photos stay. Just blocks login.
+*/
+async function handleDeactivateAccount(req, res) {
+  const supa = getSupabaseAdmin();
+  if (!supa) return jsonRes(res, { error: 'Service unavailable' }, 503);
+
+  const user = await getUserFromRequest(req);
+  if (!user) return jsonRes(res, { ok: false, error: 'Not authenticated' }, 401);
+
+  try {
+    // Mark profile as deactivated for bookkeeping
+    await supa.from('profiles')
+      .update({ deactivated_at: new Date().toISOString() })
+      .eq('id', user.id);
+
+    // Ban the auth user — Supabase supports this via admin API:
+    // setting `banned_until` to a future date prevents sign-in.
+    // 100 years in the future = effectively permanent until reactivated.
+    const farFuture = new Date(Date.now() + 100 * 365 * 24 * 60 * 60 * 1000).toISOString();
+    await supa.auth.admin.updateUserById(user.id, {
+      ban_duration: '876000h',  // 100 years
+    });
+
+    // Pause all their active listings (hide from public)
+    await supa.from('listings')
+      .update({ status: 'expired' })
+      .eq('owner_id', user.id)
+      .eq('status', 'active');
+
+    // Kill all sessions
+    try { await supa.auth.admin.signOut(user.id); } catch {}
+
+    return jsonRes(res, { ok: true });
+  } catch (e) {
+    console.error('[deactivate] failed:', e.message);
+    return jsonRes(res, { ok: false, error: 'Could not deactivate account' }, 500);
+  }
+}
+
+/* ── POST /api/delete-account — authenticated, IRREVERSIBLE ──
+   Body: { confirmEmail: string }
+
+   Hard-deletes the auth user and cascades:
+   - profiles row (FK on delete cascade)
+   - listings rows (FK on delete cascade) — and their listing_images
+   - favourites rows
+   - notifications, saved_searches, etc.
+
+   We require the user to type their email to confirm. Storage files are
+   left as orphans (cleaned up by future cron — not worth blocking deletion).
+*/
+async function handleDeleteAccount(req, res) {
+  const supa = getSupabaseAdmin();
+  if (!supa) return jsonRes(res, { error: 'Service unavailable' }, 503);
+
+  const user = await getUserFromRequest(req);
+  if (!user) return jsonRes(res, { ok: false, error: 'Not authenticated' }, 401);
+
+  let body = {};
+  try { body = await parseBody(req); } catch {}
+  const confirmEmail = String(body.confirmEmail || '').trim().toLowerCase();
+  if (!confirmEmail || confirmEmail !== (user.email || '').toLowerCase()) {
+    return jsonRes(res, {
+      ok: false,
+      error: 'Please type your email address exactly to confirm deletion.',
+    }, 400);
+  }
+
+  try {
+    // Best-effort: enumerate the user's storage objects and remove them.
+    // (Cascade deletes the DB rows, but Storage files don't auto-delete.)
+    try {
+      const { data: imgs } = await supa.from('listing_images')
+        .select('storage_path')
+        .in('listing_id',
+          (await supa.from('listings').select('id').eq('owner_id', user.id)).data?.map(l => l.id) || []
+        );
+      const paths = (imgs || []).map(i => i.storage_path).filter(Boolean);
+      if (paths.length) {
+        await supa.storage.from('vehicle-photos').remove(paths);
+      }
+    } catch (e) {
+      console.warn('[delete-account] storage cleanup failed (non-fatal):', e.message);
+    }
+
+    // Delete the auth user — this cascades to profiles, listings, etc. via FKs.
+    const { error: delErr } = await supa.auth.admin.deleteUser(user.id);
+    if (delErr) {
+      console.error('[delete-account] auth deletion failed:', delErr.message);
+      return jsonRes(res, { ok: false, error: 'Could not delete account: ' + delErr.message }, 500);
+    }
+
+    return jsonRes(res, { ok: true });
+  } catch (e) {
+    console.error('[delete-account] failed:', e.message);
+    return jsonRes(res, { ok: false, error: 'Could not delete account' }, 500);
+  }
+}
+
 // ══════════════════════════════════════════════════════════════════════════
 // HTTP SERVER
 // ══════════════════════════════════════════════════════════════════════════
@@ -1341,6 +1531,9 @@ const server = http.createServer(async (req, res) => {
     if (url === '/api/internal/listing-activated') return handleListingActivatedWebhook(req, res);
     if (url === '/api/send-password-reset-email') return handleSendPasswordResetEmail(req, res);
     if (url === '/api/reset-password') return handleResetPassword(req, res);
+    if (url === '/api/change-password') return handleChangePassword(req, res);
+    if (url === '/api/deactivate-account') return handleDeactivateAccount(req, res);
+    if (url === '/api/delete-account') return handleDeleteAccount(req, res);
   }
   if (req.method === 'GET') {
     if (url === '/api/verify-email') return handleVerifyEmailToken(req, res);
