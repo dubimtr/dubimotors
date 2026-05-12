@@ -143,8 +143,54 @@
 
     .listing-info { margin-top: 28px; }
     .listing-info-title { font-size: 26px; font-weight: 900; color: var(--dark); margin-bottom: 8px; }
-    .listing-info-meta { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; }
+    .listing-info-meta { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
     .listing-info-price { font-size: 32px; font-weight: 900; color: var(--orange); }
+
+    /* Bigger, clearer chips than the old tiny grey pills */
+    .meta-chip {
+      background: var(--light-grey);
+      color: #555;
+      font-size: 13px;
+      font-weight: 700;
+      padding: 6px 12px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      line-height: 1.2;
+    }
+    .meta-chip:empty { display: none; }
+
+    /* Seller-declared tags row */
+    .seller-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+    .seller-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 12.5px;
+      font-weight: 700;
+      padding: 5px 11px;
+      border-radius: 999px;
+      letter-spacing: 0.2px;
+    }
+    .seller-tag svg { width: 13px; height: 13px; }
+    .seller-tag.verified  { background: #E8F5E9; color: #1B5E20; }
+    .seller-tag.warranty  { background: #E3F2FD; color: #0D47A1; }
+    .seller-tag.service   { background: #FFF3E0; color: #B84A05; }
+    .seller-tag.featured  { background: #FFFBE6; color: #8a5a00; }
+    .seller-tags:empty { display: none; }
+    .seller-tags-disclaimer {
+      font-size: 11.5px;
+      color: var(--grey);
+      font-style: italic;
+      margin-bottom: 22px;
+      line-height: 1.4;
+    }
 
     .specs-grid {
       display: grid;
@@ -172,7 +218,7 @@
     .specs-table td:last-child { font-weight: 600; color: var(--dark); }
 
     .description-text { font-size: 14px; color: #555; line-height: 1.8; }
-    .location-address { font-size: 13px; color: var(--grey); line-height: 1.5; }
+    .location-address { font-size: 15px; color: var(--dark); line-height: 1.5; font-weight: 600; }
 
     /* SIDEBAR */
     .detail-sidebar {}
@@ -180,77 +226,82 @@
       background: var(--white);
       border: 1px solid var(--border);
       border-radius: 16px;
-      padding: 24px;
+      padding: 18px;
       margin-bottom: 16px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
     }
-    .price-card-price { font-size: 30px; font-weight: 900; color: var(--orange); margin-bottom: 4px; }
-    .price-card-sub { font-size: 13px; color: var(--grey); margin-bottom: 20px; }
     .price-card-actions { display: flex; flex-direction: column; gap: 10px; }
-    .btn-call {
-      background: #16a34a;
-      color: var(--white);
+
+    /* Primary action buttons — shared shape so they line up perfectly */
+    .price-card .btn-call,
+    .price-card .btn-whatsapp,
+    .price-card .btn-message {
       border: none;
-      border-radius: 10px;
-      padding: 14px;
+      border-radius: 12px;
+      padding: 14px 16px;
       font-size: 15px;
       font-weight: 700;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 8px;
-      transition: background 0.2s;
+      gap: 10px;
       text-decoration: none;
-    }
-    .btn-call:hover { background: #15803d; }
-    .btn-whatsapp {
-      background: #25D366;
       color: var(--white);
-      border: none;
-      border-radius: 10px;
-      padding: 14px;
-      font-size: 15px;
-      font-weight: 700;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      text-decoration: none;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.15);
+      transition: transform 0.12s ease, box-shadow 0.18s ease, background-color 0.18s ease;
+      letter-spacing: 0.1px;
     }
-    .btn-whatsapp:hover { background: #1ebe5d; }
-    .btn-message {
-      background: var(--orange);
-      color: var(--white);
-      border: none;
-      border-radius: 10px;
-      padding: 14px;
-      font-size: 15px;
-      font-weight: 700;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
+    .price-card .btn-call:hover,
+    .price-card .btn-whatsapp:hover,
+    .price-card .btn-message:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,0.18);
     }
-    .btn-message:hover { background: var(--orange-hover); }
-    .btn-message:disabled { opacity: 0.5; cursor: not-allowed; }
-    .btn-save {
-      background: transparent;
+    .price-card .btn-call:active,
+    .price-card .btn-whatsapp:active,
+    .price-card .btn-message:active {
+      transform: translateY(0);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.10), inset 0 1px 0 rgba(255,255,255,0.10);
+    }
+
+    .price-card .btn-call    { background: #16a34a; }
+    .price-card .btn-call:hover    { background: #15803d; }
+    .price-card .btn-whatsapp { background: #25D366; }
+    .price-card .btn-whatsapp:hover { background: #1ebe5d; }
+    .price-card .btn-message { background: var(--orange); }
+    .price-card .btn-message:hover { background: var(--orange-hover); }
+    .price-card .btn-message:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* Secondary row: Save + Share, side by side */
+    .action-row-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 4px;
+    }
+    .btn-save, .btn-share {
+      background: var(--white);
       color: var(--dark);
       border: 1.5px solid var(--border);
-      border-radius: 10px;
-      padding: 12px;
-      font-size: 14px;
-      font-weight: 600;
+      border-radius: 12px;
+      padding: 11px 12px;
+      font-size: 13.5px;
+      font-weight: 700;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 8px;
-      transition: all 0.2s;
+      gap: 6px;
+      transition: all 0.18s;
     }
-    .btn-save:hover { border-color: var(--orange); color: var(--orange); }
+    .btn-save:hover, .btn-share:hover { border-color: var(--orange); color: var(--orange); }
+    .btn-save.saved {
+      background: #FFF1E6;
+      border-color: var(--orange);
+      color: var(--orange);
+    }
+    .btn-save.saved svg { fill: var(--orange); stroke: var(--orange); }
 
     .seller-card {
       background: var(--white);
@@ -463,8 +514,16 @@
         <div class="listing-info-title" id="detail-title"></div>
         <div class="listing-info-meta">
           <div class="listing-info-price" id="detail-price"></div>
-          <span class="pill" id="detail-condition"></span>
-          <span class="pill" id="detail-location">📍 </span>
+          <span class="meta-chip" id="detail-condition"></span>
+          <span class="meta-chip" id="detail-year"></span>
+          <span class="meta-chip" id="detail-location"></span>
+        </div>
+
+        <!-- Seller-declared tags (Verified, Warranty, Service Contract, etc.)
+             populated by renderTags() in JS based on listing fields. -->
+        <div class="seller-tags" id="seller-tags"></div>
+        <div class="seller-tags-disclaimer" id="seller-tags-disclaimer" style="display:none;">
+          ⓘ Details provided by the seller. DubiMotors does not independently verify these claims.
         </div>
 
         <div class="specs-grid" id="specs-grid"></div>
@@ -489,13 +548,29 @@
     <!-- RIGHT: SIDEBAR -->
     <div class="detail-sidebar">
       <div class="price-card">
-        <div class="price-card-price" id="sidebar-price"></div>
-        <div class="price-card-sub" id="sidebar-sub"></div>
         <div class="price-card-actions">
-          <a class="btn-call" id="btn-call" href="#">📞 Call Seller</a>
-          <a class="btn-whatsapp" id="btn-whatsapp" href="#" target="_blank">💬 WhatsApp</a>
-          <button class="btn-message" id="btn-message-seller" onclick="openMessageModal()" style="display:none;">✉️ Message Seller</button>
-          <button class="btn-save" id="btn-save-listing" onclick="toggleFavorite()">🤍 Save Listing</button>
+          <a class="btn-call" id="btn-call" href="#">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+            Call Seller
+          </a>
+          <a class="btn-whatsapp" id="btn-whatsapp" href="#" target="_blank">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.71.306 1.263.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413"/></svg>
+            WhatsApp
+          </a>
+          <button class="btn-message" id="btn-message-seller" onclick="openMessageModal()" style="display:none;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            Message Seller
+          </button>
+          <div class="action-row-2">
+            <button class="btn-save" id="btn-save-listing" onclick="toggleFavorite()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" id="btn-save-svg"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+              <span id="btn-save-label">Save</span>
+            </button>
+            <button class="btn-share" id="btn-share" onclick="shareListing()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+              Share
+            </button>
+          </div>
         </div>
       </div>
 
@@ -1033,10 +1108,51 @@
     // ── INFO ──
     document.getElementById('detail-title').textContent = listing.title;
     document.getElementById('detail-price').textContent = DM.formatPrice(listing.price);
-    document.getElementById('detail-condition').textContent = listing.condition;
-    document.getElementById('detail-location').textContent = '📍 ' + listing.location;
-    document.getElementById('sidebar-price').textContent = DM.formatPrice(listing.price);
-    document.getElementById('sidebar-sub').textContent = listing.condition + ' · ' + listing.year + ' · ' + listing.location;
+
+    // Chips: condition · year · location (bigger, clearer than old tiny pills)
+    const condEl = document.getElementById('detail-condition');
+    const yearEl = document.getElementById('detail-year');
+    const locEl  = document.getElementById('detail-location');
+    if (condEl) condEl.textContent = listing.condition || '';
+    if (yearEl) yearEl.textContent = listing.year ? String(listing.year) : '';
+    if (locEl)  locEl.textContent  = listing.location ? '📍 ' + listing.location : '';
+
+    // Seller-declared tags row. We render a chip per truthy field. The
+    // disclaimer below the chips clarifies these are seller claims, not
+    // independently verified by DubiMotors (covers UAE marketplace norms).
+    const tagsEl = document.getElementById('seller-tags');
+    const discEl = document.getElementById('seller-tags-disclaimer');
+    if (tagsEl) {
+      const tags = [];
+      if (listing.verified) {
+        tags.push(`<span class="seller-tag verified">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+          Verified Dealer
+        </span>`);
+      }
+      if (listing.warranty) {
+        tags.push(`<span class="seller-tag warranty">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2 4 5v6c0 5.55 3.84 10.74 8 12 4.16-1.26 8-6.45 8-12V5l-8-3zm-2 15-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/></svg>
+          Warranty
+        </span>`);
+      }
+      if (listing.serviceContract || listing.service_history) {
+        tags.push(`<span class="seller-tag service">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M22.7 19.3l-3.81-3.83A6 6 0 0 0 12 7.5a6 6 0 1 0 5.47 8.59l3.83 3.81a1 1 0 1 0 1.4-1.4zM12 17.5a4 4 0 1 1 4-4 4 4 0 0 1-4 4z"/></svg>
+          Service Contract
+        </span>`);
+      }
+      if (listing.featured) {
+        tags.push(`<span class="seller-tag featured">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg>
+          Featured
+        </span>`);
+      }
+      tagsEl.innerHTML = tags.join('');
+      // Show disclaimer ONLY when there's at least one seller-declared claim
+      if (discEl) discEl.style.display = tags.length ? '' : 'none';
+    }
+
     document.getElementById('seller-name').textContent = listing.seller;
     document.getElementById('seller-badge').textContent = listing.verified ? '✓ Verified Dealer' : 'Private Seller';
 
@@ -1230,9 +1346,58 @@
     // ── LOCATION MAP ──
     if (listing.lat && listing.lng) {
       document.getElementById('location-section').style.display = '';
-      document.getElementById('location-address').textContent = listing.locationAddress || listing.location + ', UAE';
-      // Mapbox GL JS
+      // Initial fallback while we reverse-geocode in the background
+      const fallbackAddr = listing.locationAddress || (listing.location ? listing.location + ', UAE' : 'UAE');
+      const addrEl = document.getElementById('location-address');
+      addrEl.textContent = fallbackAddr;
+      addrEl.dataset.coarse = '1';
+
+      // Mapbox token (same one used for the map below)
       mapboxgl.accessToken = 'pk.eyJ1IjoiZHViaW1vdG9ycyIsImEiOiJjbW4yOG9vMTMwbWwyMm9wZHA1NnphaGhzIn0.jJP4cJ_mwKYG9_7h1ymsig';
+
+      // Reverse geocode to get street + neighborhood + locality. The Mapbox
+      // Geocoding API returns features ordered by specificity (most specific
+      // first), so we build the address from the most useful pieces.
+      (async () => {
+        try {
+          const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${listing.lng},${listing.lat}.json?access_token=${mapboxgl.accessToken}&language=en&types=address,neighborhood,locality,place`;
+          const res = await fetch(url);
+          if (!res.ok) return;
+          const data = await res.json();
+          if (!data.features || !data.features.length) return;
+
+          // Build a friendly address by collecting the place_type values we care about
+          const byType = {};
+          data.features.forEach(f => {
+            (f.place_type || []).forEach(t => { if (!byType[t]) byType[t] = f.text; });
+          });
+          // Prefer: address (street + number), neighborhood, locality, place (city)
+          const parts = [];
+          if (data.features[0].place_type && data.features[0].place_type.includes('address')) {
+            // The top result is a street address — use its full address text
+            const top = data.features[0];
+            const streetLine = (top.address ? top.address + ' ' : '') + top.text;
+            parts.push(streetLine);
+          }
+          if (byType.neighborhood && !parts.some(p => p.includes(byType.neighborhood))) {
+            parts.push(byType.neighborhood);
+          }
+          if (byType.locality && !parts.some(p => p.includes(byType.locality))) {
+            parts.push(byType.locality);
+          }
+          if (byType.place && !parts.some(p => p.includes(byType.place))) {
+            parts.push(byType.place);
+          }
+          // If we got something more specific than the fallback, use it
+          if (parts.length >= 2 || (parts.length === 1 && parts[0] !== fallbackAddr)) {
+            addrEl.textContent = parts.join(', ');
+            addrEl.dataset.coarse = '0';
+          }
+        } catch (e) {
+          console.warn('[listing] reverse-geocode failed:', e.message);
+        }
+      })();
+
       const map = new mapboxgl.Map({
         container: 'listing-map',
         style: 'mapbox://styles/mapbox/streets-v12',
@@ -1396,14 +1561,13 @@
   function updateFavoriteButtonUI() {
     const btn = document.getElementById('btn-save-listing');
     if (!btn) return;
+    const label = document.getElementById('btn-save-label');
     if (_isFavorited) {
-      btn.innerHTML = '❤️ Saved';
-      btn.style.background = '#FFE4E1';
-      btn.style.color = '#E53935';
+      btn.classList.add('saved');
+      if (label) label.textContent = 'Saved';
     } else {
-      btn.innerHTML = '🤍 Save Listing';
-      btn.style.background = '';
-      btn.style.color = '';
+      btn.classList.remove('saved');
+      if (label) label.textContent = 'Save';
     }
   }
 
@@ -1507,6 +1671,48 @@
     if (window.Auth) loadFavoriteState();
     if (window.Auth) initMessageButton();
   })();
+
+  // ──────────────────────────────────────────────────────────────────
+  // SHARE LISTING — native share sheet on mobile, copy-link on desktop
+  // ──────────────────────────────────────────────────────────────────
+  async function shareListing() {
+    const cur = (typeof listing !== 'undefined' && listing) ? listing : DM.getById(id);
+    const title = cur && cur.title ? cur.title : 'Listing on DubiMotors';
+    const price = cur && cur.price ? ' — ' + DM.formatPrice(cur.price) : '';
+    const text = title + price;
+    const url = window.location.href;
+
+    // navigator.share is available on iOS Safari, Chrome on Android, and
+    // some desktop browsers. Falls back gracefully on older browsers.
+    if (navigator.share) {
+      try {
+        await navigator.share({ title, text, url });
+        return;
+      } catch (e) {
+        // User cancelled — don't surface as an error
+        if (e && e.name === 'AbortError') return;
+        // Other failure → fall through to clipboard
+      }
+    }
+
+    // Fallback: copy to clipboard
+    try {
+      await navigator.clipboard.writeText(url);
+      if (typeof showToast === 'function') showToast('Link copied to clipboard');
+    } catch (e) {
+      // Last-resort fallback for browsers without clipboard API
+      const ta = document.createElement('textarea');
+      ta.value = url;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand('copy'); } catch {}
+      document.body.removeChild(ta);
+      if (typeof showToast === 'function') showToast('Link copied');
+    }
+  }
+  window.shareListing = shareListing;
 
   // ──────────────────────────────────────────────────────────────────
   // MESSAGE SELLER — open chat modal, send first message, navigate to chats
