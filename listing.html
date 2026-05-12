@@ -830,7 +830,12 @@
 
   // The full listing render — wraps the original synchronous code so it can be
   // called once the listing object is actually available from Supabase.
+  let _rendered = false;
   function renderListing(listing) {
+    // Idempotency guard. Both the dm:listings-loaded event AND the 10s timeout
+    // can fire, so we make sure renderListing runs only once.
+    if (_rendered) return;
+    _rendered = true;
 
   // Seller phone (demo — in production this comes from the listing)
   const SELLER_PHONE = '+971501234567';
@@ -841,40 +846,53 @@
     window.Auth.getUser().then(u => { window._currentUser = u || null; }).catch(() => {});
   }
 
-    // ── PENDING/REJECTED BANNER (owner-only preview) ──
-    // If the listing isn't 'active', it's visible to everyone (so direct links
-    // from chat threads keep working) but we show a status banner so visitors
-    // understand it's no longer available for purchase.
+    // ── STATUS BANNER (sold/expired/pending/rejected) ──
+    // Lives INSIDE the price card, right above the action buttons. Cleaner
+    // than a giant banner at the top of the page, and sits where the contact
+    // actions it disables actually are.
     if (listing.status && listing.status !== 'active') {
       const isOwnerView = !!(window.Auth && window._currentUser && window._currentUser.id === listing.owner_id);
       const statusLabel = {
         pending_review: { label: 'Pending Review', color: '#856404', bg: '#FFF3CD', border: '#FFD700',
-                          msg: isOwnerView ? 'This listing is being reviewed by our team and is not yet visible to the public. You can preview it here.'
-                                            : 'This listing is being reviewed and is not currently available.' },
+                          msg: isOwnerView ? 'Being reviewed by our team. Not visible to the public yet.'
+                                            : 'Listing is being reviewed and is not currently available.' },
         rejected:       { label: 'Rejected',       color: '#C62828', bg: '#FFEBEE', border: '#EF9A9A',
-                          msg: isOwnerView ? 'This listing was not approved. Edit and re-submit, or contact support.'
-                                            : 'This listing is not currently available.' },
+                          msg: isOwnerView ? 'Not approved. Edit and re-submit, or contact support.'
+                                            : 'Listing is not currently available.' },
         sold:           { label: 'Sold',           color: '#1B5E20', bg: '#E8F5E9', border: '#A5D6A7',
-                          msg: 'The seller has marked this vehicle as sold. Contact details and purchase actions are disabled.' },
+                          msg: 'The seller has marked this vehicle as sold.' },
         expired:        { label: 'Expired',        color: '#616161', bg: '#F5F5F5', border: '#BDBDBD',
-                          msg: isOwnerView ? 'This listing has expired. Renew it from My Ads to make it visible again.'
-                                            : 'This listing has expired and is no longer available.' },
-      }[listing.status] || { label: listing.status, color: '#666', bg: '#f5f5f5', border: '#ddd', msg: 'This listing is not currently available.' };
+                          msg: isOwnerView ? 'This listing has expired. Renew it from My Ads.'
+                                            : 'Listing has expired and is no longer available.' },
+      }[listing.status] || { label: listing.status, color: '#666', bg: '#f5f5f5', border: '#ddd', msg: 'Listing is not currently available.' };
+
       const banner = document.createElement('div');
-      banner.style.cssText = `background:${statusLabel.bg};border:1px solid ${statusLabel.border};color:${statusLabel.color};padding:14px 18px;margin:0 auto 16px;max-width:1200px;border-radius:10px;font-size:14px;line-height:1.5;display:flex;gap:14px;align-items:center;flex-wrap:wrap;`;
+      banner.setAttribute('data-status-banner', '1');
+      // De-dupe: if a banner somehow already exists (re-entry), wipe it first
+      document.querySelectorAll('[data-status-banner="1"]').forEach(el => el.remove());
+      banner.style.cssText = `background:${statusLabel.bg};border:1px solid ${statusLabel.border};color:${statusLabel.color};padding:10px 12px;margin:0 0 14px 0;border-radius:10px;font-size:13px;line-height:1.4;display:flex;flex-direction:column;gap:6px;`;
       const ownerLinks = isOwnerView ? `
-        <a href="place-ad.html?edit=${encodeURIComponent(id)}" style="color:${statusLabel.color};font-weight:700;text-decoration:underline;">Edit Listing</a>
-        <a href="my-ads.html" style="color:${statusLabel.color};font-weight:700;text-decoration:underline;">My Ads</a>` : '';
+        <div style="display:flex;gap:14px;margin-top:4px;">
+          <a href="place-ad.html?edit=${encodeURIComponent(id)}" style="color:${statusLabel.color};font-weight:700;text-decoration:underline;">Edit</a>
+          <a href="my-ads.html" style="color:${statusLabel.color};font-weight:700;text-decoration:underline;">My Ads</a>
+        </div>` : '';
       banner.innerHTML = `
-        <span style="font-weight:800;background:${statusLabel.color};color:#fff;padding:3px 10px;border-radius:12px;font-size:12px;letter-spacing:0.3px;">${statusLabel.label.toUpperCase()}</span>
-        <span style="flex:1;min-width:200px;">${statusLabel.msg}</span>${ownerLinks}
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span style="font-weight:800;background:${statusLabel.color};color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;letter-spacing:0.3px;">${statusLabel.label.toUpperCase()}</span>
+        </div>
+        <div>${statusLabel.msg}</div>
+        ${ownerLinks}
       `;
-      const main = document.querySelector('main');
-      if (main) main.insertBefore(banner, main.firstChild);
+
+      // Insert at the TOP of the price card, above price text and actions
+      const priceCard = document.querySelector('.price-card');
+      if (priceCard) {
+        priceCard.insertBefore(banner, priceCard.firstChild);
+      }
 
       // Disable contact + save buttons for non-active listings
-      ['callBtn', 'whatsappBtn', 'messageSellerBtn', 'saveListingBtn', 'btn-call', 'btn-whatsapp', 'btn-message-seller', 'btn-save-listing'].forEach(idSel => {
-        const el = document.getElementById(idSel) || document.querySelector('.' + idSel) || document.querySelector(`[data-action="${idSel}"]`);
+      ['btn-call', 'btn-whatsapp', 'btn-message-seller', 'btn-save-listing'].forEach(idSel => {
+        const el = document.getElementById(idSel);
         if (el) {
           el.style.opacity = '0.5';
           el.style.pointerEvents = 'none';

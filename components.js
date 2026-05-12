@@ -318,9 +318,37 @@ async function updateNavbarAuthState() {
   const email = user.email || '';
   const initials = displayName.trim().split(/\s+/).map(w => w[0]).slice(0, 2).join('').toUpperCase() || 'U';
 
-  // Update navbar avatar (the small button)
+  // Update navbar avatar (the small button) — show avatar image if profile
+  // has one, else fall back to initials text.
   const avatarEl = userBtn ? userBtn.querySelector('.nav-user-avatar') : null;
-  if (avatarEl) avatarEl.textContent = initials;
+  if (avatarEl) {
+    const avatarUrl = profile && profile.avatar_url ? profile.avatar_url : null;
+    if (avatarUrl) {
+      avatarEl.style.backgroundImage = `url("${avatarUrl.replace(/"/g, '\\"')}")`;
+      avatarEl.style.backgroundSize = 'cover';
+      avatarEl.style.backgroundPosition = 'center';
+      avatarEl.textContent = '';
+    } else {
+      avatarEl.style.backgroundImage = '';
+      avatarEl.textContent = initials;
+    }
+  }
+
+  // Update the dropdown header avatar too (the inner one shown when the menu
+  // opens). It's the first <div> child of nav-dropdown-header > div > div.
+  const dropdownAvatar = document.querySelector('#user-dropdown .nav-dropdown-header > div > div:first-child');
+  if (dropdownAvatar) {
+    const avatarUrl = profile && profile.avatar_url ? profile.avatar_url : null;
+    if (avatarUrl) {
+      dropdownAvatar.style.backgroundImage = `url("${avatarUrl.replace(/"/g, '\\"')}")`;
+      dropdownAvatar.style.backgroundSize = 'cover';
+      dropdownAvatar.style.backgroundPosition = 'center';
+      dropdownAvatar.textContent = '';
+    } else {
+      dropdownAvatar.style.backgroundImage = '';
+      dropdownAvatar.textContent = initials;
+    }
+  }
 
   // Fetch real My Ads count (active listings owned by this user) and show
   // a badge in the dropdown if > 0. Notifications/chats stay at 0 until those

@@ -341,17 +341,25 @@ function dmApplySidebarSnapshot(snap) {
   const nameEl   = document.querySelector('.dash-name');
   const emailEl  = document.querySelector('.dash-email');
   if (avatarEl) {
-    if (snap.avatarUrl) {
-      // Render real avatar image. Set as background to preserve circular shape
-      // and not need to fight any flex/text-centering rules on .dash-avatar.
+    // hasAvatarUrl: explicit URL in snap → render image
+    // hasAvatarUrl === false (legacy cache, undefined): leave element alone
+    //   so we don't flicker from image → initials → image
+    // hasAvatarUrl === null (fresh fetch found no avatar): reset to initials
+    if (typeof snap.avatarUrl === 'string' && snap.avatarUrl) {
       avatarEl.style.backgroundImage = `url("${snap.avatarUrl.replace(/"/g,'\\"')}")`;
       avatarEl.style.backgroundSize = 'cover';
       avatarEl.style.backgroundPosition = 'center';
       avatarEl.textContent = '';
-    } else {
+    } else if (snap.avatarUrl === null) {
+      // Fresh data says "no avatar" — reset to initials
       avatarEl.style.backgroundImage = '';
       avatarEl.textContent = snap.initials || '';
+    } else if (!avatarEl.style.backgroundImage && !avatarEl.textContent) {
+      // Element is empty and we have no avatar info yet — paint initials
+      avatarEl.textContent = snap.initials || '';
     }
+    // Otherwise: avatarUrl is undefined (legacy cache) AND element has content
+    // already — leave it alone to prevent flicker.
   }
   if (nameEl)   nameEl.textContent   = snap.displayName || '';
   if (emailEl)  emailEl.textContent  = snap.email || '';
@@ -691,3 +699,28 @@ if (typeof window !== 'undefined') {
     }
   };
 }
+
+// ──────────────────────────────────────────────────────────────────────────
+// AUTO-INIT: apply cache snapshot ASAP, before any page-level scripts run.
+// This eliminates the brief flash where the sidebar shows initials/empty
+// before the avatar/name reach the DOM.
+// ──────────────────────────────────────────────────────────────────────────
+(function () {
+  if (typeof window === 'undefined' || typeof document === 'undefined') return;
+  function applyEarly() {
+    try {
+      const cache = dmReadSidebarCache();
+      if (cache) {
+        dmApplySidebarSnapshot(cache);
+        document.documentElement.classList.add('auth-resolved');
+      }
+    } catch {}
+  }
+  // Try once immediately (works if script is in <head> with defer, or
+  // if the dashboard markup is already parsed). Then once more at DOM-ready
+  // to cover the early-script case.
+  applyEarly();
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', applyEarly, { once: true });
+  }
+})();
