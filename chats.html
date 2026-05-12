@@ -279,8 +279,8 @@
     let tries = 0;
     while (!window.Auth && tries < 50) { await new Promise(r => setTimeout(r, 50)); tries++; }
     if (!window.Auth) return;
-    _currentUser = await window.Auth.requireAuth();
-    if (!_currentUser) return;
+    _currentUser = await window.Auth.requireAuth({ reason: 'Sign in to view your chats.' });
+    if (!_currentUser) { window.location.href = '/'; return; }
 
     // Render the dashboard sidebar FIRST (instant from cache snapshot). This
     // means the avatar/name/email/stats appear immediately, with no flicker

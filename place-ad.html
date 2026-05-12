@@ -822,6 +822,22 @@
               </div>
             </div>
           </div>
+
+          <!-- ── FEATURES (AI-suggested, seller-editable) ── -->
+          <div class="form-full" id="features-section" style="display:none;">
+            <div class="form-group">
+              <label class="form-label">
+                Features
+                <span style="font-weight:500;color:var(--grey);font-size:12px;margin-left:6px;">— suggested by AI, tick what your vehicle has</span>
+              </label>
+              <div id="features-status" style="font-size:12.5px;color:var(--grey);margin-bottom:10px;"></div>
+              <div id="features-groups" style="display:flex;flex-direction:column;gap:14px;"></div>
+              <button type="button" id="features-refresh-btn" onclick="suggestFeatures()" style="display:none;margin-top:10px;background:transparent;color:var(--orange);border:1.5px dashed var(--orange);border-radius:8px;padding:8px 14px;font-size:12.5px;font-weight:700;cursor:pointer;">
+                Re-suggest with AI
+              </button>
+            </div>
+          </div>
+
           <div class="form-full">
             <div class="form-group">
               <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;">
@@ -915,6 +931,31 @@
           <div class="form-group">
             <label class="form-label">Email</label>
             <input class="form-input" id="inp-email" type="email" placeholder="your@email.com" />
+          </div>
+
+          <!-- ── CONTACT PREFERENCES — at least 2 required ── -->
+          <div class="form-group" style="margin-top:8px;">
+            <label class="form-label">
+              Contact Preferences <span style="color:var(--orange)">*</span>
+              <span style="font-weight:500;color:var(--grey);font-size:12px;margin-left:6px;">— at least 2 must be enabled</span>
+            </label>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-top:4px;">
+              <label style="display:flex;align-items:center;gap:10px;background:var(--light-grey);border:1px solid var(--border);border-radius:10px;padding:12px 14px;cursor:pointer;font-size:14px;font-weight:600;color:var(--dark);transition:border-color .2s;" onmouseover="this.style.borderColor='var(--orange)'" onmouseout="this.style.borderColor='var(--border)'">
+                <input type="checkbox" id="chk-contact-call" checked onchange="validateContactPrefs()" style="width:18px;height:18px;accent-color:var(--orange);cursor:pointer;" />
+                <span>📞 Call</span>
+              </label>
+              <label style="display:flex;align-items:center;gap:10px;background:var(--light-grey);border:1px solid var(--border);border-radius:10px;padding:12px 14px;cursor:pointer;font-size:14px;font-weight:600;color:var(--dark);transition:border-color .2s;" onmouseover="this.style.borderColor='var(--orange)'" onmouseout="this.style.borderColor='var(--border)'">
+                <input type="checkbox" id="chk-contact-whatsapp" checked onchange="validateContactPrefs()" style="width:18px;height:18px;accent-color:var(--orange);cursor:pointer;" />
+                <span>💬 WhatsApp</span>
+              </label>
+              <label style="display:flex;align-items:center;gap:10px;background:var(--light-grey);border:1px solid var(--border);border-radius:10px;padding:12px 14px;cursor:pointer;font-size:14px;font-weight:600;color:var(--dark);transition:border-color .2s;" onmouseover="this.style.borderColor='var(--orange)'" onmouseout="this.style.borderColor='var(--border)'">
+                <input type="checkbox" id="chk-contact-message" checked onchange="validateContactPrefs()" style="width:18px;height:18px;accent-color:var(--orange);cursor:pointer;" />
+                <span>✉️ In-App Messages</span>
+              </label>
+            </div>
+            <div id="contact-prefs-error" style="font-size:12px;color:#e53e3e;margin-top:6px;display:none;">
+              Please select at least 2 contact methods.
+            </div>
           </div>
         </div>
 
@@ -1017,8 +1058,15 @@
     while (!window.Auth && tries < 50) { await new Promise(r => setTimeout(r, 50)); tries++; }
     if (!window.Auth) return;
 
-    const user = await window.Auth.requireAuth();
-    if (!user) return; // requireAuth already redirected
+    const user = await window.Auth.requireAuth({
+      reason: 'Sign in to post your ad.',
+    });
+    if (!user) {
+      // User cancelled the sign-in modal. Go home rather than leaving the
+      // half-rendered place-ad form on screen.
+      window.location.href = '/';
+      return;
+    }
     _currentUser = user;
     _emailVerified = await window.Auth.isEmailVerified();
 
@@ -1170,6 +1218,54 @@
       setVal('inp-engine', L.engine || '');
       setVal('inp-hp', L.hp || '');
       setVal('sel-cyl', L.cylinders || '');
+
+      // Vehicle extras checkboxes
+      function setCheck(id, v) {
+        const el = document.getElementById(id);
+        if (el) el.checked = !!v;
+      }
+      setCheck('chk-warranty',     L.warranty);
+      setCheck('chk-service',      L.service_history);
+      setCheck('chk-no-accidents', L.no_accidents);
+      setCheck('chk-first-owner',  L.first_owner);
+
+      // Contact preferences. Default to true (existing rows without these
+      // columns get the column default; older rows that pre-date the migration
+      // would have null → treat as true so user can see they're enabled).
+      setCheck('chk-contact-call',     L.contact_call     !== false);
+      setCheck('chk-contact-whatsapp', L.contact_whatsapp !== false);
+      setCheck('chk-contact-message',  L.contact_message  !== false);
+
+      // Features panel hydration. If the listing has saved features, render
+      // them with the existing checked state (ticked = on the vehicle).
+      // If features are missing (older listing or fresh ad), the debounced
+      // suggestFeatures() call in updatePreview will kick in.
+      if (L.features && typeof L.features === 'object') {
+        const f = {
+          safety:  Array.isArray(L.features.safety)  ? L.features.safety  : [],
+          comfort: Array.isArray(L.features.comfort) ? L.features.comfort : [],
+          tech:    Array.isArray(L.features.tech)    ? L.features.tech    : [],
+        };
+        const total = f.safety.length + f.comfort.length + f.tech.length;
+        if (total > 0) {
+          // Mark these as already-ticked: keys are strings (renderFeatureGroups
+          // treats string = ticked). Suppress the AI auto-call by setting the
+          // key to the current vehicle id.
+          if (typeof renderFeatureGroups === 'function') {
+            renderFeatureGroups(f);
+            const section = document.getElementById('features-section');
+            const status  = document.getElementById('features-status');
+            const refresh = document.getElementById('features-refresh-btn');
+            if (section) section.style.display = '';
+            if (status)  { status.textContent = `Loaded ${total} features from this listing.`; status.style.color = ''; }
+            if (refresh) refresh.style.display = '';
+            // Block the debounce from clobbering loaded features
+            if (typeof _lastFeaturesKey !== 'undefined') {
+              _lastFeaturesKey = featuresKey();
+            }
+          }
+        }
+      }
     }
 
     if (typeof updatePreview === 'function') {
@@ -1521,6 +1617,15 @@
     document.getElementById('prev-km').textContent = km ? parseInt(km).toLocaleString() + ' KM' : (currentCat === 'plates' ? 'UAE Plate' : currentCat === 'accessories' ? 'Accessory' : 'KM');
     document.getElementById('prev-cond').textContent = cond || 'Condition';
     document.getElementById('prev-loc').textContent = loc ? '📍 ' + loc : '📍 Location';
+
+    // Debounced AI features suggestion. Only fires when make/model/trim/year
+    // change, and only for vehicle categories (not plates/accessories).
+    if (currentCat !== 'plates' && currentCat !== 'accessories') {
+      clearTimeout(window._featuresDebounce);
+      window._featuresDebounce = setTimeout(() => {
+        if (typeof suggestFeatures === 'function') suggestFeatures();
+      }, 700);
+    }
   }
 
   /* ── Pricing plan ── */
@@ -1736,6 +1841,18 @@
         if (data.condition) document.getElementById('sel-condition').value = data.condition;
         if (data.engine) document.getElementById('inp-engine').value = data.engine;
         if (data.transmission) document.getElementById('sel-trans').value = data.transmission;
+        // Fuel type — AI can determine this from engine + badges (Diesel, Hybrid, Electric, Petrol)
+        if (data.fuelType) {
+          const fuelSel = document.getElementById('sel-fuel');
+          if (fuelSel) {
+            for (let o of fuelSel.options) {
+              if (o.value.toLowerCase() === data.fuelType.toLowerCase()) {
+                fuelSel.value = o.value;
+                break;
+              }
+            }
+          }
+        }
         // Split color: exterior and interior
         if (data.exteriorColor) document.getElementById('sel-ext-color').value = data.exteriorColor;
         if (data.interiorColor) document.getElementById('sel-int-color').value = data.interiorColor;
@@ -1779,13 +1896,14 @@
   /* ══════════════════════════════════════════════════════════════
      AI PRICE ESTIMATOR
   ══════════════════════════════════════════════════════════════ */
-   async function runPriceEstimate() {
+  async function runPriceEstimate() {
     const brand = document.getElementById('sel-brand').value;
     const model = document.getElementById('sel-model').value;
     const trim  = document.getElementById('sel-trim').value;
     const year  = document.getElementById('sel-year').value;
     const km    = document.getElementById('inp-km').value;
     const cond  = document.getElementById('sel-condition').value;
+    const regionalSpec = document.getElementById('sel-spec') ? document.getElementById('sel-spec').value : '';
     if (!brand || !model || !year) {
       showToast('Please select Brand, Model and Year first.');
       return;
@@ -1798,15 +1916,16 @@
       const res = await fetch('/api/price-estimate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ brand, model, trim, year, km, condition: cond })
+        body: JSON.stringify({ brand, model, trim, year, km, condition: cond, regionalSpec })
       });
       const data = await res.json();
-      showPriceEstimate(data);
+      if (data.error) {
+        showToast(data.error);
+      } else {
+        showPriceEstimate(data);
+      }
     } catch (e) {
-      // Fallback demo
-      const base = 80000;
-      const vehicleName = [year, brand, model, trim].filter(Boolean).join(' ');
-      showPriceEstimate({ low: base * 0.85, high: base * 1.15, median: base, insight: `Based on similar ${vehicleName} listings in the UAE, the typical asking price ranges between AED ${Math.round(base*0.85).toLocaleString()} and AED ${Math.round(base*1.15).toLocaleString()}. Condition, mileage, and regional spec significantly affect the final price.`, demand: 'Medium' });
+      showToast('Price estimation unavailable. Please try again.');
     }
 
     btn.disabled = false; btn.innerHTML = '<span>✨</span> Re-estimate Price';
@@ -1899,6 +2018,143 @@
     btn.disabled = false;
     btn.innerHTML = '<span>&#x2728;</span> Regenerate';
   }
+
+  /* ══════════════════════════════════════════════════════════════
+     FEATURES SUGGESTION — AI auto-populate Safety / Comfort / Tech
+  ══════════════════════════════════════════════════════════════ */
+  // Tracks the last (make,model,trim,year) we requested features for, so
+  // we don't spam the AI on every keystroke / preview update.
+  let _lastFeaturesKey = '';
+  let _featuresInflight = false;
+
+  function featuresKey() {
+    const make  = (document.getElementById('sel-brand') || {}).value || '';
+    const model = (document.getElementById('sel-model') || {}).value || '';
+    const trim  = (document.getElementById('sel-trim')  || {}).value || '';
+    const year  = (document.getElementById('sel-year')  || {}).value || '';
+    return [make, model, trim, year].join('|');
+  }
+
+  function getCategoryFromUrl() {
+    const url = new URLSearchParams(window.location.search);
+    return (url.get('category') || 'cars').toLowerCase();
+  }
+
+  // Render the 3 feature groups as checkbox grids. `existing` is an object
+  // { safety: [...], comfort: [...], tech: [...] } where each item can be
+  // either a string (pre-ticked) or {label, checked: false} (un-ticked).
+  function renderFeatureGroups(features) {
+    const wrap = document.getElementById('features-groups');
+    if (!wrap) return;
+    const groups = [
+      { key: 'safety',  title: 'Driver Assistance & Safety', icon: '🛡️' },
+      { key: 'comfort', title: 'Comfort & Convenience',      icon: '🛋️' },
+      { key: 'tech',    title: 'Technology',                 icon: '📱' },
+    ];
+
+    wrap.innerHTML = groups.map(g => {
+      const items = (features[g.key] || []);
+      if (!items.length) return '';
+      const checkboxes = items.map((item, idx) => {
+        const label = typeof item === 'string' ? item : item.label;
+        const checked = typeof item === 'string' ? true : !!item.checked;
+        const safeId = `feat-${g.key}-${idx}`;
+        return `
+          <label style="display:flex;align-items:center;gap:9px;background:var(--white);border:1px solid var(--border);border-radius:9px;padding:9px 12px;cursor:pointer;font-size:13.5px;font-weight:600;color:var(--dark);transition:border-color .15s;" onmouseover="this.style.borderColor='var(--orange)'" onmouseout="this.style.borderColor='var(--border)'">
+            <input type="checkbox" id="${safeId}" data-feat-group="${g.key}" value="${escapeAttr(label)}" ${checked ? 'checked' : ''} style="width:16px;height:16px;accent-color:var(--orange);cursor:pointer;flex-shrink:0;" />
+            <span>${escapeHtml(label)}</span>
+          </label>`;
+      }).join('');
+      return `
+        <div>
+          <div style="font-size:13px;font-weight:700;color:var(--dark);margin-bottom:8px;letter-spacing:0.2px;">
+            <span style="margin-right:6px;">${g.icon}</span>${g.title}
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px;">
+            ${checkboxes}
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  // Collect ticked features from the DOM into { safety, comfort, tech }
+  function featuresFromDom() {
+    const out = { safety: [], comfort: [], tech: [] };
+    document.querySelectorAll('[data-feat-group]').forEach(input => {
+      if (!input.checked) return;
+      const g = input.getAttribute('data-feat-group');
+      if (out[g]) out[g].push(input.value);
+    });
+    return out;
+  }
+  window.featuresFromDom = featuresFromDom;
+
+  // Call the API. Re-runs only when make/model/trim/year change.
+  async function suggestFeatures(force) {
+    const key = featuresKey();
+    if (!key || key.split('|').filter(Boolean).length < 2) {
+      // Not enough info to ask the AI yet (need at least make + model)
+      document.getElementById('features-section').style.display = 'none';
+      return;
+    }
+    if (key === _lastFeaturesKey && !force) return;
+    if (_featuresInflight) return;
+    _lastFeaturesKey = key;
+
+    const section = document.getElementById('features-section');
+    const status  = document.getElementById('features-status');
+    const refresh = document.getElementById('features-refresh-btn');
+    section.style.display = '';
+    status.textContent = 'Suggesting features with AI…';
+    if (refresh) refresh.style.display = 'none';
+
+    const category = getCategoryFromUrl();
+    const make  = (document.getElementById('sel-brand') || {}).value || '';
+    const model = (document.getElementById('sel-model') || {}).value || '';
+    const trim  = (document.getElementById('sel-trim')  || {}).value || '';
+    const year  = (document.getElementById('sel-year')  || {}).value || '';
+    const body_type = (document.getElementById('sel-body-type') || {}).value || '';
+
+    _featuresInflight = true;
+    try {
+      const res = await fetch('/api/suggest-features', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ category, make, model, trim, year, body_type }),
+      });
+      const data = await res.json();
+      const features = (data && data.features) || { safety: [], comfort: [], tech: [] };
+      const total = (features.safety||[]).length + (features.comfort||[]).length + (features.tech||[]).length;
+      if (total === 0) {
+        status.textContent = 'No features suggested for this trim. You can add a description below.';
+        section.style.display = 'none';
+        return;
+      }
+      renderFeatureGroups(features);
+      status.textContent = `Suggested ${total} features for ${[year, make, model, trim].filter(Boolean).join(' ')}. Untick anything your vehicle doesn't have.`;
+      status.style.color = '#00B450';
+      if (refresh) refresh.style.display = '';
+    } catch (e) {
+      status.style.color = '#e53e3e';
+      status.textContent = 'Could not load features — you can skip this section.';
+      section.style.display = 'none';
+    } finally {
+      _featuresInflight = false;
+    }
+  }
+  window.suggestFeatures = suggestFeatures;
+
+  // Live-validate contact preference count (called on each checkbox toggle).
+  // Shows the error inline if < 2 are ticked.
+  function validateContactPrefs() {
+    const call = !!(document.getElementById('chk-contact-call') || {}).checked;
+    const wa   = !!(document.getElementById('chk-contact-whatsapp') || {}).checked;
+    const msg  = !!(document.getElementById('chk-contact-message') || {}).checked;
+    const count = (call ? 1 : 0) + (wa ? 1 : 0) + (msg ? 1 : 0);
+    const errEl = document.getElementById('contact-prefs-error');
+    if (errEl) errEl.style.display = (count < 2) ? '' : 'none';
+  }
+  window.validateContactPrefs = validateContactPrefs;
 
   /* ══════════════════════════════════════════════════════════════
      SUBMIT — uploads photos to Storage, inserts listing + images,
@@ -1997,7 +2253,7 @@
         user = await window.AuthModal.open({ tab: 'login', reason: 'Sign in to publish your listing.' });
         if (!user) return;
       } else {
-        window.location.href = 'login.html?next=/place-ad.html';
+        alert('Sign-in is currently unavailable. Please refresh.');
         return;
       }
     }
@@ -2077,6 +2333,34 @@
       if (!brand || !model) { showToast('Please fill in Brand and Model.'); return; }
       if (!year)            { showToast('Please select the year.'); return; }
     }
+
+    // ─── 3b. Vehicle extras (warranty, service, no-accidents, first-owner) ───
+    // These checkboxes already exist in the form, just weren't being read.
+    const hasWarranty     = !!(document.getElementById('chk-warranty')     || {}).checked;
+    const hasService      = !!(document.getElementById('chk-service')      || {}).checked;
+    const noAccidents     = !!(document.getElementById('chk-no-accidents') || {}).checked;
+    const firstOwner      = !!(document.getElementById('chk-first-owner')  || {}).checked;
+
+    // Contact preferences — at least 2 must be selected
+    const contactCall     = !!(document.getElementById('chk-contact-call')     || {}).checked;
+    const contactWhatsapp = !!(document.getElementById('chk-contact-whatsapp') || {}).checked;
+    const contactMessage  = !!(document.getElementById('chk-contact-message')  || {}).checked;
+    const contactPrefsCount = (contactCall ? 1 : 0) + (contactWhatsapp ? 1 : 0) + (contactMessage ? 1 : 0);
+    if (contactPrefsCount < 2) {
+      const errEl = document.getElementById('contact-prefs-error');
+      if (errEl) errEl.style.display = '';
+      showToast('Please select at least 2 contact methods.');
+      // Scroll the contact section into view
+      const el = document.getElementById('chk-contact-call');
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+
+    // Collect features from the ticked checkboxes in the Features panel
+    const features = (typeof featuresFromDom === 'function') ? featuresFromDom() : null;
+    // Only store features if at least one is ticked (avoid empty {})
+    const featuresTotal = features ? ((features.safety||[]).length + (features.comfort||[]).length + (features.tech||[]).length) : 0;
+    const featuresPayload = featuresTotal > 0 ? features : null;
 
     // ─── 4. Photos check ───
     // Combine sources — manual flow uses `manualPhotos`, AI flow uses `aiUploadedFiles`
@@ -2168,8 +2452,14 @@
         contact_phone: phone,
         contact_whatsapp: phone,
         verified: false,
-        warranty: false,
-        service_history: false,
+        warranty: hasWarranty,
+        service_history: hasService,
+        no_accidents: noAccidents,
+        first_owner: firstOwner,
+        features: featuresPayload,
+        contact_call: contactCall,
+        contact_whatsapp: contactWhatsapp,
+        contact_message: contactMessage,
         featured: false,
         is_demo: false,
       };
@@ -2435,6 +2725,14 @@
         contact_name: name,
         contact_phone: phone,
         contact_whatsapp: phone,
+        warranty: hasWarranty,
+        service_history: hasService,
+        no_accidents: noAccidents,
+        first_owner: firstOwner,
+        features: featuresPayload,
+        contact_call: contactCall,
+        contact_whatsapp: contactWhatsapp,
+        contact_message: contactMessage,
         updated_at: new Date().toISOString(),
       };
       const { error: updErr } = await window.supa

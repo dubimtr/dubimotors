@@ -235,8 +235,9 @@ async function updateNavbarAuthState() {
       signInBtn.textContent = 'Sign In';
       signInBtn.style.background = 'var(--orange)';
       signInBtn.onclick = async () => {
-        // Prefer the in-page modal. If for some reason it isn't loaded, fall
-        // back to the legacy login.html navigation.
+        // Prefer the in-page modal. If for some reason it isn't loaded, the
+        // alert below makes the situation visible. login.html no longer exists
+        // as a standalone page.
         if (window.AuthModal) {
           const user = await window.AuthModal.open({ tab: 'login' });
           if (user) {
@@ -244,8 +245,7 @@ async function updateNavbarAuthState() {
             updateNavbarAuthState();
           }
         } else {
-          const next = encodeURIComponent(window.location.pathname + window.location.search);
-          window.location.href = 'login.html?next=' + next;
+          alert('Sign-in is currently unavailable. Please refresh.');
         }
       };
       // Insert before the hamburger button so it sits in the right place
@@ -279,7 +279,7 @@ async function updateNavbarAuthState() {
             const user = await window.AuthModal.open({ tab: 'login' });
             if (user) updateNavbarAuthState();
           } else {
-            window.location.href = 'login.html';
+            alert('Sign-in is currently unavailable. Please refresh.');
           }
         };
         const divider = mobileNav.querySelector('div[style*="border-top"]');

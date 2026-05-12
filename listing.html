@@ -183,6 +183,8 @@
     .seller-tag.warranty  { background: #E3F2FD; color: #0D47A1; }
     .seller-tag.service   { background: #FFF3E0; color: #B84A05; }
     .seller-tag.featured  { background: #FFFBE6; color: #8a5a00; }
+    .seller-tag.no-accidents { background: #F1F8E9; color: #33691E; }
+    .seller-tag.first-owner  { background: #F3E5F5; color: #4A148C; }
     .seller-tags:empty { display: none; }
     .seller-tags-disclaimer {
       font-size: 11.5px;
@@ -315,6 +317,45 @@
     .seller-avatar { width: 48px; height: 48px; background: var(--orange); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
     .seller-name { font-size: 15px; font-weight: 800; color: var(--dark); }
     .seller-badge { font-size: 11px; color: #00B450; font-weight: 600; margin-top: 2px; }
+
+    /* FEATURES CARD (sidebar) */
+    .features-card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 18px 18px 16px;
+      margin-bottom: 16px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+    .features-card-title {
+      font-size: 14px; font-weight: 800; color: var(--dark);
+      text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 3px;
+    }
+    .features-card-sub { font-size: 12.5px; color: var(--grey); margin-bottom: 12px; }
+    .features-card-groups { display: flex; flex-direction: column; gap: 14px; }
+    .features-card-group-title {
+      font-size: 11px; font-weight: 700; color: var(--grey);
+      text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 7px;
+    }
+    .features-card-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+    .features-card-chip {
+      display: inline-flex; align-items: center; gap: 5px;
+      background: var(--light-grey); color: #444;
+      font-size: 12px; font-weight: 600;
+      padding: 5px 10px; border-radius: 999px;
+      line-height: 1.3;
+    }
+    .features-card-chip::before {
+      content: '✓';
+      color: var(--orange);
+      font-weight: 800;
+      font-size: 11px;
+    }
+    .features-card-note {
+      font-size: 11px; color: var(--grey); font-style: italic;
+      margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--border);
+      line-height: 1.4;
+    }
 
     /* FINANCE CARD */
     .finance-card {
@@ -586,6 +627,14 @@
         </div>
       </div>
 
+      <!-- FEATURES CARD — populated from listing.features. Hidden if empty. -->
+      <div class="features-card" id="features-card" style="display:none;">
+        <div class="features-card-title">Features</div>
+        <div class="features-card-sub" id="features-card-sub">Equipped on this vehicle, as listed by the seller.</div>
+        <div class="features-card-groups" id="features-card-groups"></div>
+        <div class="features-card-note">ⓘ Provided by the seller. Verify in person before purchase.</div>
+      </div>
+
       <!-- FINANCE CARD WITH SLIDERS -->
       <div class="finance-card">
         <div class="finance-title">Finance This Vehicle</div>
@@ -839,6 +888,13 @@
         warranty: data.warranty,
         serviceContract: data.service_history,
         service_history: data.service_history,
+        no_accidents: data.no_accidents,
+        first_owner: data.first_owner,
+        features: data.features,
+        contact_call: data.contact_call,
+        contact_whatsapp: data.contact_whatsapp,
+        contact_message: data.contact_message,
+        features: data.features || null,
         status: data.status,
         is_demo: data.is_demo,
         mainImg,
@@ -1148,6 +1204,18 @@
           Featured
         </span>`);
       }
+      if (listing.no_accidents) {
+        tags.push(`<span class="seller-tag no-accidents">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+          No Accidents
+        </span>`);
+      }
+      if (listing.first_owner) {
+        tags.push(`<span class="seller-tag first-owner">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21 12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61z"/></svg>
+          First Owner
+        </span>`);
+      }
       tagsEl.innerHTML = tags.join('');
       // Show disclaimer ONLY when there's at least one seller-declared claim
       if (discEl) discEl.style.display = tags.length ? '' : 'none';
@@ -1193,7 +1261,7 @@
           if (!user) return false; // user cancelled
         } else {
           const next = encodeURIComponent(window.location.pathname + window.location.search);
-          window.location.href = 'login.html?next=' + next;
+          alert('Sign-in is currently unavailable. Please refresh.');
           return false;
         }
       }
@@ -1256,6 +1324,21 @@
 
     const callBtn = document.getElementById('btn-call');
     const waBtn = document.getElementById('btn-whatsapp');
+    const msgBtn = document.getElementById('btn-message-seller');
+
+    // Honor seller's contact preferences. Listings created BEFORE the
+    // contact_prefs migration have these fields as undefined → treat as true
+    // (column default). Boolean false (explicitly disabled) → hide.
+    const allowCall    = listing.contact_call    !== false;
+    const allowWA      = listing.contact_whatsapp !== false;
+    const allowMessage = listing.contact_message !== false;
+    if (callBtn) callBtn.style.display = allowCall ? '' : 'none';
+    if (waBtn)   waBtn.style.display   = allowWA   ? '' : 'none';
+    // Message button is initially display:none; only show it when seller opted in
+    // AND the viewer is logged in (existing initMessageButton handles that).
+    // Stash the preference so initMessageButton respects it.
+    window._listingAllowMessage = allowMessage;
+
     callBtn.href = callHref;
     waBtn.href = waHref;
     callBtn.addEventListener('click', async (e) => {
@@ -1327,16 +1410,173 @@
       The listing is ${listing.verified ? `from <strong>${listing.seller}</strong>, a verified dealer in the UAE` : `from a private seller — ${listing.seller}`}.
       Contact us today to arrange a viewing${listing.category === 'bikes' || listing.category === 'marine' ? '' : ' or test drive'}.`;
 
+    // ── FEATURES CARD (sidebar) ──
+    // listing.features is a JSONB object: { safety: [...], comfort: [...], tech: [...] }
+    // Hide the card if no features are set. Each group hides individually if its
+    // array is empty.
+    (function renderFeaturesCard() {
+      const card = document.getElementById('features-card');
+      const groupsEl = document.getElementById('features-card-groups');
+      if (!card || !groupsEl) return;
+
+      const features = listing.features;
+      if (!features || typeof features !== 'object') {
+        card.style.display = 'none';
+        return;
+      }
+
+      const groupConfig = [
+        { key: 'safety',  label: 'Driver Assistance & Safety' },
+        { key: 'comfort', label: 'Comfort' },
+        { key: 'tech',    label: 'Technology' },
+      ];
+
+      const html = groupConfig
+        .filter(g => Array.isArray(features[g.key]) && features[g.key].length > 0)
+        .map(g => `
+          <div>
+            <div class="features-card-group-title">${g.label}</div>
+            <div class="features-card-chips">
+              ${features[g.key].map(name => `<span class="features-card-chip">${String(name).replace(/[<>]/g,'')}</span>`).join('')}
+            </div>
+          </div>
+        `).join('');
+
+      if (!html) { card.style.display = 'none'; return; }
+      groupsEl.innerHTML = html;
+      card.style.display = '';
+    })();
+
     // ── FINANCE SLIDERS ──
     const priceSlider = document.getElementById('fin-price');
     priceSlider.value = listing.price;
     priceSlider.max = Math.min(2000000, Math.max(listing.price * 1.5, 200000));
     calcFinance();
 
-    // ── SIMILAR LISTINGS ──
-    const similar = DM.getByCategory(listing.category).filter(l => l.id !== listing.id).slice(0, 4);
+    // ── SIMILAR LISTINGS (smart cascade) ──
+    // Progressive narrowing: try the tightest match first, widen on misses,
+    // stop as soon as we have 4 candidates. Each step builds on the prior
+    // pool, so we don't include the same listing twice across steps.
+    //
+    // Cars/bikes/heavy: make+model+year+color → make+model+year → make+model
+    //   → same body_type/segment+year → same body_type/segment → category fallback
+    // Boats/jetski: similar pattern via make/model where present
+    // Plates: same emirate digit-count → emirate → all plates
+    // Accessories: same brand → same accessory category → all accessories
+    function getSmartSimilar(target, allInCategory) {
+      const seen = new Set([target.id]);
+      const accum = [];
+      function take(arr) {
+        for (const l of arr) {
+          if (seen.has(l.id)) continue;
+          seen.add(l.id);
+          accum.push(l);
+          if (accum.length >= 4) return true;
+        }
+        return false;
+      }
+
+      const cat = (target.category || '').toLowerCase();
+      const make = (target.make || '').toLowerCase();
+      const model = (target.model || '').toLowerCase();
+      const year = target.year;
+      const color = (target.color || target.extColor || '').toLowerCase();
+      const bodyType = (target.bodyType || target.body_type || '').toLowerCase();
+
+      const pool = allInCategory.filter(l => l.id !== target.id);
+
+      if (cat === 'plates' || cat === 'accessories') {
+        // Plates: nearest match by location (emirate)
+        if (cat === 'plates') {
+          const loc = (target.location || '').toLowerCase();
+          if (loc) {
+            const sameLoc = pool.filter(l => (l.location || '').toLowerCase() === loc);
+            if (take(sameLoc)) return accum.slice(0, 4);
+          }
+        }
+        // Accessories: same brand → same model keyword
+        if (cat === 'accessories' && make) {
+          const sameBrand = pool.filter(l => (l.make || '').toLowerCase() === make);
+          if (take(sameBrand)) return accum.slice(0, 4);
+        }
+        // Category fallback
+        take(pool);
+        return accum.slice(0, 4);
+      }
+
+      // Vehicles (cars, bikes, boats, jetski, heavy)
+      // Tier 1: same make + model + year + color
+      if (make && model && year && color) {
+        const t1 = pool.filter(l =>
+          (l.make || '').toLowerCase() === make &&
+          (l.model || '').toLowerCase() === model &&
+          l.year === year &&
+          ((l.color || l.extColor || '').toLowerCase() === color)
+        );
+        if (take(t1)) return accum.slice(0, 4);
+      }
+
+      // Tier 2: same make + model + year (any color)
+      if (make && model && year) {
+        const t2 = pool.filter(l =>
+          (l.make || '').toLowerCase() === make &&
+          (l.model || '').toLowerCase() === model &&
+          l.year === year
+        );
+        if (take(t2)) return accum.slice(0, 4);
+      }
+
+      // Tier 3: same make + model (any year)
+      if (make && model) {
+        const t3 = pool.filter(l =>
+          (l.make || '').toLowerCase() === make &&
+          (l.model || '').toLowerCase() === model
+        );
+        if (take(t3)) return accum.slice(0, 4);
+      }
+
+      // Tier 4: same make + body type, ±2 years
+      if (make && bodyType && year) {
+        const t4 = pool.filter(l =>
+          (l.make || '').toLowerCase() === make &&
+          (l.bodyType || l.body_type || '').toLowerCase() === bodyType &&
+          l.year && Math.abs(l.year - year) <= 2
+        );
+        if (take(t4)) return accum.slice(0, 4);
+      }
+
+      // Tier 5: same make (any model)
+      if (make) {
+        const t5 = pool.filter(l => (l.make || '').toLowerCase() === make);
+        if (take(t5)) return accum.slice(0, 4);
+      }
+
+      // Tier 6: same body type, ±3 years
+      if (bodyType && year) {
+        const t6 = pool.filter(l =>
+          (l.bodyType || l.body_type || '').toLowerCase() === bodyType &&
+          l.year && Math.abs(l.year - year) <= 3
+        );
+        if (take(t6)) return accum.slice(0, 4);
+      }
+
+      // Tier 7: same body type (any year)
+      if (bodyType) {
+        const t7 = pool.filter(l => (l.bodyType || l.body_type || '').toLowerCase() === bodyType);
+        if (take(t7)) return accum.slice(0, 4);
+      }
+
+      // Tier 8: category fallback — any other listing in this category
+      take(pool);
+      return accum.slice(0, 4);
+    }
+
+    const similar = getSmartSimilar(listing, DM.getByCategory(listing.category));
     const simGrid = document.getElementById('similar-grid');
-    similar.forEach(l => simGrid.innerHTML += DM.renderCard(l));
+    if (simGrid) {
+      simGrid.innerHTML = '';
+      similar.forEach(l => simGrid.innerHTML += DM.renderCard(l));
+    }
     document.getElementById('similar-link').href = catPages[listing.category];
 
     // ── MODAL CAR INFO ──
@@ -1625,7 +1865,7 @@
         const u = await window.AuthModal.open({ tab: 'login', reason: 'Sign in to save listings to your favourites.' });
         if (!u) return;
       } else {
-        window.location.href = 'login.html?next=' + encodeURIComponent(window.location.pathname + window.location.search);
+        alert('Sign-in is currently unavailable. Please refresh.');
         return;
       }
     }
@@ -1766,6 +2006,14 @@
       }
     }
 
+    // Per-listing contact preference: if the seller disabled in-app messages
+    // for THIS specific ad, hide the button (overrides chat_enabled which is
+    // an account-level setting).
+    if (window._listingAllowMessage === false) {
+      btn.style.display = 'none';
+      return;
+    }
+
     btn.style.display = '';
   }
 
@@ -1816,7 +2064,7 @@
         user = await window.AuthModal.open({ tab: 'login', reason: 'Sign in to message the seller.' });
         if (!user) return;
       } else {
-        window.location.href = 'login.html?next=' + encodeURIComponent(window.location.pathname + window.location.search);
+        alert('Sign-in is currently unavailable. Please refresh.');
         return;
       }
     }

@@ -245,8 +245,8 @@
         return;
       }
 
-      // Not signed in
-      slot.innerHTML = `<a class="up-btn outline" href="login.html">Sign in to message</a>`;
+      // Not signed in — open the auth modal on click
+      slot.innerHTML = `<a class="up-btn outline" href="#" onclick="event.preventDefault();if(window.AuthModal){window.AuthModal.open({tab:'login',reason:'Sign in to message this seller.'}).then(u=>{if(u)location.reload();});}">Sign in to message</a>`;
     }
 
     // ──────────────────────────────────────────────────────────────────

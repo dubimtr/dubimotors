@@ -115,7 +115,8 @@
     let tries = 0;
     while (!window.Auth && tries < 50) { await new Promise(r => setTimeout(r, 50)); tries++; }
     if (!window.Auth) return;
-    await window.Auth.requireAuth();
+    const _u = await window.Auth.requireAuth();
+    if (!_u) { window.location.href = "/"; return; }
   })();
     renderNavbar('saved-searches');
     renderFooter();

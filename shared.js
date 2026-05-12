@@ -2508,6 +2508,12 @@ const DM = (() => {
       warranty: row.warranty,
       serviceHistory: row.service_history,
       serviceContract: row.service_history, // legacy alias for renderCard
+      service_history: row.service_history,
+      no_accidents: row.no_accidents,
+      first_owner: row.first_owner,
+      contact_call: row.contact_call,
+      contact_whatsapp: row.contact_whatsapp,
+      contact_message: row.contact_message,
       addedDate: row.created_at ? row.created_at.split('T')[0] : null,
       lat: row.latitude,
       lng: row.longitude,
@@ -2516,6 +2522,7 @@ const DM = (() => {
       images: imgs,
       description: row.description,
       isDemo: row.is_demo,
+      features: row.features || null,
     };
   }
 

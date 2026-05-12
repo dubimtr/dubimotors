@@ -1205,8 +1205,8 @@
         return;
       }
 
-      const user = await window.Auth.requireAuth();
-      if (!user) return; // requireAuth redirects, this is just a safety net
+      const user = await window.Auth.requireAuth({ reason: 'Sign in to view your profile.' });
+      if (!user) { window.location.href = '/'; return; }
 
       const profile = await window.Auth.getProfile();
       applyProfileToUI(user, profile);

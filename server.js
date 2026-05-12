@@ -245,8 +245,9 @@ Return ONLY a valid JSON object with NO markdown:
   "bodyType": "SUV, Sedan, Coupe, Hatchback, Convertible, Pickup, Van, or Wagon",
   "engine": "Engine spec — e.g. 3.0L Inline-6 TwinPower Turbo, 4.0L V8 Biturbo",
   "transmission": "Automatic or Manual",
+  "fuelType": "Petrol, Diesel, Hybrid, or Electric — based on the engine type and badges",
   "hp": "Horsepower as integer string for this exact trim",
-  "cylinders": "Number of cylinders as string",
+  "cylinders": "Number of cylinders as string (use 0 for electric)",
   "doors": "Number of doors as string",
   "seats": "Number of seats as string",
   "confidence": "high/medium/low"
@@ -592,26 +593,60 @@ async function scrapeDubicarsPrice(brand, model, year) {
 
 async function handlePriceEstimate(req, res) {
   if (!aiAvailable(res)) return;
-  const { brand, model, trim, year, km, condition } = await parseBody(req);
+  const { brand, model, trim, year, km, condition, regionalSpec } = await parseBody(req);
   if (!brand || !model || !year) return jsonRes(res, { error: 'Brand, model and year are required.' }, 400);
 
   const vehicleDesc = [year, brand, model, trim].filter(Boolean).join(' ');
   const kmNum = km ? parseInt(km) : null;
 
-  // Step 1: Scrape real live prices from Dubicars
+  // Step 1: Scrape real live prices from Dubicars (fast, but may fail/rot)
   const scraped = await scrapeDubicarsPrice(brand, model, year);
   const liveData = scraped.prices;
 
-  // Step 2: Build AI prompt with real data if available
+  // Step 2: Also query our OWN listings DB for the same make/model/year ± 2
+  // Far more reliable than third-party scraping over time.
+  let internalPrices = [];
+  try {
+    if (process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      const yearNum = parseInt(year);
+      const url = new URL(`${process.env.SUPABASE_URL}/rest/v1/listings`);
+      url.searchParams.set('select', 'price,year,trim,regional_spec');
+      url.searchParams.set('make', `ilike.${brand}`);
+      url.searchParams.set('model', `ilike.%${model}%`);
+      url.searchParams.set('year', `gte.${yearNum - 2}`);
+      url.searchParams.set('status', 'eq.active');
+      const dbRes = await fetch(url.toString(), {
+        headers: {
+          apikey: process.env.SUPABASE_SERVICE_ROLE_KEY,
+          Authorization: `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`,
+        },
+      });
+      if (dbRes.ok) {
+        const rows = await dbRes.json();
+        // Filter to within ±2 years and (if regionalSpec given) same spec
+        internalPrices = rows
+          .filter(r => Math.abs((r.year || 0) - yearNum) <= 2)
+          .filter(r => !regionalSpec || !r.regional_spec || r.regional_spec === regionalSpec)
+          .map(r => r.price)
+          .filter(p => p && p > 5000 && p < 50000000);
+      }
+    }
+  } catch (e) {
+    console.warn('Internal price lookup failed:', e.message);
+  }
+
+  // Combine all available real-world prices
+  const allPrices = [...liveData, ...internalPrices].sort((a, b) => a - b);
+
+  // Step 3: Build AI prompt with real data if available
   let priceContext = '';
-  if (liveData.length > 0) {
-    const sorted = [...liveData].sort((a, b) => a - b);
-    const low = sorted[0];
-    const high = sorted[sorted.length - 1];
-    const median = sorted[Math.floor(sorted.length / 2)];
-    priceContext = `REAL CURRENT UAE LISTINGS FOUND ON DUBICARS:\n- ${liveData.length} listings found\n- Prices range: AED ${low.toLocaleString()} to AED ${high.toLocaleString()}\n- Typical price: AED ${median.toLocaleString()}\n- All prices: ${sorted.map(p => 'AED ' + p.toLocaleString()).join(', ')}\n\nUse these REAL prices as your base.`;
+  if (allPrices.length > 0) {
+    const low = allPrices[0];
+    const high = allPrices[allPrices.length - 1];
+    const median = allPrices[Math.floor(allPrices.length / 2)];
+    priceContext = `REAL CURRENT UAE LISTINGS:\n- ${liveData.length} found on Dubicars, ${internalPrices.length} on DubiMotors\n- Prices range: AED ${low.toLocaleString()} to AED ${high.toLocaleString()}\n- Typical price: AED ${median.toLocaleString()}\n- All prices: ${allPrices.map(p => 'AED ' + p.toLocaleString()).join(', ')}\n\nUse these REAL prices as your base.`;
   } else {
-    priceContext = `No live listings found on Dubicars for this exact model. Use your knowledge of UAE market prices for ${vehicleDesc}.`;
+    priceContext = `No live listings found for this exact model. Use your knowledge of UAE market prices for ${vehicleDesc}.`;
   }
 
   const mileageNote = kmNum
@@ -621,12 +656,17 @@ async function handlePriceEstimate(req, res) {
       : 'Very low mileage: slight premium possible')
     : 'Mileage unknown';
 
+  const specNote = regionalSpec
+    ? `Regional spec: ${regionalSpec}. ${regionalSpec === 'GCC Specs' ? 'GCC spec commands the highest premium in UAE — full warranty, A/C tuned for region.' : regionalSpec === 'American Specs' ? 'American/US spec sells for ~10-15% less in UAE.' : regionalSpec === 'European Specs' ? 'European spec sells for slightly less than GCC.' : 'Non-GCC spec typically sells for 10-20% less than GCC.'}`
+    : 'Regional spec not specified.';
+
   const prompt = `You are a UAE used car market pricing expert with deep knowledge of current Dubai/UAE market prices.
 
 Vehicle to price:
 - Make/Model/Trim: ${vehicleDesc}
 - Condition: ${condition || 'Used'}
 - Mileage: ${kmNum ? kmNum.toLocaleString() + ' km' : 'unknown'}
+- ${specNote}
 
 ${priceContext}
 
@@ -637,7 +677,7 @@ IMPORTANT PRICING RULES:
 4. For exotic/luxury cars (Ferrari, Lamborghini, McLaren, Porsche, etc.), used prices in UAE are typically 30-50% below new MSRP
 5. A 2023 Ferrari SF90 Stradale used = approx AED 1.4M-1.6M (not 2.8M+)
 6. Always factor in the specific trim level — higher trims command 5-20% premium
-7. UAE market prices: factor in no import tax, strong demand for luxury, GCC spec premium
+7. Factor in regional spec impact on the final number
 
 Return ONLY this JSON (no markdown, no explanation):
 {
@@ -646,7 +686,7 @@ Return ONLY this JSON (no markdown, no explanation):
   "median": <most likely AED price as integer>,
   "insight": "<2-3 sentences about current UAE market for this specific vehicle, mentioning realistic price range>",
   "demand": "<High/Medium/Low>",
-  "source": "${liveData.length > 0 ? 'UAE market data (' + liveData.length + ' live listings)' : 'UAE market analysis'}"
+  "source": "${allPrices.length > 0 ? `UAE market data (${allPrices.length} live listings)` : 'UAE market analysis'}"
 }`;
 
   try {
@@ -670,6 +710,97 @@ Return ONLY this JSON (no markdown, no explanation):
   } catch (e) {
     console.error('Price estimate error:', e.message);
     jsonRes(res, { error: 'Price estimation unavailable. Please try again.' }, 500);
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+/* ── /api/suggest-features — AI auto-suggest car feature lists ──
+ *
+ * Given a vehicle's category/make/model/trim/year, returns three lists of
+ * features (Safety, Comfort, Technology) that the trim is COMMONLY equipped
+ * with. The seller then unticks anything their specific car doesn't have.
+ *
+ * Input:  { category, make, model, trim, year, body_type }
+ * Output: { features: { safety: string[], comfort: string[], tech: string[] } }
+ *
+ * Cost: ~$0.003 per call (gpt-4.1-mini, ~600 tokens in/out).
+ */
+async function handleSuggestFeatures(req, res) {
+  if (!aiAvailable(res)) return;
+
+  let body = {};
+  try {
+    body = await parseBody(req);
+  } catch {
+    return jsonRes(res, { error: 'Invalid JSON' }, 400);
+  }
+
+  const { category, make, model, trim, year, body_type } = body;
+  if (!category || !make || !model) {
+    return jsonRes(res, { error: 'category, make, and model are required.' }, 400);
+  }
+
+  // For non-vehicle categories (plates, accessories), features panel doesn't
+  // apply — return empty lists and let the client skip the section.
+  if (category === 'plates' || category === 'accessories') {
+    return jsonRes(res, { features: { safety: [], comfort: [], tech: [] } });
+  }
+
+  const vehicleDescriptor = [year, make, model, trim].filter(Boolean).join(' ');
+  const bodyDescriptor = body_type ? ` (${body_type})` : '';
+
+  // Map category to natural-language descriptor for the prompt
+  const categoryLabel = {
+    cars: 'car',
+    bikes: 'motorcycle',
+    boats: 'boat',
+    jetski: 'jet ski',
+    heavy: 'heavy vehicle',
+  }[category] || 'vehicle';
+
+  const prompt = `You are an automotive expert. List the features that a ${vehicleDescriptor}${bodyDescriptor} ${categoryLabel} is TYPICALLY equipped with from the factory for its trim level.
+
+Return a JSON object with three arrays:
+- "safety": Driver assistance and safety features (e.g. "Adaptive Cruise Control", "Lane Keep Assist", "Blind Spot Monitoring", "360° Camera", "Automatic Emergency Braking")
+- "comfort": Comfort and convenience features (e.g. "Heated Seats", "Ventilated Seats", "Panoramic Sunroof", "Power Tailgate", "Memory Seats", "Quad-Zone Climate Control")
+- "tech": Technology and infotainment (e.g. "Apple CarPlay", "Android Auto", "Wireless Charging", "Head-Up Display", "Premium Sound System (e.g. Harman Kardon)", "Digital Instrument Cluster")
+
+Rules:
+- Be specific to this exact trim level. A base trim should NOT list features only available on top trims.
+- Each feature should be 2-6 words. No marketing fluff.
+- Include 4-8 items per array. If a category genuinely has fewer relevant features for this vehicle, return what's appropriate — don't pad.
+- Use UAE/GCC market trim names if the vehicle is sold in the UAE.
+- Respond with ONLY the JSON object, no preamble or commentary.
+
+Example for "2023 BMW X5 xDrive40i M Sport":
+{"safety":["Adaptive Cruise Control","Lane Departure Warning","Blind Spot Detection","360° Surround View Camera","Automatic Emergency Braking","Parking Assistant"],"comfort":["Power Sport Seats","Heated Front Seats","Panoramic Sunroof","Power Tailgate","Quad-Zone Climate Control","Ambient Lighting"],"tech":["Apple CarPlay (Wireless)","Android Auto","Wireless Charging","Head-Up Display","Harman Kardon Sound","Digital Instrument Cluster","BMW Live Cockpit Pro"]}`;
+
+  try {
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4.1-mini',
+      messages: [{ role: 'user', content: prompt }],
+      max_tokens: 600,
+      temperature: 0.2,
+      response_format: { type: 'json_object' },
+    });
+    const raw = completion.choices[0].message.content;
+    let parsed = {};
+    try { parsed = JSON.parse(raw); } catch { parsed = {}; }
+
+    // Normalize: ensure each array is a clean array of strings (defensive parse)
+    const clean = (arr) => Array.isArray(arr)
+      ? arr.filter(s => typeof s === 'string' && s.trim()).map(s => s.trim()).slice(0, 12)
+      : [];
+
+    const features = {
+      safety: clean(parsed.safety),
+      comfort: clean(parsed.comfort),
+      tech: clean(parsed.tech),
+    };
+    jsonRes(res, { features });
+  } catch (e) {
+    console.error('Suggest features error:', e.message);
+    jsonRes(res, { features: { safety: [], comfort: [], tech: [] } });
   }
 }
 
@@ -1111,42 +1242,14 @@ async function handleListingActivatedWebhook(req, res) {
 
   const listingUrl = `${emailModule.SITE_URL}/listing.html?id=${encodeURIComponent(listing.id)}`;
   const tpl = emailModule.listingApprovedEmail({ name: displayName, title: listing.title, listingUrl });
+  const result = await emailModule.sendEmail({ to: ownerEmail, ...tpl });
 
-  // ─── Check user's notification prefs for `inquiries` (legacy) / listing_approved ───
-  // For listing-approved, both email and in-app default on. We respect the
-  // user's per-channel toggle if set.
-  const prefs = await getUserNotificationPrefs(supa, listing.owner_id);
-  const wantsEmail = prefChannelEnabled(prefs, 'listing_approved', 'email', true);
-  const wantsInApp = prefChannelEnabled(prefs, 'listing_approved', 'inApp', true);
-
-  // Send email (unless opted out)
-  let emailOk = true;
-  if (wantsEmail) {
-    const result = await emailModule.sendEmail({ to: ownerEmail, ...tpl });
-    if (!result.ok) {
-      console.error('[webhook] email send failed:', result.error);
-      emailOk = false;
-      // Don't fail the whole webhook — try the in-app insert anyway
-    }
+  if (!result.ok) {
+    console.error('[webhook] email send failed:', result.error);
+    return jsonRes(res, { error: result.error || 'Send failed' }, 500);
   }
 
-  // Insert in-app notification
-  if (wantsInApp) {
-    try {
-      await insertNotification(supa, {
-        userId: listing.owner_id,
-        type: 'listing_approved',
-        title: 'Your listing is now live',
-        body: listing.title || 'Your listing has been approved.',
-        linkUrl: `/listing.html?id=${listing.id}`,
-      });
-    } catch (e) {
-      console.warn('[webhook] in-app notification insert failed:', e.message);
-    }
-  }
-
-  // Mark sent for idempotency (even if only in-app was sent, we don't want a
-  // duplicate run to re-send the email)
+  // Mark sent for idempotency
   try {
     await supa.from('listings')
       .update({ listing_live_email_sent_at: new Date().toISOString() })
@@ -1155,434 +1258,7 @@ async function handleListingActivatedWebhook(req, res) {
     console.warn('[webhook] could not mark listing as emailed:', e.message);
   }
 
-  return jsonRes(res, { ok: true, email: emailOk, inApp: wantsInApp });
-}
-
-// ══════════════════════════════════════════════════════════════════════════
-// NOTIFICATION HELPERS
-// ══════════════════════════════════════════════════════════════════════════
-
-/**
- * Map the notification_prefs v2 schema to a (type, channel) lookup.
- *
- * The prefs JSON stores: { inquiries:{email,inApp}, saved_alerts:{...},
- *   expiry:{...}, price_drop:{...} }. But the notifications.type enum uses
- *   different naming: inquiry, saved_search, expiry_reminder, price_drop,
- *   listing_approved.
- *
- * Returns true/false using the prefs if set, otherwise the supplied default.
- */
-const NOTIF_TYPE_TO_PREF_KEY = {
-  inquiry:           'inquiries',
-  saved_search:      'saved_alerts',
-  expiry_reminder:   'expiry',
-  price_drop:        'price_drop',
-  // listing_approved isn't in the user-visible prefs; always send by default
-  listing_approved:  null,
-  listing_rejected:  null,
-  system:            null,
-};
-
-function prefChannelEnabled(prefs, notifType, channel, defaultIfMissing) {
-  const prefKey = NOTIF_TYPE_TO_PREF_KEY[notifType];
-  if (!prefKey) return defaultIfMissing;            // not user-configurable
-  if (!prefs || typeof prefs !== 'object') return defaultIfMissing;
-  const node = prefs[prefKey];
-  if (!node || typeof node !== 'object') return defaultIfMissing;
-  if (typeof node[channel] !== 'boolean') return defaultIfMissing;
-  return node[channel];
-}
-
-async function getUserNotificationPrefs(supa, userId) {
-  if (!userId) return null;
-  try {
-    const { data, error } = await supa
-      .from('profiles')
-      .select('notification_prefs')
-      .eq('id', userId)
-      .maybeSingle();
-    if (error || !data) return null;
-    return data.notification_prefs || null;
-  } catch { return null; }
-}
-
-/**
- * Insert one notification row. Server-only (uses the admin client).
- * Throws on failure so callers can decide whether to retry / log / ignore.
- */
-async function insertNotification(supa, { userId, type, title, body, linkUrl }) {
-  if (!userId || !type || !title) {
-    throw new Error('insertNotification: userId, type, title required');
-  }
-  const { error } = await supa.from('notifications').insert({
-    user_id: userId,
-    type,
-    title: String(title).slice(0, 200),
-    body: body ? String(body).slice(0, 1000) : null,
-    link_url: linkUrl || null,
-  });
-  if (error) throw new Error(error.message);
-}
-
-// ══════════════════════════════════════════════════════════════════════════
-// CRON ENDPOINTS (called by Render Cron Jobs via shared secret)
-// ══════════════════════════════════════════════════════════════════════════
-
-/**
- * Authenticate a cron request. Same shared-secret pattern as the listing webhook.
- * Set CRON_SECRET in Render env vars, then configure each Render Cron Job to
- * curl the URL with `-H "X-Cron-Secret: <value>"`.
- */
-function authenticateCronRequest(req) {
-  const expected = process.env.CRON_SECRET;
-  if (!expected) return { ok: false, reason: 'CRON_SECRET not configured' };
-  const provided = req.headers['x-cron-secret'];
-  if (!provided || provided !== expected) return { ok: false, reason: 'Unauthorized' };
-  return { ok: true };
-}
-
-/**
- * POST /api/cron/saved-search-alerts
- *
- * Hourly cron. For each saved_search row, find listings created since
- * last_alerted_at that match the filters, fire notifications (in-app and/or
- * email based on user prefs), and update last_alerted_at.
- */
-async function handleCronSavedSearchAlerts(req, res) {
-  const auth = authenticateCronRequest(req);
-  if (!auth.ok) return jsonRes(res, { error: auth.reason }, 401);
-
-  const supa = getSupabaseAdmin();
-  if (!supa) return jsonRes(res, { error: 'Service unavailable' }, 503);
-
-  const started = Date.now();
-  const summary = { searches_checked: 0, users_notified: 0, total_matches: 0, errors: 0 };
-
-  try {
-    // Pull all saved_searches with their owner's prefs
-    const { data: searches, error } = await supa
-      .from('saved_searches')
-      .select('id, user_id, name, filters, last_alerted_at, created_at');
-    if (error) throw error;
-
-    // Group by user for prefs fetch + cap on emails per run
-    const userIds = [...new Set(searches.map(s => s.user_id))];
-    const prefsByUser = {};
-    if (userIds.length) {
-      const { data: profs } = await supa
-        .from('profiles')
-        .select('id, display_name, notification_prefs')
-        .in('id', userIds);
-      (profs || []).forEach(p => { prefsByUser[p.id] = p; });
-    }
-
-    for (const ss of searches) {
-      summary.searches_checked++;
-      try {
-        // The "since" cutoff: last_alerted_at, or the search's own creation date
-        const since = ss.last_alerted_at || ss.created_at;
-        const matches = await findMatchingListings(supa, ss.filters || {}, since, ss.user_id);
-        if (matches.length === 0) continue;
-
-        summary.total_matches += matches.length;
-        const profile = prefsByUser[ss.user_id];
-        const prefs = profile ? profile.notification_prefs : null;
-
-        // In-app notification (one per search, summarising matches)
-        if (prefChannelEnabled(prefs, 'saved_search', 'inApp', true)) {
-          try {
-            await insertNotification(supa, {
-              userId: ss.user_id,
-              type: 'saved_search',
-              title: `${matches.length} new match${matches.length === 1 ? '' : 'es'} for "${ss.name || 'your saved search'}"`,
-              body: matches.slice(0, 3).map(m => m.title).join(' · '),
-              linkUrl: '/saved-searches.html',
-            });
-            summary.users_notified++;
-          } catch (e) { summary.errors++; console.warn('[cron/saved] notif insert:', e.message); }
-        }
-
-        // Email (one per search, with the match list)
-        if (prefChannelEnabled(prefs, 'saved_search', 'email', false)) {
-          try {
-            const { data: userData } = await supa.auth.admin.getUserById(ss.user_id);
-            const email = userData && userData.user && userData.user.email;
-            if (email) {
-              const displayName = (profile && profile.display_name) || email.split('@')[0];
-              const tpl = emailModule.savedSearchAlertEmail({
-                name: displayName,
-                searchName: ss.name,
-                matches: matches.map(m => ({
-                  title: [m.make, m.model, m.trim].filter(Boolean).join(' ') || m.title,
-                  year: m.year,
-                  price: m.price,
-                  url: `${emailModule.SITE_URL}/listing.html?id=${m.id}`,
-                })),
-              });
-              await emailModule.sendEmail({ to: email, ...tpl });
-            }
-          } catch (e) { summary.errors++; console.warn('[cron/saved] email send:', e.message); }
-        }
-
-        // Bump last_alerted_at + match_count
-        await supa.from('saved_searches')
-          .update({ last_alerted_at: new Date().toISOString(), match_count: matches.length })
-          .eq('id', ss.id);
-      } catch (e) {
-        summary.errors++;
-        console.warn('[cron/saved] per-search failed:', e.message);
-      }
-    }
-
-    summary.duration_ms = Date.now() - started;
-    return jsonRes(res, { ok: true, ...summary });
-  } catch (e) {
-    console.error('[cron/saved-search-alerts] fatal:', e.message);
-    return jsonRes(res, { error: e.message }, 500);
-  }
-}
-
-/**
- * Apply a saved_search.filters blob as a Supabase query against `listings`,
- * restricted to active listings created since `sinceIso`. Excludes the
- * saved-search owner's own listings (they don't need alerts about themselves).
- */
-async function findMatchingListings(supa, filters, sinceIso, excludeOwnerId) {
-  let q = supa.from('listings')
-    .select('id, title, make, model, trim, year, price, category, location, condition, owner_id, created_at')
-    .eq('status', 'active')
-    .gte('created_at', sinceIso || '1970-01-01')
-    .order('created_at', { ascending: false })
-    .limit(50);
-  if (excludeOwnerId) q = q.neq('owner_id', excludeOwnerId);
-  if (filters.category)  q = q.eq('category', String(filters.category).toLowerCase());
-  if (filters.make)      q = q.eq('make', filters.make);
-  if (filters.model)     q = q.eq('model', filters.model);
-  if (filters.condition) q = q.eq('condition', filters.condition);
-  if (filters.location || filters.emirate) q = q.eq('location', filters.location || filters.emirate);
-  if (filters.price_min) q = q.gte('price', Number(filters.price_min));
-  if (filters.price_max) q = q.lte('price', Number(filters.price_max));
-  if (filters.year_min)  q = q.gte('year',  Number(filters.year_min));
-  if (filters.year_max)  q = q.lte('year',  Number(filters.year_max));
-  const { data, error } = await q;
-  if (error) { console.warn('[findMatchingListings]', error.message); return []; }
-  return data || [];
-}
-
-/**
- * POST /api/cron/expiry-reminders
- *
- * Daily cron. Two jobs:
- *   1. Find listings that expire in ≤3 days AND haven't been reminded yet → fire reminder
- *   2. Find listings whose expires_at is past AND status='active' → flip to status='expired'
- */
-async function handleCronExpiryReminders(req, res) {
-  const auth = authenticateCronRequest(req);
-  if (!auth.ok) return jsonRes(res, { error: auth.reason }, 401);
-
-  const supa = getSupabaseAdmin();
-  if (!supa) return jsonRes(res, { error: 'Service unavailable' }, 503);
-
-  const summary = { reminders_sent: 0, listings_expired: 0, errors: 0 };
-  const threeDaysFromNow = new Date(Date.now() + 3 * 86400000).toISOString();
-  const nowIso = new Date().toISOString();
-
-  // ─── PART 1: 3-day reminders ───
-  try {
-    const { data: expiringSoon } = await supa
-      .from('listings')
-      .select('id, owner_id, title, expires_at')
-      .eq('status', 'active')
-      .is('expiry_reminder_sent_at', null)
-      .lte('expires_at', threeDaysFromNow)
-      .gt('expires_at', nowIso)
-      .limit(200);
-
-    for (const listing of expiringSoon || []) {
-      try {
-        const prefs = await getUserNotificationPrefs(supa, listing.owner_id);
-        const wantsInApp = prefChannelEnabled(prefs, 'expiry_reminder', 'inApp', true);
-        const wantsEmail = prefChannelEnabled(prefs, 'expiry_reminder', 'email', false);
-
-        if (wantsInApp) {
-          await insertNotification(supa, {
-            userId: listing.owner_id,
-            type: 'expiry_reminder',
-            title: `Your listing expires soon`,
-            body: `"${listing.title}" expires on ${new Date(listing.expires_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}. Renew to keep it live.`,
-            linkUrl: `/listing.html?id=${listing.id}`,
-          });
-        }
-
-        if (wantsEmail) {
-          const { data: userData } = await supa.auth.admin.getUserById(listing.owner_id);
-          const email = userData && userData.user && userData.user.email;
-          if (email) {
-            const { data: profile } = await supa.from('profiles').select('display_name').eq('id', listing.owner_id).maybeSingle();
-            const displayName = (profile && profile.display_name) || email.split('@')[0];
-            const tpl = emailModule.expiryReminderEmail({
-              name: displayName,
-              listingTitle: listing.title,
-              expiresAt: listing.expires_at,
-              listingUrl: `${emailModule.SITE_URL}/listing.html?id=${listing.id}`,
-              editUrl: `${emailModule.SITE_URL}/place-ad.html?edit=${listing.id}`,
-            });
-            await emailModule.sendEmail({ to: email, ...tpl });
-          }
-        }
-
-        // Mark reminder sent so we don't repeat tomorrow
-        await supa.from('listings')
-          .update({ expiry_reminder_sent_at: new Date().toISOString() })
-          .eq('id', listing.id);
-        summary.reminders_sent++;
-      } catch (e) {
-        summary.errors++;
-        console.warn('[cron/expiry] per-listing reminder:', e.message);
-      }
-    }
-  } catch (e) {
-    console.error('[cron/expiry] reminders query failed:', e.message);
-    summary.errors++;
-  }
-
-  // ─── PART 2: auto-expire past-due listings ───
-  try {
-    const { data: pastDue } = await supa
-      .from('listings')
-      .select('id')
-      .eq('status', 'active')
-      .lt('expires_at', nowIso)
-      .limit(500);
-    if (pastDue && pastDue.length) {
-      const ids = pastDue.map(l => l.id);
-      await supa.from('listings').update({ status: 'expired' }).in('id', ids);
-      summary.listings_expired = ids.length;
-    }
-  } catch (e) {
-    console.error('[cron/expiry] auto-expire failed:', e.message);
-    summary.errors++;
-  }
-
-  return jsonRes(res, { ok: true, ...summary });
-}
-
-/**
- * POST /api/internal/price-drop-email
- *
- * Companion to the Postgres `notify_price_drop` trigger. The DB trigger handles
- * the in-app side (insert into notifications). This endpoint handles the email
- * side, which the DB can't do directly. The trigger fires this via a Supabase
- * Database Webhook configured in Supabase Dashboard → Database → Webhooks.
- *
- * Accepts BOTH payload shapes so this works whether the Supabase webhook UI
- * supports a custom body template or not:
- *
- *   Native Supabase webhook payload:
- *     { type: "UPDATE", table: "listings",
- *       record: { id, price, owner_id, status, title, ... },
- *       old_record: { id, price, ... } }
- *
- *   Manual / simplified payload (e.g. for direct curl testing):
- *     { listing_id: "<uuid>", old_price: 50000, new_price: 45000 }
- */
-async function handlePriceDropEmail(req, res) {
-  const expectedSecret = process.env.WEBHOOK_SECRET;
-  if (!expectedSecret) return jsonRes(res, { error: 'Service not configured' }, 503);
-  const provided = req.headers['x-webhook-secret'];
-  if (!provided || provided !== expectedSecret) return jsonRes(res, { error: 'Unauthorized' }, 401);
-
-  const supa = getSupabaseAdmin();
-  if (!supa) return jsonRes(res, { error: 'Service unavailable' }, 503);
-
-  let body = {};
-  try { body = await parseBody(req); } catch {}
-
-  // ─── Normalise payload to { listingId, oldPrice, newPrice } ───
-  let listingId, oldPrice, newPrice;
-  if (body && body.record && typeof body.record === 'object') {
-    // Native Supabase Database Webhook payload
-    // Only care about UPDATE events; INSERT has no old_record, DELETE has no record
-    if (body.type && body.type.toUpperCase() !== 'UPDATE') {
-      return jsonRes(res, { ok: true, skipped: 'not_update' });
-    }
-    if (!body.old_record) {
-      return jsonRes(res, { ok: true, skipped: 'no_old_record' });
-    }
-    // Cheap status guard before the more expensive checks
-    if (body.record.status && body.record.status !== 'active') {
-      return jsonRes(res, { ok: true, skipped: 'not_active' });
-    }
-    listingId = body.record.id;
-    oldPrice  = body.old_record.price;
-    newPrice  = body.record.price;
-  } else if (body && body.listing_id) {
-    // Manual / simplified payload
-    listingId = body.listing_id;
-    oldPrice  = body.old_price;
-    newPrice  = body.new_price;
-  } else {
-    return jsonRes(res, { error: 'Unrecognised payload shape' }, 400);
-  }
-
-  // Validate
-  if (!listingId) return jsonRes(res, { error: 'Missing listing id' }, 400);
-  if (oldPrice == null || newPrice == null) return jsonRes(res, { ok: true, skipped: 'no_price_change' });
-  oldPrice = Number(oldPrice);
-  newPrice = Number(newPrice);
-  if (!Number.isFinite(oldPrice) || !Number.isFinite(newPrice)) {
-    return jsonRes(res, { error: 'Non-numeric prices' }, 400);
-  }
-  if (newPrice >= oldPrice) {
-    return jsonRes(res, { ok: true, skipped: 'not_a_drop' });
-  }
-
-  // Look up listing (for title + owner, and to confirm it's still active)
-  const { data: listing } = await supa
-    .from('listings')
-    .select('id, owner_id, title, status')
-    .eq('id', listingId)
-    .maybeSingle();
-  if (!listing) return jsonRes(res, { error: 'Listing not found' }, 404);
-  if (listing.status !== 'active') return jsonRes(res, { ok: true, skipped: 'listing_not_active' });
-
-  // Get all favouriters (excluding the seller themselves)
-  const { data: favs } = await supa
-    .from('favourites')
-    .select('user_id')
-    .eq('listing_id', listingId)
-    .neq('user_id', listing.owner_id);
-
-  let sent = 0;
-  let skipped = 0;
-  for (const fav of favs || []) {
-    try {
-      const prefs = await getUserNotificationPrefs(supa, fav.user_id);
-      if (!prefChannelEnabled(prefs, 'price_drop', 'email', false)) {
-        skipped++;
-        continue;
-      }
-      const { data: userData } = await supa.auth.admin.getUserById(fav.user_id);
-      const email = userData && userData.user && userData.user.email;
-      if (!email) { skipped++; continue; }
-      const { data: profile } = await supa.from('profiles').select('display_name').eq('id', fav.user_id).maybeSingle();
-      const displayName = (profile && profile.display_name) || email.split('@')[0];
-      const tpl = emailModule.priceDropEmail({
-        name: displayName,
-        listingTitle: listing.title,
-        oldPrice,
-        newPrice,
-        listingUrl: `${emailModule.SITE_URL}/listing.html?id=${listing.id}`,
-      });
-      const result = await emailModule.sendEmail({ to: email, ...tpl });
-      if (result.ok) sent++; else skipped++;
-    } catch (e) {
-      skipped++;
-      console.warn('[price-drop-email] per-user:', e.message);
-    }
-  }
-
-  return jsonRes(res, { ok: true, emails_sent: sent, emails_skipped: skipped, favouriters: (favs || []).length });
+  return jsonRes(res, { ok: true });
 }
 
 /* ── POST /api/send-password-reset-email — public, sends a reset link ──
@@ -1979,14 +1655,12 @@ const server = http.createServer(async (req, res) => {
     if (url === '/api/vin-lookup') return handleVINLookup(req, res);
     if (url === '/api/mulkiya-scan') return handleMulkiyaScan(req, res);
     if (url === '/api/price-estimate') return handlePriceEstimate(req, res);
+    if (url === '/api/suggest-features') return handleSuggestFeatures(req, res);
     if (url === '/api/verify-listing') return handleVerifyListing(req, res);
     if (url === '/api/send-welcome-email') return handleSendWelcomeEmail(req, res);
     if (url === '/api/send-verification-email') return handleSendVerificationEmail(req, res);
     if (url === '/api/send-listing-approved-email') return handleSendListingApprovedEmail(req, res);
     if (url === '/api/internal/listing-activated') return handleListingActivatedWebhook(req, res);
-    if (url === '/api/internal/price-drop-email')  return handlePriceDropEmail(req, res);
-    if (url === '/api/cron/saved-search-alerts')   return handleCronSavedSearchAlerts(req, res);
-    if (url === '/api/cron/expiry-reminders')      return handleCronExpiryReminders(req, res);
     if (url === '/api/send-password-reset-email') return handleSendPasswordResetEmail(req, res);
     if (url === '/api/reset-password') return handleResetPassword(req, res);
     if (url === '/api/change-password') return handleChangePassword(req, res);

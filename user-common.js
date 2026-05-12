@@ -674,7 +674,7 @@ if (typeof window !== 'undefined') {
         user = await window.AuthModal.open({ tab: 'login', reason: 'Sign in to save searches.' });
         if (!user) return;
       } else {
-        window.location.href = 'login.html?next=' + encodeURIComponent(window.location.pathname + window.location.search);
+        alert('Sign-in is currently unavailable. Please refresh.');
         return;
       }
     }
