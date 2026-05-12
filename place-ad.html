@@ -57,6 +57,12 @@
       padding: 18px 0; position: sticky; top: 68px; z-index: 50;
     }
     .steps-bar .container { display: flex; align-items: center; justify-content: center; gap: 0; }
+    /* On phone/tablet, drop the sticky behavior — it competes with the navbar
+       hide/show on scroll and creates the "floating in the middle of the page"
+       look users reported. Inline at the top of the form is cleaner. */
+    @media (max-width: 768px) {
+      .steps-bar { position: static; top: auto; padding: 14px 0; }
+    }
     .step-item { display: flex; align-items: center; gap: 10px; padding: 0 20px; position: relative; }
     .step-item:not(:last-child)::after {
       content: ''; position: absolute; right: -1px; top: 50%;
@@ -1791,15 +1797,30 @@
       aiUploadedFiles.slice(0, 3).forEach((f, i) => formData.append('photo' + i, f));
       const res = await fetch('/api/analyze-photos', { method: 'POST', body: formData });
       const data = await res.json();
-      if (data.brand) fillFormFromAI(data);
+      analyzing.classList.remove('show');
+      // Real failure path — show a clear error and let the user pick Manual / VIN
+      if (!data || data.error || !data.brand) {
+        const errorText = (data && data.error) ? data.error : 'AI could not detect a vehicle in these photos.';
+        document.getElementById('ai-result-text').textContent = '❌ ' + errorText;
+        const banner = resultBanner.querySelector('div[style*="color:#fff8"]') || null;
+        // Update the subtitle/info row if present
+        const sub = document.getElementById('ai-result-sub');
+        if (sub) sub.textContent = 'Try clearer photos, or use VIN / Manual entry instead.';
+        resultBanner.style.background = 'linear-gradient(135deg,#7a1f1f 0%, #5a1818 100%)';
+        resultBanner.classList.add('show');
+        return;
+      }
+      // Real success — populate the form
+      fillFormFromAI(data);
+      document.getElementById('ai-result-text').textContent = 'AI detected: ' + (data.brand || 'Vehicle') + ' ' + (data.model || '') + (data.year ? ' (' + data.year + ')' : '');
+      resultBanner.style.background = '';
+      resultBanner.classList.add('show');
     } catch (e) {
-      // Fallback: show demo fill
-      fillFormFromAI({ brand: 'Toyota', model: 'Land Cruiser', trim: 'VXR', year: '2023', condition: 'Used', engine: '3.5L V6 Twin Turbo', transmission: 'Automatic', color: 'White', bodyType: 'SUV', hp: '409', cylinders: '6' });
+      analyzing.classList.remove('show');
+      document.getElementById('ai-result-text').textContent = '❌ Could not reach AI service. Please try again.';
+      resultBanner.style.background = 'linear-gradient(135deg,#7a1f1f 0%, #5a1818 100%)';
+      resultBanner.classList.add('show');
     }
-
-    analyzing.classList.remove('show');
-    document.getElementById('ai-result-text').textContent = 'AI detected: ' + (document.getElementById('sel-brand').value || 'Vehicle') + ' ' + (document.getElementById('sel-model').value || '');
-    resultBanner.classList.add('show');
   }
 
   function fillFormFromAI(data) {
@@ -1853,16 +1874,53 @@
             }
           }
         }
-        // Split color: exterior and interior
-        if (data.exteriorColor) document.getElementById('sel-ext-color').value = data.exteriorColor;
-        if (data.interiorColor) document.getElementById('sel-int-color').value = data.interiorColor;
-        // Legacy fallback
-        if (data.color && !data.exteriorColor) document.getElementById('sel-ext-color').value = data.color;
-        if (data.bodyType) document.getElementById('sel-body').value = data.bodyType;
-        if (data.hp) document.getElementById('inp-hp').value = data.hp;
-        if (data.cylinders) document.getElementById('sel-cyl').value = data.cylinders;
-        if (data.doors) document.getElementById('sel-doors').value = data.doors;
-        if (data.seats) document.getElementById('sel-seats').value = data.seats;
+        // Color matching is fuzzy because the AI returns specific paint
+        // names like "Obsidian Black" or "Misano Red" but our dropdown has
+        // generic options like "Black", "Red". We find a generic option that
+        // appears as a substring of the AI's response, OR vice-versa.
+        function setColorFuzzy(selectId, aiColor) {
+          if (!aiColor) return;
+          const sel = document.getElementById(selectId);
+          if (!sel) return;
+          const lc = aiColor.toLowerCase();
+          // 1) exact match
+          for (let o of sel.options) {
+            if (o.value && o.value.toLowerCase() === lc) { sel.value = o.value; return; }
+          }
+          // 2) AI string contains option label, or option label contains AI string
+          for (let o of sel.options) {
+            if (!o.value) continue;
+            const lo = o.value.toLowerCase();
+            if (lc.includes(lo) || lo.includes(lc)) { sel.value = o.value; return; }
+          }
+          // 3) common color word fallback (covers "Nardo Grey" → "Grey", etc.)
+          const colorWords = ['black','white','silver','grey','gray','red','blue','green','beige','brown','gold','orange','purple','yellow','maroon','cream','tan'];
+          for (const word of colorWords) {
+            if (lc.includes(word)) {
+              const target = word === 'gray' ? 'grey' : word;
+              for (let o of sel.options) {
+                if (o.value && o.value.toLowerCase() === target) { sel.value = o.value; return; }
+              }
+            }
+          }
+        }
+        setColorFuzzy('sel-ext-color', data.exteriorColor || data.color);
+        setColorFuzzy('sel-int-color', data.interiorColor);
+
+        if (data.bodyType) {
+          const bodySel = document.getElementById('sel-body');
+          if (bodySel) {
+            const lc = data.bodyType.toLowerCase();
+            for (let o of bodySel.options) {
+              const lo = (o.value || '').toLowerCase();
+              if (lo && (lo === lc || lc.includes(lo) || lo.includes(lc))) { bodySel.value = o.value; break; }
+            }
+          }
+        }
+        if (data.hp) document.getElementById('inp-hp').value = String(data.hp).replace(/\D/g, '') || data.hp;
+        if (data.cylinders) document.getElementById('sel-cyl').value = String(data.cylinders).replace(/\D/g, '') || data.cylinders;
+        if (data.doors) document.getElementById('sel-doors').value = String(data.doors).replace(/\D/g, '') || data.doors;
+        if (data.seats) document.getElementById('sel-seats').value = String(data.seats).replace(/\D/g, '') || data.seats;
         // Do NOT auto-fill regionalSpec — cannot be determined from photos
         updatePreview();
         setTimeout(runPriceEstimate, 500);

@@ -30,6 +30,12 @@ function getOpenAI() {
   return _openai;
 }
 
+// Model selection. Defaults assume the OPENAI_API_KEY is for OpenAI (not
+// a Gemini compat endpoint). If you wire OPENAI_BASE_URL to Google's
+// generativelanguage endpoint, set AI_VISION_MODEL=gemini-2.5-flash etc.
+const AI_TEXT_MODEL   = process.env.AI_TEXT_MODEL   || 'gpt-4.1-mini';
+const AI_VISION_MODEL = process.env.AI_VISION_MODEL || 'gpt-4o-mini';
+
 // Backwards-compat shim so existing handlers using `openai.chat.completions.create(...)` still work.
 const openai = new Proxy({}, {
   get(_, prop) {
@@ -262,7 +268,7 @@ ABSOLUTE RULES:
 
   try {
     const completion = await openai.chat.completions.create({
-      model: 'gemini-2.5-flash',
+      model: AI_VISION_MODEL,
       messages: [{
         role: 'user',
         content: [{ type: 'text', text: prompt }, ...imageContent]
@@ -377,7 +383,7 @@ ${missing.map(f => `"${f}": "..."`).join(',\n')}
 Return ONLY the JSON object with those fields.`;
         try {
           const completion = await openai.chat.completions.create({
-            model: 'gemini-2.5-flash',
+            model: AI_TEXT_MODEL,
             messages: [{ role: 'user', content: enrichPrompt }],
             max_tokens: 150,
           });
@@ -422,7 +428,7 @@ Return ONLY the raw JSON object.`;
 
   try {
     const completion = await openai.chat.completions.create({
-      model: 'gemini-2.5-flash',
+      model: AI_TEXT_MODEL,
       messages: [{ role: 'user', content: prompt }],
       max_tokens: 400,
     });
@@ -476,7 +482,7 @@ IMPORTANT: Never return an error just because the image is partial. Always attem
 
   try {
     const completion = await openai.chat.completions.create({
-      model: 'gemini-2.5-flash',
+      model: AI_VISION_MODEL,
       messages: [{ role: 'user', content: [{ type: 'text', text: prompt }, ...imageContent] }],
       max_tokens: 400,
     });
@@ -691,7 +697,7 @@ Return ONLY this JSON (no markdown, no explanation):
 
   try {
     const completion = await openai.chat.completions.create({
-      model: 'gemini-2.5-flash',
+      model: AI_TEXT_MODEL,
       messages: [{ role: 'user', content: prompt }],
       max_tokens: 600,
     });
