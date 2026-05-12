@@ -74,7 +74,7 @@
                 <nav class="dash-nav">
           <a href="profile.html" class="dash-nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>My Profile</a>
           <a href="my-ads.html" class="dash-nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M3 9h18M9 21V9"/></svg>My Ads<span class="dash-nav-badge" style="display:none;">0</span></a>
-          <a href="favourites.html" class="dash-nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>Favourites<span class="dash-nav-badge" style="background:#E53935;display:none;">0</span></a>
+          <a href="favourites.html" class="dash-nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>Favorites<span class="dash-nav-badge" style="background:#E53935;display:none;">0</span></a>
           <a href="saved-searches.html" class="dash-nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>Saved Searches<span class="dash-nav-badge" style="background:#2196F3;display:none;">0</span></a>
           <a href="alerts.html" class="dash-nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>Vehicle Alerts<span class="dash-nav-badge" style="background:#2196F3;display:none;">0</span></a>
           <a href="recent-searches.html" class="dash-nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>Recent Searches</a>
@@ -166,13 +166,21 @@
       const list = document.getElementById('notif-list');
       list.innerHTML = '<div style="text-align:center;padding:30px;color:var(--grey);font-size:13px;">Loading…</div>';
 
+      // Wait for Auth & supa
+      let tries = 0;
+      while ((!window.Auth || !window.supa) && tries < 50) {
+        await new Promise(r => setTimeout(r, 50));
+        tries++;
+      }
+      if (!window.Auth || !window.supa) return;
+
       const user = await window.Auth.getUser();
       if (!user) return;
 
       try {
         const { data, error } = await window.supa
           .from('notifications')
-          .select('id, type, title, body, link_url, read_at, created_at')
+          .select('id, type, title, body, link_url, read_at, seen_at, created_at')
           .eq('user_id', user.id)
           .order('created_at', { ascending: false })
           .limit(100);
@@ -180,8 +188,23 @@
         notifs = data || [];
         updateChrome();
         renderNotifs();
+
+        // Facebook-style "seen": opening the page clears the bell badge for
+        // ALL notifications, even if the user doesn't click each one. Individual
+        // click still marks `read_at` which controls per-row visual state.
+        const hasUnseen = notifs.some(n => !n.seen_at);
+        if (hasUnseen) {
+          try {
+            await window.supa.rpc('mark_all_notifications_seen');
+            notifs.forEach(n => { if (!n.seen_at) n.seen_at = new Date().toISOString(); });
+            if (typeof window.dmRefreshNavbarNotifications === 'function') {
+              window.dmRefreshNavbarNotifications();
+            }
+          } catch (e) {
+            console.warn('[notifications] mark-seen failed:', e);
+          }
+        }
       } catch (e) {
-        // Table not present yet, or some other issue — show empty state
         notifs = [];
         updateChrome();
         renderNotifs();

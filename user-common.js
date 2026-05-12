@@ -289,7 +289,7 @@ function dmGetInitials(name) {
  *   .dash-avatar       — user initials
  *   .dash-name         — display name
  *   .dash-email        — email
- *   .dash-stat-num     — first one is Active Ads, second is Saved/Favourites
+ *   .dash-stat-num     — first one is Active Ads, second is Saved/Favorites
  *   .dash-nav-badge    — sidebar nav badges; hidden unless count > 0
  *
  * This is called on each user page. Polls briefly for window.Auth to load.
@@ -309,7 +309,7 @@ function dmGetInitials(name) {
  *   .dash-avatar       — user initials
  *   .dash-name         — display name
  *   .dash-email        — email
- *   .dash-stat-num     — first one is Active Ads, second is Saved/Favourites
+ *   .dash-stat-num     — first one is Active Ads, second is Saved/Favorites
  *   .dash-nav-badge    — sidebar nav badges; hidden unless count > 0
  */
 const DM_SIDEBAR_CACHE_KEY = 'dm_sidebar_cache_v1';
@@ -340,7 +340,19 @@ function dmApplySidebarSnapshot(snap) {
   const avatarEl = document.querySelector('.dash-avatar');
   const nameEl   = document.querySelector('.dash-name');
   const emailEl  = document.querySelector('.dash-email');
-  if (avatarEl) avatarEl.textContent = snap.initials || '';
+  if (avatarEl) {
+    if (snap.avatarUrl) {
+      // Render real avatar image. Set as background to preserve circular shape
+      // and not need to fight any flex/text-centering rules on .dash-avatar.
+      avatarEl.style.backgroundImage = `url("${snap.avatarUrl.replace(/"/g,'\\"')}")`;
+      avatarEl.style.backgroundSize = 'cover';
+      avatarEl.style.backgroundPosition = 'center';
+      avatarEl.textContent = '';
+    } else {
+      avatarEl.style.backgroundImage = '';
+      avatarEl.textContent = snap.initials || '';
+    }
+  }
   if (nameEl)   nameEl.textContent   = snap.displayName || '';
   if (emailEl)  emailEl.textContent  = snap.email || '';
 
@@ -369,7 +381,7 @@ function dmApplySidebarSnapshot(snap) {
       badge.style.display = '';
     }
   }
-  // Favourites count badge in sidebar
+  // Favorites count badge in sidebar
   const favLink = document.querySelector('a[href="favourites.html"].dash-nav-item');
   if (favLink) {
     const badge = favLink.querySelector('.dash-nav-badge');
@@ -475,6 +487,7 @@ async function dmFillDashboardSidebar() {
     displayName,
     email,
     initials,
+    avatarUrl: (profile && profile.avatar_url) || null,
     isVerified,
     activeCount,
     savedCount,
@@ -663,6 +676,7 @@ if (typeof window !== 'undefined') {
         user_id: user.id,
         name,
         filters,
+        kind: 'search',
       });
       if (error) throw error;
       // Brief visual confirmation

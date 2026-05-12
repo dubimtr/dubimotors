@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Favourites — DUBIMOTORS</title>
+  <title>Favorites — DUBIMOTORS</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" />
@@ -34,7 +34,7 @@
     .dash-card-title { font-size: 18px; font-weight: 800; color: var(--dark); margin-bottom: 4px; }
     .dash-card-sub { font-size: 13px; color: var(--grey); margin-bottom: 24px; }
 
-    /* Favourite card — same look as my-ads */
+    /* Favorite card — same look as my-ads */
     .fav-card {
       display: grid; grid-template-columns: 180px 1fr; gap: 20px;
       padding: 16px; border: 1.5px solid var(--border); border-radius: 14px;
@@ -87,7 +87,7 @@
                 <nav class="dash-nav">
           <a href="profile.html" class="dash-nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>My Profile</a>
           <a href="my-ads.html" class="dash-nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M3 9h18M9 21V9"/></svg>My Ads<span class="dash-nav-badge" style="display:none;">0</span></a>
-          <a href="favourites.html" class="dash-nav-item active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>Favourites<span class="dash-nav-badge" style="background:#E53935;display:none;">0</span></a>
+          <a href="favourites.html" class="dash-nav-item active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>Favorites<span class="dash-nav-badge" style="background:#E53935;display:none;">0</span></a>
           <a href="saved-searches.html" class="dash-nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>Saved Searches<span class="dash-nav-badge" style="background:#2196F3;display:none;">0</span></a>
           <a href="alerts.html" class="dash-nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>Vehicle Alerts<span class="dash-nav-badge" style="background:#2196F3;display:none;">0</span></a>
           <a href="recent-searches.html" class="dash-nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>Recent Searches</a>
@@ -99,7 +99,7 @@
 
       <main class="dash-main">
         <div class="dash-card">
-          <div class="dash-card-title">Favourites</div>
+          <div class="dash-card-title">Favorites</div>
           <div class="dash-card-sub">Listings you've saved with the ❤️ button. Click a listing to view it, or remove from favourites here.</div>
           <div id="fav-list"></div>
         </div>
@@ -123,7 +123,7 @@
     while (!window.Auth && tries < 50) { await new Promise(r => setTimeout(r, 50)); tries++; }
     if (!window.Auth) return;
     await window.Auth.requireAuth();
-    renderFavourites();
+    renderFavorites();
   })();
 
   renderNavbar('favourites');
@@ -147,7 +147,7 @@
     return 'AED ' + Number(n).toLocaleString();
   }
 
-  async function renderFavourites() {
+  async function renderFavorites() {
     const list = document.getElementById('fav-list');
     list.innerHTML = '<div style="padding:30px;text-align:center;color:var(--grey);font-size:13px;">Loading…</div>';
 
@@ -230,7 +230,7 @@
               </div>
               <div class="fav-card-actions">
                 <a class="btn-fav primary" href="listing.html?id=${l.id}">View Listing</a>
-                <button class="btn-fav danger" onclick="removeFavourite('${l.id}')">Remove</button>
+                <button class="btn-fav danger" onclick="removeFavorite('${l.id}')">Remove</button>
               </div>
             </div>
           </div>`;
@@ -241,7 +241,7 @@
     }
   }
 
-  async function removeFavourite(listingId) {
+  async function removeFavorite(listingId) {
     if (!confirm('Remove this listing from your favourites?')) return;
     const el = document.getElementById('fav-' + listingId);
     if (el) { el.style.opacity = '0.3'; el.style.pointerEvents = 'none'; }
@@ -255,13 +255,13 @@
         .eq('listing_id', listingId);
       if (error) throw error;
       showToast('Removed from favourites.');
-      renderFavourites();
+      renderFavorites();
     } catch (e) {
       if (el) { el.style.opacity = '1'; el.style.pointerEvents = ''; }
       showToast('Could not remove: ' + (e.message || ''));
     }
   }
-  window.removeFavourite = removeFavourite;
+  window.removeFavorite = removeFavorite;
 
   // Fill the dashboard sidebar with real auth + listing counts
   if (typeof dmFillDashboardSidebar === 'function') dmFillDashboardSidebar();

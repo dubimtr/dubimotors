@@ -18,7 +18,8 @@ function renderNavbar(activePage = '') {
       html.auth-resolved #nav-chat-btn,
       html.auth-resolved .btn-place-ad,
       html.auth-resolved #nav-signin-btn { visibility: visible; opacity: 1; transition: opacity .15s ease; }
-      /* Same for profile.html sidebar/main cards */
+      /* Same for profile.html sidebar/main cards (profile info only — NOT the
+         nav links, which are static and don't depend on auth state) */
       html:not(.auth-resolved) #sidebar-name,
       html:not(.auth-resolved) #sidebar-email,
       html:not(.auth-resolved) #sidebar-avatar,
@@ -26,8 +27,7 @@ function renderNavbar(activePage = '') {
       html:not(.auth-resolved) #main-avatar,
       html:not(.auth-resolved) .profile-avatar-meta,
       html:not(.auth-resolved) .profile-form-grid,
-      html:not(.auth-resolved) .dash-profile-card,
-      html:not(.auth-resolved) .dash-nav { visibility: hidden; opacity: 0; }
+      html:not(.auth-resolved) .dash-profile-card { visibility: hidden; opacity: 0; }
       html.auth-resolved #sidebar-name,
       html.auth-resolved #sidebar-email,
       html.auth-resolved #sidebar-avatar,
@@ -35,8 +35,7 @@ function renderNavbar(activePage = '') {
       html.auth-resolved #main-avatar,
       html.auth-resolved .profile-avatar-meta,
       html.auth-resolved .profile-form-grid,
-      html.auth-resolved .dash-profile-card,
-      html.auth-resolved .dash-nav { visibility: visible; opacity: 1; transition: opacity .15s ease; }
+      html.auth-resolved .dash-profile-card { visibility: visible; opacity: 1; transition: opacity .15s ease; }
     `;
     document.head.appendChild(style);
   }
@@ -87,7 +86,8 @@ function renderNavbar(activePage = '') {
               </div>
               <a class="nav-dropdown-item" href="profile.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>&nbsp;My Profile</a>
               <a class="nav-dropdown-item" href="my-ads.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M3 9h18M9 21V9"/></svg>&nbsp;My Ads <span id="dd-myads-count" style="margin-left:auto;background:var(--orange);color:#fff;font-size:10px;padding:1px 7px;border-radius:10px;display:none;">0</span></a>
-              <a class="nav-dropdown-item" href="saved-searches.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>&nbsp;Vehicle Alerts</a>
+              <a class="nav-dropdown-item" href="saved-searches.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>&nbsp;Saved Searches</a>
+              <a class="nav-dropdown-item" href="alerts.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>&nbsp;Vehicle Alerts</a>
               <a class="nav-dropdown-item" href="notifications.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>&nbsp;Notifications <span id="dd-notif-count" style="margin-left:auto;background:var(--orange);color:#fff;font-size:10px;padding:1px 7px;border-radius:10px;display:none;">0</span></a>
               <a class="nav-dropdown-item" href="place-ad.html" style="color:var(--orange);font-weight:700;"><svg viewBox="0 0 24 24" fill="none" stroke="var(--orange)" stroke-width="2" width="16" height="16"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>&nbsp;Place an Ad</a>
               <a class="nav-dropdown-item" href="login.html" style="color:#E53935;border-top:1px solid var(--border);margin-top:4px;padding-top:12px;"><svg viewBox="0 0 24 24" fill="none" stroke="#E53935" stroke-width="2" width="16" height="16"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>&nbsp;Log Out</a>
@@ -434,13 +434,14 @@ async function loadNavbarNotifications(userId) {
   const ddBadge = document.getElementById('dd-notif-count');
   const dropdown = document.getElementById('notif-dropdown');
 
-  // Unread count
+  // Unseen count (Facebook-style: badge clears when user OPENS notifications page,
+  // even if they don't click each row individually)
   try {
     const { count, error } = await window.supa
       .from('notifications')
       .select('id', { count: 'exact', head: true })
       .eq('user_id', userId)
-      .is('read_at', null);
+      .is('seen_at', null);
     const n = (!error && typeof count === 'number') ? count : 0;
     if (badge) {
       badge.textContent = n > 99 ? '99+' : String(n);
