@@ -798,7 +798,12 @@
           </div>
           <!-- PIN LOCATION MAP -->
           <div class="form-full" style="margin-top:8px;">
-            <label class="form-label" style="margin-bottom:8px;display:block;">📍 Pin Exact Location <span style="font-size:12px;color:var(--grey);font-weight:400;">(optional, helps buyers find you)</span></label>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;gap:10px;flex-wrap:wrap;">
+              <label class="form-label" style="margin-bottom:0;">📍 Pin Exact Location <span style="font-size:12px;color:var(--grey);font-weight:400;">(optional, helps buyers find you)</span></label>
+              <button type="button" id="btn-use-my-location" onclick="useMyLocation()" style="background:var(--white);border:1.5px solid var(--border);border-radius:8px;padding:6px 12px;font-size:12px;font-weight:700;color:var(--dark);cursor:pointer;display:inline-flex;align-items:center;gap:5px;transition:border-color .15s;" onmouseover="this.style.borderColor='var(--orange)'" onmouseout="this.style.borderColor='var(--border)'">
+                <span>📡</span> Use my current location
+              </button>
+            </div>
             <div id="place-ad-map" style="width:100%;height:280px;border-radius:12px;border:1.5px solid var(--border);overflow:hidden;background:#eee;"></div>
             <div id="place-ad-map-address" style="font-size:12px;color:var(--grey);margin-top:6px;min-height:18px;"></div>
             <input type="hidden" id="inp-lat" />
@@ -1831,30 +1836,69 @@
       onBrandChange();
     }
     setTimeout(() => {
+      // Model matching — handle three cases:
+      //  a) AI returns "296" and option is "296" → exact match
+      //  b) AI returns "M3 Competition" and option is "M3" → option is substring of AI
+      //  c) AI returns "296" and option is "296 GTS" → AI is substring of option
+      // When (b) succeeds, the LEFTOVER part of the AI string is the implicit
+      // trim. We stash it so the trim step below can use it as a fallback if
+      // data.trim is missing.
+      let derivedTrim = null;
       if (data.model) {
         const modelSel = document.getElementById('sel-model');
-        for (let o of modelSel.options) { if (o.value.toLowerCase().includes(data.model.toLowerCase())) { modelSel.value = o.value; break; } }
-        onModelChange();
+        const aiModel = data.model.toLowerCase().trim();
+        // Pass 1: exact match
+        let matched = false;
+        for (let o of modelSel.options) {
+          if (o.value && o.value.toLowerCase() === aiModel) { modelSel.value = o.value; matched = true; break; }
+        }
+        // Pass 2: option label is a substring of AI string (e.g. AI "296 GTB" → option "296")
+        if (!matched) {
+          // Iterate options sorted by length DESC so longer/more-specific options win
+          const opts = Array.from(modelSel.options).filter(o => o.value).sort((a, b) => b.value.length - a.value.length);
+          for (const o of opts) {
+            const lo = o.value.toLowerCase();
+            // Match on word boundary so "AMG" doesn't match inside "SAMGER"
+            if (new RegExp('\\b' + lo.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b').test(aiModel)) {
+              modelSel.value = o.value;
+              matched = true;
+              // Leftover words → derived trim
+              derivedTrim = aiModel.replace(new RegExp('\\b' + lo.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b', 'i'), '').trim();
+              break;
+            }
+          }
+        }
+        // Pass 3: AI string is a substring of option label
+        if (!matched) {
+          for (let o of modelSel.options) {
+            if (o.value && o.value.toLowerCase().includes(aiModel)) { modelSel.value = o.value; matched = true; break; }
+          }
+        }
+        if (matched) onModelChange();
       }
       setTimeout(() => {
-        if (data.trim) {
+        // Trim: prefer data.trim, fall back to derivedTrim from model parsing
+        const trimSource = (data.trim || derivedTrim || '').trim();
+        if (trimSource) {
           const trimSel = document.getElementById('sel-trim');
           let trimMatched = false;
           for (let o of trimSel.options) {
-            if (o.value.toLowerCase().includes(data.trim.toLowerCase()) ||
-                data.trim.toLowerCase().includes(o.value.toLowerCase())) {
+            if (!o.value) continue;
+            const lo = o.value.toLowerCase();
+            const lt = trimSource.toLowerCase();
+            if (lo === lt || lo.includes(lt) || lt.includes(lo)) {
               trimSel.value = o.value;
               trimMatched = true;
               break;
             }
           }
           // If no match found, add AI-detected trim as a custom option and select it
-          if (!trimMatched && data.trim) {
+          if (!trimMatched) {
             const newOpt = document.createElement('option');
-            newOpt.value = data.trim;
-            newOpt.textContent = data.trim + ' (AI detected)';
+            newOpt.value = trimSource;
+            newOpt.textContent = trimSource + ' (AI detected)';
             trimSel.appendChild(newOpt);
-            trimSel.value = data.trim;
+            trimSel.value = trimSource;
             trimSel.disabled = false;
           }
         }
@@ -1862,14 +1906,24 @@
         if (data.condition) document.getElementById('sel-condition').value = data.condition;
         if (data.engine) document.getElementById('inp-engine').value = data.engine;
         if (data.transmission) document.getElementById('sel-trans').value = data.transmission;
-        // Fuel type — AI can determine this from engine + badges (Diesel, Hybrid, Electric, Petrol)
+        // Fuel type — fuzzy: handles Petrol↔Gasoline synonyms and partial matches
         if (data.fuelType) {
           const fuelSel = document.getElementById('sel-fuel');
           if (fuelSel) {
+            let lc = data.fuelType.toLowerCase().trim();
+            // Normalize common synonyms to the dropdown's vocabulary
+            const synonyms = { 'petrol': 'gasoline', 'gas': 'gasoline', 'ev': 'electric', 'bev': 'electric', 'phev': 'hybrid', 'plug-in hybrid': 'hybrid' };
+            if (synonyms[lc]) lc = synonyms[lc];
+            // Try exact then substring match
+            let matched = false;
             for (let o of fuelSel.options) {
-              if (o.value.toLowerCase() === data.fuelType.toLowerCase()) {
-                fuelSel.value = o.value;
-                break;
+              if (o.value && o.value.toLowerCase() === lc) { fuelSel.value = o.value; matched = true; break; }
+            }
+            if (!matched) {
+              for (let o of fuelSel.options) {
+                if (!o.value) continue;
+                const lo = o.value.toLowerCase();
+                if (lo.includes(lc) || lc.includes(lo)) { fuelSel.value = o.value; break; }
               }
             }
           }
@@ -1893,11 +1947,34 @@
             const lo = o.value.toLowerCase();
             if (lc.includes(lo) || lo.includes(lc)) { sel.value = o.value; return; }
           }
-          // 3) common color word fallback (covers "Nardo Grey" → "Grey", etc.)
-          const colorWords = ['black','white','silver','grey','gray','red','blue','green','beige','brown','gold','orange','purple','yellow','maroon','cream','tan'];
-          for (const word of colorWords) {
+          // 3) common color word fallback (covers "Nardo Grey" → "Grey",
+          // "Giallo Modena" → "Yellow", "Rosso Corsa" → "Red", etc.)
+          // Maps common manufacturer color-word fragments to generic options.
+          const colorMap = {
+            // English generic
+            black: 'black', white: 'white', silver: 'silver', grey: 'grey', gray: 'grey',
+            red: 'red', blue: 'blue', green: 'green', beige: 'beige', brown: 'brown',
+            gold: 'gold', orange: 'orange', purple: 'purple', yellow: 'yellow',
+            maroon: 'maroon', cream: 'cream', tan: 'tan',
+            // Italian (Ferrari, Lamborghini, Maserati, Alfa)
+            rosso: 'red', giallo: 'yellow', nero: 'black', bianco: 'white',
+            grigio: 'grey', argento: 'silver', blu: 'blue', verde: 'green',
+            arancio: 'orange', arancione: 'orange', viola: 'purple', oro: 'gold',
+            // German (BMW, Audi, Porsche, Mercedes)
+            schwarz: 'black', weiss: 'white', 'weiß': 'white', silber: 'silver',
+            grau: 'grey', rot: 'red', blau: 'blue', gelb: 'yellow', gruen: 'green',
+            // French (Bugatti, Peugeot)
+            noir: 'black', blanc: 'white', rouge: 'red', bleu: 'blue', vert: 'green',
+            jaune: 'yellow', gris: 'grey',
+            // Common paint name fragments
+            obsidian: 'black', midnight: 'black', jet: 'black', onyx: 'black',
+            pearl: 'white', polar: 'white', ibis: 'white', glacier: 'white',
+            nardo: 'grey', daytona: 'grey', frozen: 'grey', moonstone: 'grey',
+            misano: 'red', solar: 'red', tornado: 'red', dragon: 'red', soul: 'red',
+            bahama: 'yellow', taxi: 'yellow', sun: 'yellow', modena: 'yellow',
+          };
+          for (const [word, target] of Object.entries(colorMap)) {
             if (lc.includes(word)) {
-              const target = word === 'gray' ? 'grey' : word;
               for (let o of sel.options) {
                 if (o.value && o.value.toLowerCase() === target) { sel.value = o.value; return; }
               }
@@ -3069,13 +3146,72 @@
       }
       reverseGeocode(lat, lng);
     });
-    // Try to use browser geolocation to center map
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(function(pos) {
-        _placeAdMap.flyTo({ center: [pos.coords.longitude, pos.coords.latitude], zoom: 14 });
-      }, null, { timeout: 5000 });
-    }
+    // No automatic geolocation prompt — keeps the map at the UAE default
+    // until the user explicitly clicks "Use my current location".
   }
+
+  /**
+   * Asks the browser for the user's current coordinates and drops a pin
+   * on the place-ad map. Triggered ONLY by the "Use my current location"
+   * button — never automatically on page load. We also remember a previous
+   * "denied" result in localStorage so we don't beg the user repeatedly
+   * across visits.
+   */
+  function useMyLocation() {
+    const btn = document.getElementById('btn-use-my-location');
+    if (!navigator.geolocation) {
+      showToast('Your browser does not support geolocation. Click on the map to drop a pin manually.');
+      return;
+    }
+    // If the user previously denied, point them at browser settings rather
+    // than re-trigger the prompt (the browser would just deny again silently).
+    try {
+      if (localStorage.getItem('dm_geo_denied') === '1') {
+        showToast('Location access is blocked. Enable it in your browser settings to use this feature.');
+        return;
+      }
+    } catch {}
+
+    if (btn) { btn.disabled = true; btn.style.opacity = '0.6'; btn.innerHTML = '<span>⏳</span> Locating…'; }
+    navigator.geolocation.getCurrentPosition(
+      function (pos) {
+        if (btn) { btn.disabled = false; btn.style.opacity = ''; btn.innerHTML = '<span>📡</span> Use my current location'; }
+        const lat = pos.coords.latitude;
+        const lng = pos.coords.longitude;
+        if (_placeAdMap) _placeAdMap.flyTo({ center: [lng, lat], zoom: 15 });
+        document.getElementById('inp-lat').value = lat.toFixed(6);
+        document.getElementById('inp-lng').value = lng.toFixed(6);
+        // Drop / move the marker so the pin is committed
+        if (_placeAdMarker) {
+          _placeAdMarker.setLngLat([lng, lat]);
+        } else {
+          const el = document.createElement('div');
+          el.style.cssText = 'width:20px;height:20px;background:#E84118;border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,0.4);cursor:grab;';
+          _placeAdMarker = new mapboxgl.Marker({ element: el, draggable: true })
+            .setLngLat([lng, lat])
+            .addTo(_placeAdMap);
+          _placeAdMarker.on('dragend', function () {
+            const p = _placeAdMarker.getLngLat();
+            document.getElementById('inp-lat').value = p.lat.toFixed(6);
+            document.getElementById('inp-lng').value = p.lng.toFixed(6);
+            reverseGeocode(p.lat, p.lng);
+          });
+        }
+        reverseGeocode(lat, lng);
+      },
+      function (err) {
+        if (btn) { btn.disabled = false; btn.style.opacity = ''; btn.innerHTML = '<span>📡</span> Use my current location'; }
+        if (err && err.code === err.PERMISSION_DENIED) {
+          try { localStorage.setItem('dm_geo_denied', '1'); } catch {}
+          showToast('Location permission denied. You can still click on the map to drop a pin.');
+        } else {
+          showToast('Could not get your location. Click on the map to drop a pin instead.');
+        }
+      },
+      { timeout: 8000, enableHighAccuracy: false }
+    );
+  }
+  window.useMyLocation = useMyLocation;
 
   function reverseGeocode(lat, lng) {
     const addrEl = document.getElementById('place-ad-map-address');

@@ -245,13 +245,12 @@ Return ONLY a valid JSON object with NO markdown:
   "model": "Specific model — e.g. M3, C-Class, Land Cruiser 300, Sportage",
   "trim": "EXACT trim variant — e.g. M Competition, AMG C63 S, GT3 RS, GTI, Limited Edition, EX Premium. NEVER return empty string or null. If uncertain use the most likely trim for this model year.",
   "year": "4-digit model year based on design generation and facelift details",
-  "condition": "Brand New or Used",
   "exteriorColor": "Specific paint color — e.g. Obsidian Black, Polar White, Nardo Grey, Misano Red. Use manufacturer color names when identifiable.",
   "interiorColor": "Interior color — e.g. Black, Cognac, Red, Beige, Brown",
   "bodyType": "SUV, Sedan, Coupe, Hatchback, Convertible, Pickup, Van, or Wagon",
   "engine": "Engine spec — e.g. 3.0L Inline-6 TwinPower Turbo, 4.0L V8 Biturbo",
   "transmission": "Automatic or Manual",
-  "fuelType": "Petrol, Diesel, Hybrid, or Electric — based on the engine type and badges",
+  "fuelType": "Gasoline, Diesel, Hybrid, or Electric — based on engine type and badges (use Gasoline for petrol-powered cars, Hybrid for PHEV/HEV, Electric for EVs)",
   "hp": "Horsepower as integer string for this exact trim",
   "cylinders": "Number of cylinders as string (use 0 for electric)",
   "doors": "Number of doors as string",
@@ -263,7 +262,8 @@ ABSOLUTE RULES:
 - TRIM must NEVER be empty. Always provide a specific trim name.
 - EXTERIOR COLOR is always determinable from exterior photos.
 - BODY TYPE is always determinable from the vehicle shape.
-- Do NOT include regionalSpec in your response.
+- Do NOT include "condition" — the seller picks this themselves. Photos can't reliably distinguish demo cars / showroom-fresh used cars from brand-new ones.
+- Do NOT include "regionalSpec" — also seller-picked.
 - Return ONLY the raw JSON object.`;
 
   try {
@@ -615,10 +615,15 @@ async function handlePriceEstimate(req, res) {
   try {
     if (process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY) {
       const yearNum = parseInt(year);
+      // When the AI fills the form with a combined model like "296 GTB",
+      // the data may live in our DB as model="296" trim="GTB" (separate
+      // columns). We can't ilike across both, so we grep on the FIRST word
+      // of the user-supplied model and do the rest of the matching in JS.
+      const modelFirstWord = (model || '').trim().split(/\s+/)[0];
       const url = new URL(`${process.env.SUPABASE_URL}/rest/v1/listings`);
-      url.searchParams.set('select', 'price,year,trim,regional_spec');
+      url.searchParams.set('select', 'price,year,model,trim,regional_spec');
       url.searchParams.set('make', `ilike.${brand}`);
-      url.searchParams.set('model', `ilike.%${model}%`);
+      url.searchParams.set('model', `ilike.%${modelFirstWord}%`);
       url.searchParams.set('year', `gte.${yearNum - 2}`);
       url.searchParams.set('status', 'eq.active');
       const dbRes = await fetch(url.toString(), {
@@ -629,10 +634,16 @@ async function handlePriceEstimate(req, res) {
       });
       if (dbRes.ok) {
         const rows = await dbRes.json();
-        // Filter to within ±2 years and (if regionalSpec given) same spec
+        // Build the requested model+trim string for finer match
+        const wanted = (model + ' ' + (trim || '')).toLowerCase().trim();
         internalPrices = rows
           .filter(r => Math.abs((r.year || 0) - yearNum) <= 2)
           .filter(r => !regionalSpec || !r.regional_spec || r.regional_spec === regionalSpec)
+          // Substring match across model+trim either direction
+          .filter(r => {
+            const have = ((r.model || '') + ' ' + (r.trim || '')).toLowerCase().trim();
+            return have.includes(wanted) || wanted.includes(have) || have.includes(model.toLowerCase());
+          })
           .map(r => r.price)
           .filter(p => p && p > 5000 && p < 50000000);
       }
@@ -676,14 +687,20 @@ Vehicle to price:
 
 ${priceContext}
 
-IMPORTANT PRICING RULES:
+CRITICAL PRICING RULES:
 1. ${mileageNote}
-2. Give USED market prices (not new/dealer prices) unless condition is "New"
-3. Be CONSERVATIVE and REALISTIC — do not overestimate
-4. For exotic/luxury cars (Ferrari, Lamborghini, McLaren, Porsche, etc.), used prices in UAE are typically 30-50% below new MSRP
-5. A 2023 Ferrari SF90 Stradale used = approx AED 1.4M-1.6M (not 2.8M+)
-6. Always factor in the specific trim level — higher trims command 5-20% premium
-7. Factor in regional spec impact on the final number
+2. Give USED resale market prices, NOT new/dealer prices, unless condition is "New".
+3. Be CONSERVATIVE. When uncertain, lean LOWER, not higher.
+4. UAE used exotic/luxury prices are typically 30-50% BELOW new MSRP. Examples:
+   - Ferrari 296 GTB new MSRP ~AED 1.55M → used ~AED 850K-1.15M (not 1.5M+)
+   - Ferrari SF90 Stradale new MSRP ~AED 2.0M → used ~AED 1.3M-1.6M (not 2.5M+)
+   - Lamborghini Huracan new ~AED 1.05M → used ~AED 600K-850K
+   - McLaren 720S new ~AED 1.2M → used ~AED 700K-1.0M
+   - Porsche 911 Turbo S new ~AED 1.0M → used ~AED 600K-900K
+5. Normal cars: factor in age (~10-15% depreciation per year for first 3 years, ~5-8% after).
+6. Higher trims command 5-20% premium over base trim.
+7. GCC spec sells HIGHEST in UAE; American/European spec sells 10-15% lower.
+8. SANITY CHECK: Your median must be at most 70% of the new MSRP for a 1-3 year old car, and at most 50% for a 4+ year old car. If you'd return higher, you're wrong — reduce.
 
 Return ONLY this JSON (no markdown, no explanation):
 {
@@ -700,6 +717,7 @@ Return ONLY this JSON (no markdown, no explanation):
       model: AI_TEXT_MODEL,
       messages: [{ role: 'user', content: prompt }],
       max_tokens: 600,
+      temperature: 0.1,
     });
     const text = completion.choices[0].message.content.trim();
     const jsonMatch = text.match(/\{[\s\S]*\}/);
