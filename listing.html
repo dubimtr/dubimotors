@@ -694,6 +694,10 @@
    * Last-resort fetch: directly query Supabase for a single listing by id,
    * IGNORING status. This is what makes sold/expired listings still viewable
    * when someone has a direct link (e.g. from a chat thread).
+   *
+   * IMPORTANT: we don't depend on DM.toLegacyShape (it may not be exported in
+   * older shared.js builds). We do the mapping inline here so this works
+   * regardless of which version of shared.js is deployed.
    */
   async function fetchListingDirect(listingId) {
     if (!window.supa) return null;
@@ -704,11 +708,71 @@
         .eq('id', listingId)
         .maybeSingle();
       if (error || !data) return null;
-      // Map to legacy shape using shared.js's mapper if available
-      if (typeof DM !== 'undefined' && typeof DM.toLegacyShape === 'function') {
-        return DM.toLegacyShape(data);
+
+      // Map raw DB row → legacy shape the renderer expects (mirrors shared.js
+      // toLegacyShape but inlined so it always works).
+      const imgs = (data.listing_images || [])
+        .slice()
+        .sort((a,b) => (b.is_primary?1:0) - (a.is_primary?1:0) || (a.display_order||0) - (b.display_order||0));
+      const primary = imgs.find(i => i.is_primary);
+      const images = imgs.map(i => i.url);
+      const mainImg = (primary && primary.url) || imgs[0]?.url || '';
+
+      // Pretty contact name fallback (matches shared.js logic)
+      let dealerType = null;
+      if (data.contact_name) {
+        const name = data.contact_name.toLowerCase();
+        if (name.includes('dealer') || name.includes('motors') || name.includes('cars') || name.includes('auto')) {
+          dealerType = 'dealer';
+        }
       }
-      return data;
+
+      return {
+        id: data.legacy_id || data.id,
+        uuid: data.id,
+        title: data.title,
+        category: data.category,
+        make: data.make,
+        model: data.model,
+        trim: data.trim,
+        price: data.price,
+        year: data.year,
+        km: data.km,
+        condition: data.condition,
+        engine: data.engine,
+        hp: data.hp,
+        cylinders: data.cylinders,
+        transmission: data.transmission,
+        bodyType: data.body_type,
+        doors: data.doors,
+        seats: data.seats,
+        color: data.color,
+        fuelType: data.fuel_type,
+        regionalSpec: data.regional_spec,
+        location: data.location,
+        locationAddress: data.location,
+        latitude: data.latitude,
+        longitude: data.longitude,
+        description: data.description,
+        owner_id: data.owner_id,
+        contact_name: data.contact_name,
+        contact_phone: data.contact_phone,
+        seller: data.contact_name || 'Private Seller',
+        sellerType: dealerType || 'individual',
+        featured: data.featured,
+        verified: data.verified,
+        warranty: data.warranty,
+        serviceContract: data.service_history,
+        service_history: data.service_history,
+        status: data.status,
+        is_demo: data.is_demo,
+        mainImg,
+        images,
+        listing_images: imgs,
+        addedDate: data.created_at,
+        created_at: data.created_at,
+        expires_at: data.expires_at,
+      };
     } catch (e) {
       console.warn('[listing] direct fetch failed:', e.message);
       return null;
