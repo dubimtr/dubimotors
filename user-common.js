@@ -341,28 +341,47 @@ function dmApplySidebarSnapshot(snap) {
   const nameEl   = document.querySelector('.dash-name');
   const emailEl  = document.querySelector('.dash-email');
   if (avatarEl) {
-    // hasAvatarUrl: explicit URL in snap → render image
-    // hasAvatarUrl === false (legacy cache, undefined): leave element alone
-    //   so we don't flicker from image → initials → image
-    // hasAvatarUrl === null (fresh fetch found no avatar): reset to initials
+    // Use a real <img> element rather than background-image. Browsers
+    // disk-cache <img> URLs across pages, so once the avatar has loaded
+    // once, navigating to other dashboard pages renders it INSTANTLY from
+    // cache (background-image doesn't get this treatment).
     if (typeof snap.avatarUrl === 'string' && snap.avatarUrl) {
-      avatarEl.style.backgroundImage = `url("${snap.avatarUrl.replace(/"/g,'\\"')}")`;
-      avatarEl.style.backgroundSize = 'cover';
-      avatarEl.style.backgroundPosition = 'center';
-      avatarEl.textContent = '';
+      const existing = avatarEl.querySelector('img.dash-avatar-img');
+      if (existing) {
+        // If src matches, do nothing (no DOM thrash → no flicker)
+        if (existing.getAttribute('src') !== snap.avatarUrl) {
+          existing.setAttribute('src', snap.avatarUrl);
+        }
+      } else {
+        avatarEl.textContent = '';
+        avatarEl.style.backgroundImage = '';
+        const img = document.createElement('img');
+        img.className = 'dash-avatar-img';
+        img.src = snap.avatarUrl;
+        img.alt = '';
+        img.decoding = 'async';
+        img.loading = 'eager';
+        // Hard-fit inside the circular .dash-avatar parent
+        img.style.cssText = 'width:100%;height:100%;border-radius:50%;object-fit:cover;display:block;';
+        avatarEl.appendChild(img);
+      }
     } else if (snap.avatarUrl === null) {
-      // Fresh data says "no avatar" — reset to initials
+      // Fresh data says "no avatar" — reset to initials, remove any img
+      const existing = avatarEl.querySelector('img.dash-avatar-img');
+      if (existing) existing.remove();
       avatarEl.style.backgroundImage = '';
-      avatarEl.textContent = snap.initials || '';
-    } else if (!avatarEl.style.backgroundImage && !avatarEl.textContent) {
+      if (avatarEl.textContent !== (snap.initials || '')) {
+        avatarEl.textContent = snap.initials || '';
+      }
+    } else if (!avatarEl.querySelector('img.dash-avatar-img') && !avatarEl.textContent) {
       // Element is empty and we have no avatar info yet — paint initials
       avatarEl.textContent = snap.initials || '';
     }
     // Otherwise: avatarUrl is undefined (legacy cache) AND element has content
     // already — leave it alone to prevent flicker.
   }
-  if (nameEl)   nameEl.textContent   = snap.displayName || '';
-  if (emailEl)  emailEl.textContent  = snap.email || '';
+  if (nameEl && nameEl.textContent !== (snap.displayName || '')) nameEl.textContent = snap.displayName || '';
+  if (emailEl && emailEl.textContent !== (snap.email || '')) emailEl.textContent = snap.email || '';
 
   // Verified badge — show/hide based on profile.email_verified_at
   // Every dashboard page has a `.dash-verified-badge` element. We use the snap's
@@ -379,34 +398,26 @@ function dmApplySidebarSnapshot(snap) {
   if (stats[0] && typeof snap.activeCount === 'number') stats[0].textContent = snap.activeCount;
   if (stats[1] && typeof snap.savedCount  === 'number') stats[1].textContent = snap.savedCount;
 
-  // Sidebar nav badges: show My Ads count if > 0
-  document.querySelectorAll('.dash-nav-badge').forEach(b => b.style.display = 'none');
-  const myAdsLink = document.querySelector('a[href="my-ads.html"].dash-nav-item');
-  if (myAdsLink) {
-    const badge = myAdsLink.querySelector('.dash-nav-badge');
-    if (badge && snap.activeCount > 0) {
-      badge.textContent = snap.activeCount;
-      badge.style.display = '';
-    }
+  // Sidebar nav badges. Show/hide each badge based on the count. We don't
+  // blanket-hide-then-show because that causes a visible flicker when the
+  // count is the same (e.g. when fresh fetch matches cached value).
+  function setBadge(linkSelector, count) {
+    const link = document.querySelector(linkSelector);
+    if (!link) return;
+    const badge = link.querySelector('.dash-nav-badge');
+    if (!badge) return;
+    const shouldShow = typeof count === 'number' && count > 0;
+    const newText = shouldShow ? String(count) : '';
+    const targetDisplay = shouldShow ? '' : 'none';
+    if (shouldShow && badge.textContent !== newText) badge.textContent = newText;
+    if (badge.style.display !== targetDisplay) badge.style.display = targetDisplay;
   }
-  // Favorites count badge in sidebar
-  const favLink = document.querySelector('a[href="favourites.html"].dash-nav-item');
-  if (favLink) {
-    const badge = favLink.querySelector('.dash-nav-badge');
-    if (badge && snap.savedCount > 0) {
-      badge.textContent = snap.savedCount;
-      badge.style.display = '';
-    }
-  }
-  // Chats unread count badge in sidebar (don't overwrite if the current page
-  // managed its own count, e.g. chats.html updates it live)
-  const chatsLink = document.querySelector('a[href="chats.html"].dash-nav-item');
-  if (chatsLink && typeof snap.chatsUnread === 'number') {
-    const badge = chatsLink.querySelector('.dash-nav-badge');
-    if (badge && snap.chatsUnread > 0) {
-      badge.textContent = snap.chatsUnread;
-      badge.style.display = '';
-    }
+
+  setBadge('a[href="my-ads.html"].dash-nav-item', snap.activeCount);
+  setBadge('a[href="favourites.html"].dash-nav-item', snap.savedCount);
+  // Chats badge — only update if a value is explicitly in the snapshot
+  if (typeof snap.chatsUnread === 'number') {
+    setBadge('a[href="chats.html"].dash-nav-item', snap.chatsUnread);
   }
 }
 

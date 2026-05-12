@@ -318,37 +318,42 @@ async function updateNavbarAuthState() {
   const email = user.email || '';
   const initials = displayName.trim().split(/\s+/).map(w => w[0]).slice(0, 2).join('').toUpperCase() || 'U';
 
-  // Update navbar avatar (the small button) — show avatar image if profile
-  // has one, else fall back to initials text.
-  const avatarEl = userBtn ? userBtn.querySelector('.nav-user-avatar') : null;
-  if (avatarEl) {
-    const avatarUrl = profile && profile.avatar_url ? profile.avatar_url : null;
+  // Update navbar avatar (the small button) — use a real <img> element so the
+  // browser disk-caches the avatar URL across page navigations. Falls back to
+  // initials text if no avatar uploaded.
+  function setAvatarOnElement(el, avatarUrl, initialsText) {
+    if (!el) return;
     if (avatarUrl) {
-      avatarEl.style.backgroundImage = `url("${avatarUrl.replace(/"/g, '\\"')}")`;
-      avatarEl.style.backgroundSize = 'cover';
-      avatarEl.style.backgroundPosition = 'center';
-      avatarEl.textContent = '';
+      const existing = el.querySelector('img.nav-avatar-img');
+      if (existing) {
+        if (existing.getAttribute('src') !== avatarUrl) existing.setAttribute('src', avatarUrl);
+      } else {
+        el.textContent = '';
+        el.style.backgroundImage = '';
+        const img = document.createElement('img');
+        img.className = 'nav-avatar-img';
+        img.src = avatarUrl;
+        img.alt = '';
+        img.decoding = 'async';
+        img.loading = 'eager';
+        img.style.cssText = 'width:100%;height:100%;border-radius:50%;object-fit:cover;display:block;';
+        el.appendChild(img);
+      }
     } else {
-      avatarEl.style.backgroundImage = '';
-      avatarEl.textContent = initials;
+      const existing = el.querySelector('img.nav-avatar-img');
+      if (existing) existing.remove();
+      el.style.backgroundImage = '';
+      if (el.textContent !== initialsText) el.textContent = initialsText;
     }
   }
 
-  // Update the dropdown header avatar too (the inner one shown when the menu
-  // opens). It's the first <div> child of nav-dropdown-header > div > div.
+  const avatarUrl = profile && profile.avatar_url ? profile.avatar_url : null;
+  const avatarEl = userBtn ? userBtn.querySelector('.nav-user-avatar') : null;
+  setAvatarOnElement(avatarEl, avatarUrl, initials);
+
+  // Dropdown header avatar (shown when menu opens)
   const dropdownAvatar = document.querySelector('#user-dropdown .nav-dropdown-header > div > div:first-child');
-  if (dropdownAvatar) {
-    const avatarUrl = profile && profile.avatar_url ? profile.avatar_url : null;
-    if (avatarUrl) {
-      dropdownAvatar.style.backgroundImage = `url("${avatarUrl.replace(/"/g, '\\"')}")`;
-      dropdownAvatar.style.backgroundSize = 'cover';
-      dropdownAvatar.style.backgroundPosition = 'center';
-      dropdownAvatar.textContent = '';
-    } else {
-      dropdownAvatar.style.backgroundImage = '';
-      dropdownAvatar.textContent = initials;
-    }
-  }
+  setAvatarOnElement(dropdownAvatar, avatarUrl, initials);
 
   // Fetch real My Ads count (active listings owned by this user) and show
   // a badge in the dropdown if > 0. Notifications/chats stay at 0 until those
