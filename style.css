@@ -809,7 +809,20 @@ select.form-input { appearance: none; background-image: url("data:image/svg+xml,
   opacity: 0;
   transition: all 0.3s;
   border-left: 4px solid var(--orange);
-  max-width: 90vw;
+  /* Hard size limits so the toast can NEVER stretch to a giant box, even
+     if some other CSS or transform tries to enlarge it. */
+  width: auto;
+  min-width: 200px;
+  max-width: min(420px, 90vw);
+  min-height: 0;
+  max-height: 80px;
+  height: auto;
+  line-height: 1.4;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: flex;
+  align-items: center;
   box-shadow: 0 8px 32px rgba(0,0,0,0.18);
 }
 .toast.show { transform: translate(-50%, 0); opacity: 1; }
