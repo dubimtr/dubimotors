@@ -1065,6 +1065,127 @@ Return ONLY this JSON:
 }
 
 // ══════════════════════════════════════════════════════════════════════════
+// /api/notify-admin-pending — email the admin when a listing enters pending_review
+// ══════════════════════════════════════════════════════════════════════════
+// Called by the frontend (place-ad.html) right after a listing's status is
+// set to pending_review. Single source of truth — every entry path
+// (verifier flag, duplicate detection, AI parse failure, AI timeout) calls
+// this same endpoint, so the admin gets exactly one notification regardless
+// of WHY the listing was held for review.
+//
+// Security model:
+//   - Accept only a listing_id, then look up the row server-side using the
+//     service role. Don't trust client-supplied seller info.
+//   - Verify the listing is actually in pending_review before sending.
+//   - Idempotency: skip if `admin_notified_at` is already set on the row.
+//     This prevents double-emails if the user double-clicks Publish.
+async function handleNotifyAdminPending(req, res) {
+  const supa = getSupabaseAdmin();
+  if (!supa) return jsonRes(res, { error: 'Service unavailable' }, 503);
+
+  let body = {};
+  try { body = await parseBody(req); } catch {}
+  const listingId = body.listing_id;
+  if (!listingId) return jsonRes(res, { error: 'Missing listing_id' }, 400);
+
+  // Fetch the listing (server-side, service role — bypasses RLS)
+  const { data: listing, error: lErr } = await supa
+    .from('listings')
+    .select('id, owner_id, title, make, model, trim, year, price, status, moderation_reason, admin_notified_at')
+    .eq('id', listingId)
+    .maybeSingle();
+  if (lErr || !listing) {
+    return jsonRes(res, { error: 'Listing not found' }, 404);
+  }
+
+  // Defensive: only email if actually in pending_review
+  if (listing.status !== 'pending_review') {
+    return jsonRes(res, { ok: true, skipped: 'not_pending' });
+  }
+
+  // Idempotency: don't re-send if already notified
+  if (listing.admin_notified_at) {
+    return jsonRes(res, { ok: true, skipped: 'already_sent' });
+  }
+
+  // Look up seller info for the email body
+  let sellerEmail = '';
+  let sellerName = '';
+  let sellerPhone = '';
+  try {
+    const { data: userData } = await supa.auth.admin.getUserById(listing.owner_id);
+    if (userData && userData.user) {
+      sellerEmail = userData.user.email || '';
+    }
+  } catch {}
+  try {
+    const { data: profile } = await supa
+      .from('profiles')
+      .select('display_name, phone, verified_phone')
+      .eq('id', listing.owner_id)
+      .maybeSingle();
+    if (profile) {
+      sellerName = profile.display_name || '';
+      sellerPhone = profile.verified_phone || profile.phone || '';
+    }
+  } catch {}
+
+  const adminTo = process.env.ADMIN_NOTIFY_EMAIL || 'dubimotorsae@gmail.com';
+  const vehicleTitle = [listing.year, listing.make, listing.model, listing.trim].filter(Boolean).join(' ') || (listing.title || 'Listing');
+  const priceFormatted = listing.price ? 'AED ' + parseInt(listing.price).toLocaleString() : 'Price not specified';
+  const adminUrl = `${emailModule.SITE_URL}/admin.html`;
+  const reason = listing.moderation_reason || '';
+
+  const html = `
+<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#fff;">
+  <div style="background:#111;padding:24px 32px;">
+    <div style="color:#fff;font-size:22px;font-weight:900;">DUBI<span style="color:#E8450A;">MOTORS</span></div>
+    <div style="color:#bbb;font-size:12px;margin-top:4px;">Admin notification</div>
+  </div>
+  <div style="padding:32px;">
+    <div style="background:#FFF3CD;border:1px solid #FFD700;border-radius:12px;padding:14px 18px;margin-bottom:24px;">
+      <div style="font-size:14px;font-weight:700;color:#856404;">A listing is awaiting your review</div>
+    </div>
+    <h2 style="font-size:20px;font-weight:900;color:#111;margin:0 0 6px;">${vehicleTitle}</h2>
+    <div style="font-size:18px;font-weight:900;color:#E8450A;margin-bottom:18px;">${priceFormatted}</div>
+    <table style="width:100%;font-size:14px;color:#333;border-collapse:collapse;margin-bottom:20px;">
+      <tr><td style="padding:6px 0;color:#888;width:120px;">Seller name</td><td style="padding:6px 0;">${sellerName || '—'}</td></tr>
+      <tr><td style="padding:6px 0;color:#888;">Seller phone</td><td style="padding:6px 0;">${sellerPhone || '—'}</td></tr>
+      <tr><td style="padding:6px 0;color:#888;">Seller email</td><td style="padding:6px 0;">${sellerEmail || '—'}</td></tr>
+      <tr><td style="padding:6px 0;color:#888;">Listing ID</td><td style="padding:6px 0;font-family:monospace;font-size:12px;">${listing.id}</td></tr>
+    </table>
+    ${reason ? `<div style="background:#F8F8F8;border-radius:10px;padding:14px 16px;margin-bottom:24px;"><div style="font-size:12px;font-weight:700;color:#666;margin-bottom:6px;">Reason for review:</div><div style="font-size:14px;color:#333;">${reason}</div></div>` : ''}
+    <a href="${adminUrl}" style="display:inline-block;background:#E8450A;color:#fff;text-decoration:none;padding:12px 22px;border-radius:8px;font-weight:700;font-size:14px;">Open Admin Panel</a>
+    <div style="margin-top:28px;padding-top:20px;border-top:1px solid #eee;font-size:12px;color:#999;">
+      Automated notification &mdash; DubiMotors admin alerts.
+    </div>
+  </div>
+</div>`;
+
+  const result = await emailModule.sendEmail({
+    to: adminTo,
+    subject: `[Pending Review] ${vehicleTitle} — ${priceFormatted}`,
+    html,
+  });
+
+  if (!result.ok) {
+    console.error('[notify-admin-pending] send failed:', result.error);
+    return jsonRes(res, { error: result.error || 'Send failed' }, 500);
+  }
+
+  // Mark as notified to prevent duplicate emails
+  try {
+    await supa.from('listings')
+      .update({ admin_notified_at: new Date().toISOString() })
+      .eq('id', listing.id);
+  } catch (e) {
+    console.warn('[notify-admin-pending] could not mark notified:', e.message);
+  }
+
+  return jsonRes(res, { ok: true });
+}
+
+// ══════════════════════════════════════════════════════════════════════════
 // EMAIL VERIFICATION & TRANSACTIONAL EMAIL ENDPOINTS
 // ══════════════════════════════════════════════════════════════════════════
 const crypto = require('crypto');
@@ -1958,6 +2079,7 @@ const server = http.createServer(async (req, res) => {
     if (url === '/api/price-estimate') return handlePriceEstimate(req, res);
     if (url === '/api/suggest-features') return handleSuggestFeatures(req, res);
     if (url === '/api/verify-listing') return handleVerifyListing(req, res);
+    if (url === '/api/notify-admin-pending') return handleNotifyAdminPending(req, res);
     if (url === '/api/send-otp') return handleSendOtp(req, res);
     if (url === '/api/verify-otp') return handleVerifyOtp(req, res);
     if (url === '/api/send-welcome-email') return handleSendWelcomeEmail(req, res);

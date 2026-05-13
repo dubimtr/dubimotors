@@ -3201,6 +3201,18 @@
         })
         .eq('id', listingId);
 
+      // ─── 9b. If pending_review, notify admin by email (fire-and-forget) ───
+      // Single call covers every entry path: AI verifier rejection, duplicate
+      // detection, AI timeout, AI parse failure. The endpoint is idempotent —
+      // it'll skip if already sent for this listing.
+      if (!approved) {
+        fetch('/api/notify-admin-pending', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ listing_id: listingId }),
+        }).catch(() => { /* non-blocking — admin will see it in /admin.html regardless */ });
+      }
+
       // ─── 10. Done ───
       clearSubmitProgress();
       submitBtn.disabled = false;
@@ -3509,8 +3521,16 @@
             status: 'pending_review',
             moderation_reason: reason,
             moderation_at: new Date().toISOString(),
+            admin_notified_at: null, // edit re-opens the listing for review; clear so admin gets re-notified
           })
           .eq('id', _editListingId);
+
+        // Notify admin (idempotent — server skips if already notified)
+        fetch('/api/notify-admin-pending', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ listing_id: _editListingId }),
+        }).catch(() => {});
       }
 
       // ─── G. Done — redirect to the listing ───
