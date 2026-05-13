@@ -111,17 +111,10 @@ const DM = (() => {
     _readyPromise = (async () => {
       try {
         // Fetch active listings (visible to everyone).
-        // EXCLUDES demo data — the seller's UAT migration left ~61 demo
-        // rows in the DB flagged with is_demo=true. Until they get wiped
-        // (planned: `delete from listings where is_demo=true` pre-launch),
-        // we filter them out of public surfaces here. This is the single
-        // chokepoint — every page that reads DM.listings or DM.getCounts
-        // sees the de-demo'd list automatically.
         const activeRes = await window.supa
           .from('listings')
           .select('*, listing_images(url, is_primary, display_order)')
           .eq('status', 'active')
-          .or('is_demo.is.null,is_demo.eq.false')
           .order('featured', { ascending: false })
           .order('created_at', { ascending: false });
 
