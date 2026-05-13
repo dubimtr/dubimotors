@@ -1138,21 +1138,25 @@
   renderNavbar('home');
   renderFooter();
 
-  // Populate counts from real data
-  const counts = DM.getCounts();
-  document.getElementById('stat-total').textContent = counts.total;
-  document.getElementById('stat-cars').textContent = counts.cars;
-  document.getElementById('stat-boats').textContent = counts.boats;
-  document.getElementById('stat-bikes').textContent = counts.bikes;
-  document.getElementById('count-cars').textContent = counts.cars + ' listings';
-  const marineCount = counts.boats || 0;
-  const heavyCount = counts.heavy || 0;
-  document.getElementById('count-marine').textContent = marineCount + ' listings';
-  document.getElementById('count-bikes').textContent = counts.bikes + ' listings';
-  if (document.getElementById('count-heavy')) document.getElementById('count-heavy').textContent = heavyCount + ' listings';
-  document.getElementById('sc-cars').textContent = counts.cars + ' listings';
-  document.getElementById('sc-marine').textContent = marineCount + ' listings';
-  document.getElementById('sc-bikes').textContent = counts.bikes + ' listings';
+  // Populate counts from real data. Initial call uses whatever data DM has
+  // (empty array if Supabase hasn't loaded yet, real numbers if cached);
+  // re-fires on `dm:listings-loaded` once the async fetch completes.
+  function renderCounts() {
+    const counts = DM.getCounts();
+    const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+    set('stat-total', counts.total);
+    set('stat-cars',  counts.cars);
+    set('stat-boats', counts.boats);
+    set('stat-bikes', counts.bikes);
+    set('count-cars',  counts.cars  + ' listings');
+    set('count-marine', (counts.boats || 0) + ' listings');
+    set('count-bikes',  counts.bikes + ' listings');
+    set('count-heavy',  (counts.heavy || 0) + ' listings');
+    set('sc-cars',  counts.cars  + ' listings');
+    set('sc-marine', (counts.boats || 0) + ' listings');
+    set('sc-bikes',  counts.bikes + ' listings');
+  }
+  renderCounts();
 
   // Hot Deals: sorted by a "trending score" — views per day since posted.
   // A new ad with 200 views in 1 day ranks above a 3-month-old ad with 500.
@@ -1270,6 +1274,7 @@
   // Hot Deals with fresh content (DM may have populated more rows since
   // first paint).
   window.addEventListener('dm:listings-loaded', () => {
+    try { renderCounts(); } catch (e) { console.warn(e); }
     try { renderHotDeals(); } catch (e) { console.warn(e); }
     try { renderRecentlyAdded(); } catch (e) { console.warn(e); }
   });

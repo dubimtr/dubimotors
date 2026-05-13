@@ -162,7 +162,7 @@
       <div class="results-header">
         <div class="results-title" id="results-title">All Listings</div>
         <select class="sort-select" id="sortSelect" onchange="applyFilters()" aria-label="Sort listings">
-          <option value="default">Sort: Featured</option><option value="price-asc">Price: Low to High</option><option value="price-desc">Price: High to Low</option><option value="year-desc">Newest First</option>
+          <option value="default">Sort: Featured</option><option value="newest">Newest First</option><option value="price-asc">Price: Low to High</option><option value="price-desc">Price: High to Low</option><option value="year-desc">Model Year: Newest</option>
         </select>
       </div>
       <div class="listings-grid cols-3" id="results-grid"></div>
@@ -289,23 +289,29 @@
     const bodies = [...document.querySelectorAll('.cb-body:checked')].map(e => e.value);
 
     filtered = allListings.filter(l => {
+      const normalize = s => (s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
       if (city && l.location && !l.location.includes(city)) return false;
-      if (make && !(l.make || l.title || '').toLowerCase().includes(make)) return false;
-      if (model && !(l.model || l.title || '').toLowerCase().includes(model)) return false;
+      if (make  && normalize(l.make)  !== normalize(make))  return false;
+      if (model && normalize(l.model) !== normalize(model)) return false;
       if (cond && l.condition !== cond) return false;
       if (l.price < minP || l.price > maxP) return false;
       if (l.year && (l.year < minYr || l.year > maxYr)) return false;
       if (cbV && !l.verified) return false;
       if (cbO && !cbD && l.sellerType === 'dealer') return false;
       if (!cbO && cbD && l.sellerType !== 'dealer') return false;
-      if (bodies.length && l.bodyType && !bodies.includes(l.bodyType)) return false;
+      if (bodies.length && !bodies.includes(l.bodyType || '')) return false;
       return true;
     });
 
-    if (sort === 'price-asc') filtered.sort((a, b) => a.price - b.price);
+    if (sort === 'price-asc')       filtered.sort((a, b) => a.price - b.price);
     else if (sort === 'price-desc') filtered.sort((a, b) => b.price - a.price);
-    else if (sort === 'year-desc') filtered.sort((a, b) => (b.year || 0) - (a.year || 0));
-    else if (sort === 'km-asc') filtered.sort((a, b) => (a.km || 0) - (b.km || 0));
+    else if (sort === 'year-desc')  filtered.sort((a, b) => (b.year || 0) - (a.year || 0));
+    else if (sort === 'km-asc')     filtered.sort((a, b) => (a.km || 0) - (b.km || 0));
+    else if (sort === 'newest')     filtered.sort((a, b) => {
+      const da = a.addedDate ? new Date(a.addedDate).getTime() : 0;
+      const db = b.addedDate ? new Date(b.addedDate).getTime() : 0;
+      return db - da;
+    });
     currentPage = 1;
     renderPage();
   }

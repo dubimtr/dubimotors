@@ -441,9 +441,10 @@
         <div class="results-title" id="results-title">All Listings</div>
         <select class="sort-select" id="sortSelect" onchange="applyFilters()" aria-label="Sort listings">
           <option value="default">Sort: Featured</option>
+          <option value="newest">Newest First</option>
           <option value="price-asc">Price: Low to High</option>
           <option value="price-desc">Price: High to Low</option>
-          <option value="year-desc">Newest First</option>
+          <option value="year-desc">Model Year: Newest</option>
           <option value="km-asc">Lowest KM</option>
         </select>
       </div>
@@ -650,6 +651,25 @@
     onTopMakeChange();
   }
 
+  // Parse a seller-typed engine string into cubic centimeters.
+  // Handles common formats: "1.5T", "2.0L", "3.5", "5.0L V8", "1500cc",
+  // "1500 cc", "V12 6.5L", etc. Returns null if no number can be parsed.
+  function parseEngineCC(s) {
+    if (!s) return null;
+    const str = String(s).toLowerCase();
+    // Look for explicit "cc" first
+    const ccMatch = str.match(/(\d+)\s*cc/);
+    if (ccMatch) return parseInt(ccMatch[1], 10);
+    // Then look for "N.N" or "N.NL" or "N.NT" (litres)
+    const litreMatch = str.match(/(\d+\.\d+|\d+)\s*l\b|(\d+\.\d+)\s*t\b|(\d+\.\d+)/);
+    if (litreMatch) {
+      const num = parseFloat(litreMatch[1] || litreMatch[2] || litreMatch[3]);
+      if (num > 50) return Math.round(num);     // already in cc
+      if (num > 0)  return Math.round(num * 1000); // litres → cc
+    }
+    return null;
+  }
+
   function applyFilters() {
     const city    = document.getElementById('filterCity').value;
     const make    = document.getElementById('filterMake').value.toLowerCase();
@@ -674,6 +694,9 @@
     const doors   = [...document.querySelectorAll('.cb-doors:checked')].map(x => x.value);
     const cyls    = [...document.querySelectorAll('.cb-cyl:checked')].map(x => x.value);
     const fuels   = [...document.querySelectorAll('.cb-fuel:checked')].map(x => x.value);
+    const hpMin   = parseFloat(document.getElementById('hpMin').value) || 0;
+    const hpMax   = parseFloat(document.getElementById('hpMax').value) || Infinity;
+    const engineCC = (document.getElementById('filterEngineCC') || {}).value || '';
     const sort    = document.getElementById('sortSelect').value;
     const colors  = activeColors.size ? [...activeColors] : [];
 
@@ -708,22 +731,63 @@
       }
       if (city && l.location !== city) return false;
       if (cond && l.condition !== cond) return false;
-      if (make && !l.title.toLowerCase().includes(make)) return false;
-      if (model && !l.title.toLowerCase().includes(model)) return false;
-      if (trim && !l.title.toLowerCase().includes(trim)) return false;
+      // Make/Model/Trim: compare on the structured fields, not the title.
+      // Title-based matching was too loose (a Lamborghini Huracán would NOT
+      // match a search for "huracan" due to the accent; a "Mercedes Benz"
+      // listing wouldn't match "mercedes-benz"; etc.). We normalize both
+      // sides by stripping non-alphanumerics and lowercasing — that way
+      // "Mercedes-Benz" and "mercedes benz" match, and "Huracán" and
+      // "huracan" match.
+      const normalize = s => (s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+      if (make  && normalize(l.make)  !== normalize(make))  return false;
+      if (model && normalize(l.model) !== normalize(model)) return false;
+      if (trim  && !normalize(l.trim).includes(normalize(trim))) return false;
       if (l.price < minP || l.price > maxP) return false;
       if (l.year < minYr || l.year > maxYr) return false;
-      if (l.km < minKm || l.km > maxKm) return false;
+      if ((l.km || 0) < minKm || (l.km || 0) > maxKm) return false;
       if (cbVer && !l.verified) return false;
       if (cbWar && !l.warranty) return false;
       if (cbSvc && !l.serviceContract) return false;
       if (cbOwn && !cbDlr && l.verified) return false;  // owner = not verified dealer
       if (!cbOwn && cbDlr && !l.verified) return false; // dealer = verified
-      if (bodies.length && l.bodyType && !bodies.includes(l.bodyType)) return false;
-      if (trans.length && l.transmission && !trans.some(t => l.transmission.toLowerCase().includes(t.toLowerCase()))) return false;
-      if (fuels.length && l.fuelType && !fuels.includes(l.fuelType)) return false;
+      // Body type / transmission / fuel: previously these short-circuited
+      // to PASS when the listing had no value for the field, meaning a
+      // listing with body_type=NULL would show up under EVERY body filter.
+      // Fix: if a filter is active and the listing has no value, exclude it.
+      if (bodies.length && !bodies.includes(l.bodyType || '')) return false;
+      if (trans.length) {
+        const lt = (l.transmission || '').toLowerCase();
+        if (!trans.some(t => lt.includes(t.toLowerCase()))) return false;
+      }
+      if (fuels.length && !fuels.includes(l.fuelType || '')) return false;
+      // Doors / Cylinders — previously read but never applied. Now active.
+      if (doors.length && !doors.includes(String(l.doors || ''))) return false;
+      if (cyls.length  && !cyls.includes(String(l.cylinders || ''))) return false;
+      // Horsepower — previously not even read. Now active.
+      if (l.hp != null) {
+        if (hpMin > 0   && l.hp < hpMin) return false;
+        if (hpMax < Infinity && l.hp > hpMax) return false;
+      } else if (hpMin > 0 || hpMax < Infinity) {
+        // Listing has no hp data — if user is filtering by hp, exclude it
+        return false;
+      }
+      // Engine CC — values are "1000" (up to 1000), "2000" (up to 2000),
+      // "5000" (5000+). Parse hp.engine string for numeric cc (e.g.
+      // "1.5T" = 1500cc, "5.0L V8" = 5000cc, "3.0" = 3000cc).
+      if (engineCC) {
+        const cc = parseEngineCC(l.engine);
+        if (cc == null) return false; // no data
+        const threshold = parseInt(engineCC, 10);
+        if (engineCC === '5000') {
+          if (cc < 5000) return false;
+        } else {
+          if (cc > threshold) return false;
+        }
+      }
+      // Color — live listings store the color in `l.color`; the old hardcoded
+      // demo data used `l.extColor`/`l.intColor`. Fall back to either.
       if (colors.length) {
-        const extC = (l.extColor || '').toLowerCase();
+        const extC = (l.extColor || l.color || '').toLowerCase();
         const intC = (l.intColor || '').toLowerCase();
         const matched = colors.some(c => extC.includes(c.toLowerCase()) || intC.includes(c.toLowerCase()));
         if (!matched) return false;
@@ -731,10 +795,20 @@
       return true;
     });
 
-    if (sort === 'price-asc') filtered.sort((a,b) => a.price - b.price);
+    // Sorts. 'newest' = posted-date DESC (this is what users mean by
+    // "newest first" — when the listing was POSTED, not what year the
+    // car is). 'year-desc' is the model-year explicit option.
+    if (sort === 'price-asc')       filtered.sort((a,b) => a.price - b.price);
     else if (sort === 'price-desc') filtered.sort((a,b) => b.price - a.price);
-    else if (sort === 'year-desc') filtered.sort((a,b) => b.year - a.year);
-    else if (sort === 'km-asc') filtered.sort((a,b) => a.km - b.km);
+    else if (sort === 'year-desc')  filtered.sort((a,b) => (b.year || 0) - (a.year || 0));
+    else if (sort === 'km-asc')     filtered.sort((a,b) => (a.km || 0) - (b.km || 0));
+    else if (sort === 'newest')     filtered.sort((a,b) => {
+      const da = a.addedDate ? new Date(a.addedDate).getTime() : 0;
+      const db = b.addedDate ? new Date(b.addedDate).getTime() : 0;
+      return db - da;
+    });
+    // 'default' = leave in source order, which is already featured-first,
+    // then newest first (set by Supabase query in shared.js).
 
     currentPage = 1;
     renderPage();
