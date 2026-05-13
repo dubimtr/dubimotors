@@ -54,7 +54,17 @@
     /* ── Steps bar ── */
     .steps-bar {
       background: var(--white); border-bottom: 1px solid var(--border);
-      padding: 14px 0; position: sticky; top: 68px; z-index: 50;
+      padding: 14px 0;
+      /* -webkit-sticky for older iOS Safari (12 and earlier); modern browsers
+         use the unprefixed value. Listed in this order so old Safari picks up
+         the first, modern browsers cascade to the second. */
+      position: -webkit-sticky;
+      position: sticky;
+      top: 68px;
+      /* z-index 1100 keeps the stepper above the navbar (which is 1000) so
+         when both are stuck, the stepper renders flush below it without the
+         navbar's bottom border clipping the stepper's top. */
+      z-index: 1100;
     }
     .steps-bar .container { display: flex; align-items: center; justify-content: center; gap: 0; }
     /* On mobile the navbar is shorter (60px); stick to that height so the
