@@ -857,6 +857,38 @@
   </div>
 </section>
 
+<!-- ── RECENTLY ADDED ── -->
+<section class="section section-alt">
+  <div class="container">
+    <div class="section-header">
+      <div>
+        <div class="section-eyebrow">Fresh on the market</div>
+        <div class="section-title">🆕 Recently Added</div>
+        <div class="section-subtitle">The newest listings across every category — cars, bikes, boats and more.</div>
+      </div>
+      <a class="section-link" href="cars.html">View All Listings →</a>
+    </div>
+    <div class="listings-grid" id="recently-added-grid"></div>
+  </div>
+</section>
+
+<!-- ── RECENTLY SOLD ── -->
+<section class="section">
+  <div class="container">
+    <div class="section-header">
+      <div>
+        <div class="section-eyebrow">Just sold</div>
+        <div class="section-title">✅ Recently Sold</div>
+        <div class="section-subtitle">Listings that recently closed. See what's moving in the UAE market.</div>
+      </div>
+    </div>
+    <div class="listings-grid" id="recently-sold-grid"></div>
+    <div id="recently-sold-empty" style="display:none;text-align:center;padding:30px;color:var(--grey);font-size:14px;">
+      No recently sold listings yet. Check back soon.
+    </div>
+  </div>
+</section>
+
 <!-- ── POST YOUR AD ── -->
 <div class="post-ad-banner">
   <div class="container">
@@ -1123,9 +1155,100 @@
   document.getElementById('sc-bikes').textContent = counts.bikes + ' listings';
 
   // Render hot deals (first 4 listings)
-  const hotGrid = document.getElementById('hot-deals-grid');
-  DM.listings.slice(0, 4).forEach(l => {
-    hotGrid.innerHTML += DM.renderCard(l);
+  function renderHotDeals() {
+    const hotGrid = document.getElementById('hot-deals-grid');
+    if (!hotGrid) return;
+    hotGrid.innerHTML = '';
+    DM.listings.slice(0, 4).forEach(l => {
+      hotGrid.innerHTML += DM.renderCard(l);
+    });
+  }
+  renderHotDeals();
+
+  // ── Recently Added: 4 newest active listings across ALL categories ──
+  // Sorted by created_at desc; we re-sort because DM.listings is sorted by
+  // featured-first then created_at, and we want strict newness here.
+  function renderRecentlyAdded() {
+    const grid = document.getElementById('recently-added-grid');
+    if (!grid) return;
+    const sorted = [...DM.listings].sort((a, b) => {
+      const ta = a.addedDate ? new Date(a.addedDate).getTime() : 0;
+      const tb = b.addedDate ? new Date(b.addedDate).getTime() : 0;
+      return tb - ta;
+    });
+    grid.innerHTML = '';
+    sorted.slice(0, 4).forEach(l => { grid.innerHTML += DM.renderCard(l); });
+  }
+  renderRecentlyAdded();
+
+  // ── Recently Sold: 4 most-recently-sold listings across ALL categories ──
+  // Sold listings are NOT in DM.listings (which is active-only), so we hit
+  // Supabase directly. Sort by sold_at desc, fall back to created_at if
+  // sold_at is null (older rows that pre-date the sold_at migration).
+  async function loadRecentlySold() {
+    const grid = document.getElementById('recently-sold-grid');
+    const empty = document.getElementById('recently-sold-empty');
+    if (!grid) return;
+    try {
+      const { data, error } = await window.supa
+        .from('listings')
+        .select('*, listing_images(url, is_primary, display_order)')
+        .eq('status', 'sold')
+        .order('sold_at', { ascending: false, nullsFirst: false })
+        .order('created_at', { ascending: false })
+        .limit(4);
+      if (error) throw error;
+      if (!data || data.length === 0) {
+        grid.style.display = 'none';
+        if (empty) empty.style.display = '';
+        return;
+      }
+      // Map raw rows → legacy shape so DM.renderCard works
+      const mapped = data.map(row => {
+        if (typeof DM.toLegacyShape === 'function') return DM.toLegacyShape(row);
+        // Inline fallback if older shared.js
+        const imgs = (row.listing_images || []).sort((a,b) =>
+          (b.is_primary?1:0) - (a.is_primary?1:0) || (a.display_order||0) - (b.display_order||0));
+        return {
+          id: row.legacy_id || row.id, uuid: row.id, title: row.title, category: row.category,
+          make: row.make, model: row.model, trim: row.trim, price: row.price, year: row.year,
+          km: row.km, condition: row.condition, location: row.location, status: row.status,
+          mainImg: imgs[0]?.url || '', images: imgs.map(i => i.url),
+          addedDate: row.created_at,
+        };
+      });
+      grid.innerHTML = '';
+      mapped.forEach(l => { grid.innerHTML += DM.renderCard(l); });
+      // Overlay a "SOLD" badge on each card. The card markup uses .listing-card;
+      // we wrap a sticker into the first child of each.
+      grid.querySelectorAll('.listing-card').forEach((card, idx) => {
+        if (card.querySelector('.sold-sticker')) return; // idempotent
+        const sticker = document.createElement('div');
+        sticker.className = 'sold-sticker';
+        sticker.textContent = 'SOLD';
+        sticker.style.cssText = 'position:absolute;top:12px;left:12px;background:#1B5E20;color:#fff;font-weight:800;font-size:11px;letter-spacing:0.5px;padding:5px 10px;border-radius:6px;z-index:5;box-shadow:0 2px 8px rgba(0,0,0,0.25);';
+        // Make sure the card has position:relative so absolute positioning anchors right
+        if (getComputedStyle(card).position === 'static') card.style.position = 'relative';
+        card.appendChild(sticker);
+      });
+    } catch (e) {
+      console.warn('[index] recently sold fetch failed:', e.message);
+      if (grid) grid.style.display = 'none';
+      if (empty) empty.style.display = '';
+    }
+  }
+  // Wait briefly for window.supa to be ready, then load
+  (function waitForSupa() {
+    if (window.supa) return loadRecentlySold();
+    setTimeout(waitForSupa, 100);
+  })();
+
+  // After DM finishes loading the live data, re-render Recently Added and
+  // Hot Deals with fresh content (DM may have populated more rows since
+  // first paint).
+  window.addEventListener('dm:listings-loaded', () => {
+    try { renderHotDeals(); } catch (e) { console.warn(e); }
+    try { renderRecentlyAdded(); } catch (e) { console.warn(e); }
   });
 
   // Search tab state

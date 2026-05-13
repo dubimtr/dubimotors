@@ -826,12 +826,28 @@
   async function fetchListingDirect(listingId) {
     if (!window.supa) return null;
     try {
-      const { data, error } = await window.supa
-        .from('listings')
-        .select('*, listing_images(url, is_primary, display_order)')
-        .eq('id', listingId)
-        .maybeSingle();
-      if (error || !data) return null;
+      let data = null;
+      // Step 1: try as UUID. If listingId isn't a valid UUID, Postgres will
+      // error out — we catch that and fall through to legacy_id lookup.
+      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(listingId);
+      if (isUuid) {
+        const res = await window.supa
+          .from('listings')
+          .select('*, listing_images(url, is_primary, display_order)')
+          .eq('id', listingId)
+          .maybeSingle();
+        if (!res.error && res.data) data = res.data;
+      }
+      // Step 2: fall back to legacy_id (used by demo listings and old URLs)
+      if (!data) {
+        const res = await window.supa
+          .from('listings')
+          .select('*, listing_images(url, is_primary, display_order)')
+          .eq('legacy_id', listingId)
+          .maybeSingle();
+        if (!res.error && res.data) data = res.data;
+      }
+      if (!data) return null;
 
       // Map raw DB row → legacy shape the renderer expects (mirrors shared.js
       // toLegacyShape but inlined so it always works).
@@ -967,6 +983,24 @@
     // can fire, so we make sure renderListing runs only once.
     if (_rendered) return;
     _rendered = true;
+    try {
+      _renderListingInner(listing);
+    } catch (err) {
+      console.error('[listing] render failed:', err, listing);
+      // Show a clear error rather than a half-rendered page
+      hideListingLoader();
+      const main = document.querySelector('main');
+      if (main) {
+        main.innerHTML = `<div style="text-align:center;padding:80px 20px;max-width:600px;margin:0 auto;">
+          <h2 style="color:#222;margin-bottom:12px;">Something went wrong loading this listing</h2>
+          <p style="color:#666;margin-bottom:24px;">${(err && err.message) ? err.message : 'Unknown error'}</p>
+          <a href="index.html" style="display:inline-block;background:var(--orange);color:#fff;padding:12px 24px;border-radius:8px;font-weight:700;text-decoration:none;">Back to Home</a>
+        </div>`;
+      }
+    }
+  }
+
+  function _renderListingInner(listing) {
 
   // Seller phone (demo — in production this comes from the listing)
   const SELLER_PHONE = '+971501234567';
@@ -1118,7 +1152,8 @@
     const catPages  = { cars: 'cars.html', boats: 'boats.html', bikes: 'bikes.html', jetski: 'jetski.html' };
 
     // Parse title parts: "2024 Volkswagen Golf GTI P1RTG" → make=Volkswagen, model=Golf, trim=GTI P1RTG
-    const titleParts = listing.title.replace(/^\d{4}\s+/, '').split(' ');
+    const safeTitle = listing.title || '';
+    const titleParts = safeTitle.replace(/^\d{4}\s+/, '').split(' ');
     const make  = titleParts[0] || '';
     const model = titleParts[1] || '';
     const trim  = titleParts.slice(2).join(' ') || '';
@@ -1130,7 +1165,7 @@
     if (make) bcHTML += `<span class="bc-sep">›</span><a href="${catPages[listing.category]}?make=${encodeURIComponent(make)}">${make}</a>`;
     if (model) bcHTML += `<span class="bc-sep">›</span><a href="${catPages[listing.category]}?make=${encodeURIComponent(make)}&model=${encodeURIComponent(model)}">${model}</a>`;
     if (trim) bcHTML += `<span class="bc-sep">›</span><span class="bc-current">${trim}</span>`;
-    else if (model) bcHTML = bcHTML.replace(`>${model}</a>`, `>${model}</a><span class="bc-sep">›</span><span class="bc-current">${listing.title.match(/^\d{4}/)?.[0] || ''} ${model}</span>`);
+    else if (model) bcHTML = bcHTML.replace(`>${model}</a>`, `>${model}</a><span class="bc-sep">›</span><span class="bc-current">${safeTitle.match(/^\d{4}/)?.[0] || ''} ${model}</span>`);
 
     document.getElementById('breadcrumb-bar').innerHTML = bcHTML;
 
@@ -1354,10 +1389,17 @@
 
     // ── KEY SPECS HIGHLIGHT BOXES (Year / Mileage / Engine / Regional Spec) ──
     const specsGrid = document.getElementById('specs-grid');
+    const formatKm = (v) => {
+      if (v == null || v === '') return '—';
+      const n = typeof v === 'number' ? v : parseInt(v);
+      if (!isFinite(n)) return '—';
+      return n.toLocaleString() + ' KM';
+    };
+
     const keySpecs = [
-      { icon: '📅', label: 'Year',          value: listing.year },
-      { icon: '🛣️', label: 'Mileage',       value: (listing.km === 0 ? '0' : listing.km.toLocaleString()) + ' KM' },
-      { icon: '⚙️', label: 'Engine',        value: listing.engine },
+      { icon: '📅', label: 'Year',          value: listing.year || '—' },
+      { icon: '🛣️', label: 'Mileage',       value: formatKm(listing.km) },
+      { icon: '⚙️', label: 'Engine',        value: listing.engine || '—' },
       { icon: '🌍', label: 'Regional Spec', value: listing.regionalSpec || 'GCC Specs' },
     ];
     keySpecs.forEach(s => {
@@ -1367,16 +1409,16 @@
     // ── FULL SPECIFICATIONS TABLE (expanded to match filter fields) ──
     const specsTable = document.getElementById('specs-table');
     // Derive clean model and trim from listing data
-    const cleanModel = listing.model || (listing.title.replace(listing.year + ' ', '').replace(make + ' ', '').split(' ').slice(0, 2).join(' '));
+    const cleanModel = listing.model || ((listing.title || '').replace((listing.year || '') + ' ', '').replace((make || '') + ' ', '').split(' ').slice(0, 2).join(' '));
     const cleanTrim  = listing.trim || '';
 
     const fullSpecs = [
-      ['Make',              make || listing.title.split(' ')[0]],
+      ['Make',              make || (listing.title || '').split(' ')[0]],
       ['Model',             cleanModel],
       ...(cleanTrim ? [['Trim', cleanTrim]] : []),
       ['Year',              listing.year],
       ['Condition',         listing.condition],
-      ['Mileage',           (listing.km === 0 ? '0' : listing.km.toLocaleString()) + ' KM'],
+      ['Mileage',           formatKm(listing.km)],
       ['Regional Spec',     listing.regionalSpec || 'GCC Specs'],
       ['Body Type',         listing.bodyType || 'Sedan'],
       ['Engine',            listing.engine],
@@ -1401,9 +1443,15 @@
     });
 
     // ── DESCRIPTION ──
+    const cond = (listing.condition || '').toString();
+    const condDesc = cond ? `${cond.toLowerCase()} condition` : 'as listed';
+    const kmNum = (listing.km == null) ? null : (typeof listing.km === 'number' ? listing.km : parseInt(listing.km));
+    const kmText = (kmNum == null || !isFinite(kmNum))
+      ? ''
+      : (kmNum === 0 ? ' with 0 KM on the odometer (brand new)' : ` with ${kmNum.toLocaleString()} KM on the odometer`);
     document.getElementById('detail-desc').innerHTML = `
-      This ${listing.year} ${listing.make || ''} ${listing.model || ''} is listed for sale in ${listing.location}, UAE.
-      The vehicle is in ${listing.condition.toLowerCase()} condition${listing.km === 0 ? ' with 0 KM on the odometer (brand new)' : ` with ${listing.km.toLocaleString()} KM on the odometer`}.
+      This ${listing.year || ''} ${listing.make || ''} ${listing.model || ''} is listed for sale in ${listing.location || 'the UAE'}, UAE.
+      The vehicle is in ${condDesc}${kmText}.
       ${listing.engine ? `Powered by a ${listing.engine}${listing.hp ? ' producing ' + listing.hp + ' hp' : ''} with ${listing.transmission} transmission.` : ''}
       ${listing.fuelType ? `Fuel type: ${listing.fuelType}.` : ''}
       <br /><br />
