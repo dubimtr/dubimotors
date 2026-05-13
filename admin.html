@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Admin — DubiMotors</title>
+<meta name="robots" content="noindex,nofollow" />
+<link rel="stylesheet" href="style.css" />
+<style>
+  .admin-wrap { max-width: 1100px; margin: 24px auto; padding: 0 18px; }
+  .admin-header { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 18px; }
+  .admin-header h1 { font-size: 22px; font-weight: 800; margin: 0; }
+  .admin-header .stat { font-size: 13px; color: var(--grey); }
+  .admin-tabs { display: flex; gap: 6px; border-bottom: 1.5px solid var(--border); margin-bottom: 18px; flex-wrap: wrap; }
+  .admin-tab {
+    padding: 10px 16px; font-size: 13px; font-weight: 700; color: var(--grey); cursor: pointer;
+    border-bottom: 2px solid transparent; margin-bottom: -1.5px; transition: color .15s, border-color .15s;
+    background: none; border-top: none; border-left: none; border-right: none;
+  }
+  .admin-tab.active { color: var(--orange); border-bottom-color: var(--orange); }
+  .admin-row {
+    background: #fff; border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px;
+    margin-bottom: 12px; display: grid; grid-template-columns: 88px 1fr auto; gap: 14px; align-items: center;
+  }
+  .admin-row img { width: 88px; height: 64px; border-radius: 8px; object-fit: cover; background: #eee; }
+  .admin-row .row-title { font-size: 14px; font-weight: 700; color: var(--dark); margin-bottom: 2px; }
+  .admin-row .row-sub { font-size: 12px; color: var(--grey); }
+  .admin-row .actions { display: flex; gap: 6px; flex-wrap: wrap; }
+  .admin-row .btn-mini {
+    padding: 7px 12px; font-size: 12px; font-weight: 700; border-radius: 6px; cursor: pointer; border: 1px solid;
+  }
+  .btn-approve { border-color: #16a34a; color: #16a34a; background: #fff; }
+  .btn-approve:hover { background: #16a34a; color: #fff; }
+  .btn-reject { border-color: #DC2626; color: #DC2626; background: #fff; }
+  .btn-reject:hover { background: #DC2626; color: #fff; }
+  .btn-view { border-color: var(--border); color: var(--dark); background: #fff; }
+  .btn-view:hover { border-color: var(--orange); color: var(--orange); }
+  .reports-list {
+    font-size: 12px; color: var(--grey); margin-top: 6px;
+    background: #FFF8E1; padding: 8px 10px; border-radius: 6px; border: 1px solid #FFE082;
+  }
+  .reports-list strong { color: #856404; }
+  .empty-state {
+    text-align: center; padding: 60px 20px; color: var(--grey); font-size: 14px;
+  }
+  .empty-state .big { font-size: 22px; margin-bottom: 6px; color: var(--dark); }
+  .gate-screen {
+    display: flex; align-items: center; justify-content: center; min-height: 60vh; padding: 20px;
+  }
+  .gate-screen .card {
+    max-width: 420px; padding: 30px; background: #fff; border: 1px solid var(--border);
+    border-radius: 12px; text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<header id="navbar-placeholder"></header>
+
+<main>
+  <div id="gate-screen" class="gate-screen" style="display:none;">
+    <div class="card">
+      <div style="font-size:28px;margin-bottom:6px;">🔒</div>
+      <h2 style="margin:0 0 8px;font-size:18px;">Admin access only</h2>
+      <p style="font-size:13px;color:var(--grey);margin:0 0 18px;">This page is restricted to DubiMotors staff.</p>
+      <a href="/" style="display:inline-block;background:var(--orange);color:#fff;padding:10px 20px;border-radius:8px;font-weight:700;text-decoration:none;font-size:13px;">Back to Home</a>
+    </div>
+  </div>
+
+  <div id="admin-content" class="admin-wrap" style="display:none;">
+    <div class="admin-header">
+      <h1>Admin · Listing Review</h1>
+      <div class="stat" id="admin-stat">Loading…</div>
+    </div>
+    <div class="admin-tabs">
+      <button class="admin-tab active" data-tab="pending_review">Pending Review (<span id="cnt-pending">0</span>)</button>
+      <button class="admin-tab" data-tab="reported">Reported (<span id="cnt-reported">0</span>)</button>
+      <button class="admin-tab" data-tab="active">Active (<span id="cnt-active">0</span>)</button>
+      <button class="admin-tab" data-tab="rejected">Rejected (<span id="cnt-rejected">0</span>)</button>
+    </div>
+    <div id="admin-list"></div>
+  </div>
+</main>
+
+<footer id="footer-placeholder"></footer>
+
+<div id="toast"
+  style="position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:12px 24px;border-radius:8px;font-size:14px;font-weight:600;z-index:10000;opacity:0;transition:opacity 0.3s;pointer-events:none;"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js" defer></script>
+<script src="supabase-client.js" defer></script>
+<script src="auth.js" defer></script>
+<script src="shared.js"></script>
+<script src="components.js"></script>
+<script src="auth-modal.js" defer></script>
+<script src="icons.js"></script>
+
+<script>
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.style.opacity = '1';
+    clearTimeout(showToast._t);
+    showToast._t = setTimeout(() => { t.style.opacity = '0'; }, 2500);
+  }
+
+  // Wait for auth + supa, then gate
+  (async () => {
+    let tries = 0;
+    while ((!window.Auth || !window.supa) && tries < 50) {
+      await new Promise(r => setTimeout(r, 50));
+      tries++;
+    }
+    renderNavbar('');
+    renderFooter();
+
+    const user = await window.Auth.requireAuth({ reason: 'Admin access required.' });
+    if (!user) { window.location.href = '/'; return; }
+
+    // Verify admin status — check profiles.is_admin (set by SQL migration 22)
+    const { data: profile } = await window.supa
+      .from('profiles')
+      .select('is_admin, display_name')
+      .eq('id', user.id)
+      .maybeSingle();
+
+    if (!profile || !profile.is_admin) {
+      document.getElementById('gate-screen').style.display = '';
+      return;
+    }
+
+    document.getElementById('admin-content').style.display = '';
+    initAdmin();
+  })();
+
+  let currentTab = 'pending_review';
+  function initAdmin() {
+    document.querySelectorAll('.admin-tab').forEach(btn => {
+      btn.onclick = () => {
+        document.querySelectorAll('.admin-tab').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentTab = btn.dataset.tab;
+        loadListings();
+      };
+    });
+    loadListings();
+    loadCounts();
+  }
+
+  async function loadCounts() {
+    const statuses = ['pending_review', 'active', 'rejected'];
+    for (const s of statuses) {
+      const { count } = await window.supa.from('listings')
+        .select('*', { count: 'exact', head: true })
+        .eq('status', s);
+      const el = document.getElementById('cnt-' + (s === 'pending_review' ? 'pending' : s));
+      if (el) el.textContent = count || 0;
+    }
+    // Reported count = listings with at least 1 report
+    const { data: reportedRows } = await window.supa.from('listing_reports').select('listing_id');
+    const uniqueReported = new Set((reportedRows || []).map(r => r.listing_id));
+    document.getElementById('cnt-reported').textContent = uniqueReported.size;
+  }
+
+  async function loadListings() {
+    const listEl = document.getElementById('admin-list');
+    listEl.innerHTML = '<div class="empty-state">Loading…</div>';
+
+    // Different query for each tab
+    let q;
+    if (currentTab === 'reported') {
+      // Reported tab: listings that have at least 1 report (regardless of status)
+      const { data: reports } = await window.supa
+        .from('listing_reports')
+        .select('listing_id, reason, notes, created_at, reporter_id')
+        .order('created_at', { ascending: false });
+      if (!reports || reports.length === 0) {
+        listEl.innerHTML = '<div class="empty-state"><div class="big">🎉</div>No reports — all clear.</div>';
+        return;
+      }
+      // Group by listing_id; preserve newest-first order
+      const grouped = {};
+      const order = [];
+      reports.forEach(r => {
+        if (!grouped[r.listing_id]) { grouped[r.listing_id] = []; order.push(r.listing_id); }
+        grouped[r.listing_id].push(r);
+      });
+      // Fetch the listings themselves
+      const { data: listings } = await window.supa
+        .from('listings')
+        .select('id, title, make, model, year, price, status, owner_id, listing_images(url, is_primary, display_order)')
+        .in('id', order);
+      if (!listings) return;
+      const listingsById = Object.fromEntries(listings.map(l => [l.id, l]));
+      renderRows(order.map(id => ({
+        listing: listingsById[id],
+        reports: grouped[id],
+      })).filter(x => x.listing));
+      return;
+    }
+
+    // Standard tabs (pending_review / active / rejected)
+    const { data: listings, error } = await window.supa
+      .from('listings')
+      .select('id, title, make, model, year, price, status, owner_id, moderation_reason, created_at, listing_images(url, is_primary, display_order)')
+      .eq('status', currentTab)
+      .order('created_at', { ascending: false })
+      .limit(50);
+    if (error) {
+      listEl.innerHTML = `<div class="empty-state">Error: ${error.message}</div>`;
+      return;
+    }
+    if (!listings || listings.length === 0) {
+      listEl.innerHTML = `<div class="empty-state"><div class="big">📭</div>No listings in ${currentTab.replace('_',' ')}.</div>`;
+      return;
+    }
+    renderRows(listings.map(l => ({ listing: l, reports: [] })));
+  }
+
+  function renderRows(rows) {
+    const listEl = document.getElementById('admin-list');
+    const html = rows.map(({ listing: l, reports }) => {
+      const img = (l.listing_images || []).sort((a,b) => (b.is_primary?1:0) - (a.is_primary?1:0))[0];
+      const reasonText = l.moderation_reason ? `<div class="row-sub" style="margin-top:4px;font-style:italic;">Reason: ${escapeHtml(l.moderation_reason)}</div>` : '';
+      const reportsHtml = reports && reports.length > 0 ? `
+        <div class="reports-list">
+          <strong>${reports.length} report${reports.length === 1 ? '' : 's'}:</strong>
+          ${reports.slice(0, 3).map(r => `<div>• ${escapeHtml(r.reason)}${r.notes ? ' — ' + escapeHtml(r.notes) : ''}</div>`).join('')}
+          ${reports.length > 3 ? `<div>…and ${reports.length - 3} more</div>` : ''}
+        </div>` : '';
+      return `
+        <div class="admin-row">
+          <img src="${img ? img.url : ''}" alt="" />
+          <div>
+            <div class="row-title">${escapeHtml(l.title || (l.make + ' ' + l.model))}</div>
+            <div class="row-sub">${l.year || '—'} · ${l.make || '—'} ${l.model || ''} · AED ${(l.price || 0).toLocaleString()} · <em>${l.status}</em></div>
+            ${reasonText}
+            ${reportsHtml}
+          </div>
+          <div class="actions">
+            <a class="btn-mini btn-view" href="listing.html?id=${l.id}" target="_blank">View</a>
+            ${l.status !== 'active'   ? `<button class="btn-mini btn-approve" onclick="setStatus('${l.id}','active')">Approve</button>` : ''}
+            ${l.status !== 'rejected' ? `<button class="btn-mini btn-reject"  onclick="setStatus('${l.id}','rejected')">Reject</button>` : ''}
+          </div>
+        </div>`;
+    }).join('');
+    listEl.innerHTML = html;
+  }
+
+  function escapeHtml(s) {
+    if (s == null) return '';
+    return String(s).replace(/[&<>"']/g, c => ({
+      '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+    }[c]));
+  }
+
+  async function setStatus(listingId, newStatus) {
+    if (!confirm(`Mark this listing as ${newStatus}?`)) return;
+    const { error } = await window.supa
+      .from('listings')
+      .update({
+        status: newStatus,
+        moderation_reason: newStatus === 'rejected' ? 'Manually rejected by admin.' : null,
+        moderation_at: new Date().toISOString(),
+      })
+      .eq('id', listingId);
+    if (error) {
+      showToast('Update failed: ' + error.message);
+      return;
+    }
+    showToast('Listing marked as ' + newStatus + '.');
+    loadListings();
+    loadCounts();
+  }
+  window.setStatus = setStatus;
+</script>
+</body>
+</html>

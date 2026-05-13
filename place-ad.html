@@ -2493,6 +2493,206 @@
   }
   window.suggestFeatures = suggestFeatures;
 
+  /**
+   * Normalize a phone string to E.164 the same way the server does. Used to
+   * compare a typed phone against the saved verified_phone. Returns null if
+   * the format isn't acceptable.
+   *
+   * NOTE: must match server.js normalizePhone() to avoid mismatches where the
+   * server says "verified" but the client still sees an unverified state.
+   */
+  function clientNormalizePhone(raw) {
+    if (!raw || typeof raw !== 'string') return null;
+    let s = raw.replace(/[\s\-().]/g, '');
+    if (s.startsWith('+')) {
+      /* already E.164 */
+    } else if (s.startsWith('00')) {
+      s = '+' + s.slice(2);
+    } else if (s.startsWith('0') && s.length >= 9 && s.length <= 11) {
+      s = '+971' + s.slice(1);
+    } else if (/^\d{9,10}$/.test(s)) {
+      s = '+971' + s;
+    } else {
+      return null;
+    }
+    const gcc = ['+971','+966','+973','+968','+965','+974'];
+    if (!gcc.some(p => s.startsWith(p))) return null;
+    if (s.length < 11 || s.length > 14) return null;
+    return s;
+  }
+
+  /**
+   * Ensure the seller has OTP-verified this phone number. Returns true on
+   * success, false if the user aborted. On success, future submissions
+   * using the same phone won't re-prompt (cached in profiles.verified_phone).
+   */
+  async function ensurePhoneVerified(typedPhone) {
+    const normalized = clientNormalizePhone(typedPhone);
+    if (!normalized) {
+      showToast('Please enter a valid UAE/GCC phone number.');
+      const el = document.getElementById('inp-phone');
+      if (el) el.focus();
+      return false;
+    }
+
+    // Already verified this exact number? Skip the modal.
+    try {
+      const profile = await (window.Auth.getProfile ? window.Auth.getProfile() : Promise.resolve(null));
+      if (profile && profile.verified_phone === normalized) return true;
+    } catch { /* fall through and prompt */ }
+
+    // Open the OTP modal — returns true if verified, false if cancelled.
+    return await openOtpModal(normalized);
+  }
+
+  /**
+   * OTP modal — send code → enter 6-digit code → verify. On success the
+   * server stamps profiles.verified_phone. We await a Promise that resolves
+   * true/false so the submit flow can branch on the result.
+   */
+  function openOtpModal(phone) {
+    return new Promise((resolve) => {
+      // Build overlay
+      const overlay = document.createElement('div');
+      overlay.id = 'otp-modal-overlay';
+      overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:10001;display:flex;align-items:flex-start;justify-content:center;padding:40px 16px;overflow-y:auto;';
+      overlay.innerHTML = `
+        <div style="background:#fff;border-radius:14px;max-width:440px;width:100%;padding:24px 26px;box-shadow:0 12px 40px rgba(0,0,0,0.3);">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;">
+            <div>
+              <div style="font-size:18px;font-weight:800;color:var(--dark);">Verify your phone</div>
+              <div style="font-size:13px;color:var(--grey);margin-top:2px;">We'll send a one-time code to <strong>${phone}</strong> via SMS.</div>
+            </div>
+            <button type="button" id="otp-close" style="background:none;border:none;font-size:24px;color:#999;cursor:pointer;line-height:1;padding:0 4px;">×</button>
+          </div>
+
+          <div id="otp-step-send">
+            <p style="font-size:12.5px;color:#666;line-height:1.5;margin:6px 0 14px 0;">
+              Verifying your number helps buyers trust your listing and prevents fake accounts.
+              Standard SMS rates may apply.
+            </p>
+            <button type="button" id="otp-send-btn" style="width:100%;background:var(--orange);border:none;color:#fff;padding:12px;border-radius:8px;font-weight:700;font-size:14px;cursor:pointer;">Send code</button>
+            <button type="button" id="otp-wrong-num" style="display:block;width:100%;background:none;border:none;color:var(--orange);padding:10px;font-size:12px;cursor:pointer;text-decoration:underline;margin-top:6px;">Wrong number?</button>
+          </div>
+
+          <div id="otp-step-enter" style="display:none;">
+            <p style="font-size:12.5px;color:#666;margin:6px 0 12px 0;">Enter the 6-digit code we just sent.</p>
+            <input type="text" id="otp-code" maxlength="6" inputmode="numeric" autocomplete="one-time-code"
+                   placeholder="• • • • • •"
+                   style="width:100%;padding:12px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:20px;font-weight:700;letter-spacing:8px;text-align:center;font-family:monospace;margin-bottom:12px;" />
+            <button type="button" id="otp-verify-btn" style="width:100%;background:var(--orange);border:none;color:#fff;padding:12px;border-radius:8px;font-weight:700;font-size:14px;cursor:pointer;">Verify</button>
+            <button type="button" id="otp-resend" style="display:block;width:100%;background:none;border:none;color:var(--orange);padding:10px;font-size:12px;cursor:pointer;text-decoration:underline;margin-top:6px;">Resend code</button>
+          </div>
+
+          <div id="otp-error" style="display:none;background:#FEF1F1;border:1px solid #FDB1B1;color:#9F1A1A;padding:9px 12px;border-radius:8px;font-size:12.5px;margin-top:10px;"></div>
+        </div>`;
+      document.body.appendChild(overlay);
+
+      function showError(msg) {
+        const e = overlay.querySelector('#otp-error');
+        e.textContent = msg;
+        e.style.display = '';
+      }
+      function clearError() {
+        const e = overlay.querySelector('#otp-error');
+        e.style.display = 'none';
+      }
+      function close(result) {
+        overlay.remove();
+        resolve(result);
+      }
+
+      overlay.querySelector('#otp-close').onclick = () => close(false);
+      overlay.querySelector('#otp-wrong-num').onclick = () => {
+        close(false);
+        const el = document.getElementById('inp-phone');
+        if (el) { el.focus(); el.select(); }
+      };
+      overlay.addEventListener('click', (e) => { if (e.target === overlay) close(false); });
+
+      async function authedFetch(url, body) {
+        // Forward the user's Supabase JWT so the server can identify them
+        let token = null;
+        try {
+          const sess = await window.supa.auth.getSession();
+          token = sess.data.session && sess.data.session.access_token;
+        } catch {}
+        return fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { Authorization: 'Bearer ' + token } : {}),
+          },
+          body: JSON.stringify(body),
+        });
+      }
+
+      async function sendCode() {
+        clearError();
+        const sendBtn = overlay.querySelector('#otp-send-btn');
+        const resendBtn = overlay.querySelector('#otp-resend');
+        if (sendBtn) { sendBtn.disabled = true; sendBtn.textContent = 'Sending…'; }
+        if (resendBtn) { resendBtn.disabled = true; resendBtn.textContent = 'Sending…'; }
+        try {
+          const r = await authedFetch('/api/send-otp', { phone });
+          const data = await r.json();
+          if (!r.ok) {
+            showError(data.error || 'Could not send code.');
+            if (sendBtn) { sendBtn.disabled = false; sendBtn.textContent = 'Send code'; }
+            if (resendBtn) { resendBtn.disabled = false; resendBtn.textContent = 'Resend code'; }
+            return;
+          }
+          // Move to "enter code" step
+          overlay.querySelector('#otp-step-send').style.display = 'none';
+          overlay.querySelector('#otp-step-enter').style.display = '';
+          setTimeout(() => overlay.querySelector('#otp-code').focus(), 50);
+        } catch (e) {
+          showError('Network error — please try again.');
+          if (sendBtn) { sendBtn.disabled = false; sendBtn.textContent = 'Send code'; }
+          if (resendBtn) { resendBtn.disabled = false; resendBtn.textContent = 'Resend code'; }
+        }
+      }
+
+      overlay.querySelector('#otp-send-btn').onclick = sendCode;
+      overlay.querySelector('#otp-resend').onclick = sendCode;
+
+      overlay.querySelector('#otp-verify-btn').onclick = async () => {
+        clearError();
+        const code = (overlay.querySelector('#otp-code').value || '').replace(/\D/g, '');
+        if (code.length !== 6) {
+          showError('Please enter the 6-digit code.');
+          return;
+        }
+        const btn = overlay.querySelector('#otp-verify-btn');
+        btn.disabled = true; btn.textContent = 'Verifying…';
+        try {
+          const r = await authedFetch('/api/verify-otp', { phone, code });
+          const data = await r.json();
+          if (!r.ok || !data.ok) {
+            showError(data.error || 'Verification failed.');
+            btn.disabled = false; btn.textContent = 'Verify';
+            return;
+          }
+          // Invalidate the cached profile so the next read picks up
+          // the new verified_phone value
+          if (window.Auth && window.Auth.clearProfileCache) window.Auth.clearProfileCache();
+          close(true);
+          showToast('Phone verified ✓');
+        } catch (e) {
+          showError('Network error — please try again.');
+          btn.disabled = false; btn.textContent = 'Verify';
+        }
+      };
+
+      // Enter key in code field → verify
+      overlay.querySelector('#otp-code').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') overlay.querySelector('#otp-verify-btn').click();
+      });
+    });
+  }
+  window.openOtpModal = openOtpModal;
+  window.ensurePhoneVerified = ensurePhoneVerified;
+
   // Live-validate contact preference count (called on each checkbox toggle).
   // Shows the error inline if < 2 are ticked.
   function validateContactPrefs() {
@@ -2618,6 +2818,22 @@
         return;
       }
       _emailVerified = true;
+    }
+
+    // ─── 1b. Phone verification gate ───
+    // The seller's phone number must be OTP-verified before we'll publish the
+    // listing. If their profile already has a verified phone matching the one
+    // they typed, we skip. Otherwise we open the OTP modal.
+    const typedPhoneRaw = document.getElementById('inp-phone').value.trim();
+    if (!typedPhoneRaw) {
+      showToast('Please enter a phone number.');
+      document.getElementById('inp-phone').focus();
+      return;
+    }
+    const phoneOk = await ensurePhoneVerified(typedPhoneRaw);
+    if (!phoneOk) {
+      // User closed the OTP modal without verifying — abort submit
+      return;
     }
 
     // ─── 2. Common required fields ───
@@ -2767,6 +2983,49 @@
         setSubmitProgress('Uploading photos…', i + 1, photos.length);
       }
 
+      // ─── 5b. Duplicate detection ───
+      // Flag listings that look like an exact re-post of a recent ad from the
+      // same seller: same make+model+year+color+regional spec, with mileage
+      // within ±5% (handled server-side in the find_duplicate_listing RPC).
+      // A dealer with multiple white 2023 M3s will pass — different KMs.
+      // Someone re-posting the same listing twice will trip this.
+      let isDuplicate = false;
+      try {
+        const { data: dupId, error: dupErr } = await window.supa.rpc('find_duplicate_listing', {
+          p_owner_id:      user.id,
+          p_make:          brand,
+          p_model:         model,
+          p_year:          year || new Date().getFullYear(),
+          p_color:         color || null,
+          p_regional_spec: regionalSpec || null,
+          p_km:            km == null ? null : parseInt(km),
+        });
+        if (dupErr) {
+          console.warn('[place-ad] dup RPC failed, falling back to loose check:', dupErr.message);
+          // Fallback: simpler check without color/spec/km. Same logic as
+          // the original loose check; still catches the obvious cases if
+          // the RPC isn't deployed yet.
+          const cutoff = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+          const { data: dupes } = await window.supa
+            .from('listings')
+            .select('id')
+            .eq('owner_id', user.id)
+            .ilike('make', brand)
+            .ilike('model', model)
+            .eq('year', year || new Date().getFullYear())
+            .neq('status', 'rejected')
+            .gte('created_at', cutoff)
+            .limit(1);
+          if (dupes && dupes.length > 0) isDuplicate = true;
+        } else if (dupId) {
+          isDuplicate = true;
+          console.warn('[place-ad] duplicate listing detected via RPC:', dupId);
+        }
+      } catch (e) {
+        // Non-fatal: if the check fails, proceed normally
+        console.warn('[place-ad] dup check threw:', e.message);
+      }
+
       // ─── 6. Insert listing row ───
       setSubmitProgress('Creating your listing…', 0, 0);
       const listingRow = {
@@ -2836,7 +3095,12 @@
       setSubmitProgress('AI is reviewing your listing…', 0, 0);
       let approved = true;
       let reason = '';
-      try {
+      if (isDuplicate) {
+        // Don't waste an AI call. Duplicate → manual review.
+        approved = false;
+        reason = 'This looks similar to one of your recent listings. Our team will review it shortly to make sure it isn\'t a duplicate.';
+      } else {
+        try {
         // 20-second hard timeout so a hung OpenAI call doesn't block forever
         const ctrl = new AbortController();
         const timer = setTimeout(() => ctrl.abort(), 20000);
@@ -2856,6 +3120,7 @@
         reason = e.name === 'AbortError'
           ? 'Automatic review timed out. A team member will review shortly.'
           : 'Automatic review unavailable. A team member will review shortly.';
+      }
       }
 
       // ─── 9. Update listing status with moderation result ───

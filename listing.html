@@ -612,6 +612,12 @@
               Share
             </button>
           </div>
+          <!-- Report this listing — only shown for non-owners. The handler
+               checks owner-vs-viewer at click time and bails politely. -->
+          <a href="#" onclick="event.preventDefault();openReportModal();" id="btn-report-listing"
+             style="display:block;text-align:center;margin-top:10px;font-size:12px;color:#999;text-decoration:none;">
+            <span style="opacity:.7;">🚩</span> Report this listing
+          </a>
         </div>
       </div>
 
@@ -1987,6 +1993,22 @@
     while (!window.Auth && tries < 50) { await new Promise(r => setTimeout(r, 50)); tries++; }
     if (window.Auth) loadFavoriteState();
     if (window.Auth) initMessageButton();
+    // Hide the "Report this listing" link if viewer owns the listing (can't
+    // report your own). Runs after the listing has rendered so we know
+    // listing.owner_id / ownerId.
+    (async function gateReportLink() {
+      try {
+        const me = await window.Auth.getUser();
+        if (!me) return; // signed-out viewers can still see "Report" — they'll be prompted to sign in
+        const cur = (typeof listing !== 'undefined' && listing) ? listing : DM.getById(id);
+        if (!cur) return;
+        const ownerId = cur.ownerId || cur.owner_id;
+        if (ownerId && ownerId === me.id) {
+          const el = document.getElementById('btn-report-listing');
+          if (el) el.style.display = 'none';
+        }
+      } catch {}
+    })();
     // If the buyer clicked the "rate seller back" notification, they land here
     // with a #rate-seller hash. Open the rate-seller modal once the listing
     // has loaded and we know the seller's id.
@@ -2148,6 +2170,131 @@
     }
   }
   window.shareListing = shareListing;
+
+  /**
+   * Report-listing modal. Triggered by the small "Report this listing" link
+   * under the action buttons. Inserts one row into listing_reports.
+   * The database trigger flips status='pending_review' once three distinct
+   * reporters have reported a single listing.
+   */
+  async function openReportModal() {
+    const cur = (typeof listing !== 'undefined' && listing) ? listing : DM.getById(id);
+    if (!cur) return;
+    const targetId = cur.uuid || (
+      /^[0-9a-f]{8}-/i.test(cur.id) ? cur.id : null
+    );
+    if (!targetId) {
+      showToast('This is a demo listing and cannot be reported.');
+      return;
+    }
+
+    // Auth gate — must be signed in to report
+    let me = null;
+    try { me = await window.Auth.getUser(); } catch {}
+    if (!me) {
+      if (window.AuthModal) {
+        const u = await window.AuthModal.open({ tab: 'login', reason: 'Sign in to report a listing.' });
+        if (!u) return;
+        me = u;
+      } else {
+        return;
+      }
+    }
+    // Owner can't report their own listing
+    const ownerId = cur.ownerId || cur.owner_id;
+    if (ownerId && ownerId === me.id) {
+      showToast('You can\'t report your own listing.');
+      return;
+    }
+
+    const overlay = document.createElement('div');
+    overlay.id = 'report-modal-overlay';
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:10001;display:flex;align-items:flex-start;justify-content:center;padding:40px 16px;overflow-y:auto;';
+    overlay.innerHTML = `
+      <div style="background:#fff;border-radius:14px;max-width:480px;width:100%;padding:24px 26px;box-shadow:0 12px 40px rgba(0,0,0,0.3);">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;">
+          <div>
+            <div style="font-size:18px;font-weight:800;color:var(--dark);">Report this listing</div>
+            <div style="font-size:13px;color:var(--grey);margin-top:2px;">Help us keep DubiMotors trustworthy.</div>
+          </div>
+          <button type="button" id="rep-close" style="background:none;border:none;font-size:24px;color:#999;cursor:pointer;line-height:1;padding:0 4px;">×</button>
+        </div>
+        <div style="margin-bottom:14px;">
+          <div style="font-size:13px;font-weight:700;color:var(--dark);margin-bottom:8px;">What's wrong with it?</div>
+          <div style="display:flex;flex-direction:column;gap:6px;">
+            ${[
+              ['fake',        'Fake listing or not a real vehicle'],
+              ['spam',        'Spam or unrelated content'],
+              ['wrong_price', 'Price seems wrong or misleading'],
+              ['duplicate',   'Duplicate of another listing'],
+              ['sold',        'Already sold but still listed'],
+              ['fraud',       'Scam, fraud, or suspicious behavior'],
+              ['other',       'Something else'],
+            ].map(([val, label]) => `
+              <label style="display:flex;align-items:center;gap:10px;padding:9px 11px;border:1px solid var(--border);border-radius:8px;cursor:pointer;font-size:13px;color:var(--dark);transition:border-color .15s;">
+                <input type="radio" name="rep-reason" value="${val}" style="accent-color:var(--orange);" />
+                <span>${label}</span>
+              </label>`).join('')}
+          </div>
+        </div>
+        <div style="margin-bottom:14px;">
+          <div style="font-size:13px;font-weight:700;color:var(--dark);margin-bottom:6px;">Additional details <span style="font-weight:400;color:var(--grey);">(optional)</span></div>
+          <textarea id="rep-notes" rows="3" maxlength="500"
+                    placeholder="What did you notice? Be specific."
+                    style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;resize:vertical;font-family:inherit;"></textarea>
+        </div>
+        <div id="rep-error" style="display:none;background:#FEF1F1;border:1px solid #FDB1B1;color:#9F1A1A;padding:9px 12px;border-radius:8px;font-size:12.5px;margin-bottom:10px;"></div>
+        <div style="display:flex;gap:10px;justify-content:flex-end;border-top:1px solid var(--border);padding-top:14px;">
+          <button type="button" id="rep-cancel" style="background:#fff;border:1.5px solid var(--border);color:var(--dark);padding:10px 18px;border-radius:8px;font-weight:700;font-size:14px;cursor:pointer;">Cancel</button>
+          <button type="button" id="rep-submit" style="background:var(--orange);border:none;color:#fff;padding:10px 22px;border-radius:8px;font-weight:700;font-size:14px;cursor:pointer;">Submit Report</button>
+        </div>
+      </div>`;
+    document.body.appendChild(overlay);
+
+    function close() { overlay.remove(); }
+    overlay.querySelector('#rep-close').onclick = close;
+    overlay.querySelector('#rep-cancel').onclick = close;
+    overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
+
+    overlay.querySelector('#rep-submit').onclick = async () => {
+      const reason = overlay.querySelector('input[name="rep-reason"]:checked')?.value;
+      const notes  = (overlay.querySelector('#rep-notes').value || '').trim() || null;
+      const errEl  = overlay.querySelector('#rep-error');
+      if (!reason) {
+        errEl.textContent = 'Please pick a reason.';
+        errEl.style.display = '';
+        return;
+      }
+      const btn = overlay.querySelector('#rep-submit');
+      btn.disabled = true; btn.textContent = 'Sending…';
+      try {
+        const { error } = await window.supa.from('listing_reports').insert({
+          listing_id: targetId,
+          reporter_id: me.id,
+          reason,
+          notes,
+        });
+        if (error) {
+          // The unique constraint kicks in if they've already reported it
+          if (error.code === '23505') {
+            errEl.textContent = 'You\'ve already reported this listing.';
+          } else {
+            errEl.textContent = error.message || 'Could not send report.';
+          }
+          errEl.style.display = '';
+          btn.disabled = false; btn.textContent = 'Submit Report';
+          return;
+        }
+        close();
+        showToast('Report submitted. Thank you.');
+      } catch (e) {
+        errEl.textContent = 'Network error — please try again.';
+        errEl.style.display = '';
+        btn.disabled = false; btn.textContent = 'Submit Report';
+      }
+    };
+  }
+  window.openReportModal = openReportModal;
 
   // ──────────────────────────────────────────────────────────────────
   // MESSAGE SELLER — open chat modal, send first message, navigate to chats

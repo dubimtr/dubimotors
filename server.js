@@ -964,20 +964,24 @@ Return ONLY this JSON:
         });
       }
     } else {
-      // If AI response is unclear, approve by default (fail open)
-      sendVerificationEmail(email, { brand, model, trim, year, price, name }).catch(() => {});
+      // AI returned something but we couldn't parse a clear approve/reject.
+      // Fail-CLOSED: route to manual review rather than silently approving.
+      // The frontend will set listing.status = 'pending_review'.
       return jsonRes(res, {
-        approved: true,
-        message: `Your ${vehicleDesc} listing has been verified and is now live on DubiMotors.`,
+        approved: false,
+        needs_review: true,
+        reason: 'We could not auto-verify this listing. Our team will review it shortly and you\'ll be notified when it goes live.',
       });
     }
   } catch (e) {
     console.error('Verify listing error:', e.message);
-    // On AI error, approve and continue (don't block sellers)
-    sendVerificationEmail(email, { brand, model, trim, year, price, name }).catch(() => {});
+    // AI request errored out (timeout, rate limit, network). Also fail-closed —
+    // route to manual review. Better to delay a real listing by a few hours
+    // than auto-approve a fraudulent one because the AI was down.
     return jsonRes(res, {
-      approved: true,
-      message: `Your ${vehicleDesc} listing has been submitted and is now live on DubiMotors.`,
+      approved: false,
+      needs_review: true,
+      reason: 'Verification service is temporarily unavailable. Our team will manually review your listing within 24 hours.',
     });
   }
 }
@@ -1020,6 +1024,201 @@ async function getUserFromRequest(req) {
   } catch (e) {
     console.warn('[auth] getUserFromRequest failed:', e.message);
     return null;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   PHONE VERIFICATION via Twilio Verify
+   ─────────────────────────────────────────────────────────────────
+
+   Two endpoints:
+     POST /api/send-otp   — body: { phone }     → triggers SMS
+     POST /api/verify-otp — body: { phone, code } → confirms code,
+                            stamps profiles.verified_phone
+
+   Both require an authenticated user (Authorization: Bearer <jwt>).
+
+   The Twilio Verify service handles OTP generation, expiry, retries,
+   rate limiting, and SMS delivery. We just call /start and /check.
+
+   If TWILIO_* env vars aren't set, the endpoints return 503 and the
+   frontend should fall back to "phone unverified" (allowing posting
+   anyway, but marking the listing for later review).
+*/
+
+const TWILIO_BASE = 'https://verify.twilio.com/v2';
+
+function twilioConfigured() {
+  return !!(process.env.TWILIO_ACCOUNT_SID &&
+            process.env.TWILIO_AUTH_TOKEN &&
+            process.env.TWILIO_VERIFY_SERVICE_SID);
+}
+
+function twilioAuthHeader() {
+  const sid = process.env.TWILIO_ACCOUNT_SID;
+  const tok = process.env.TWILIO_AUTH_TOKEN;
+  return 'Basic ' + Buffer.from(`${sid}:${tok}`).toString('base64');
+}
+
+/**
+ * Normalize a user-typed phone number to E.164. Returns null if it
+ * doesn't look like a real GCC phone.
+ *   "+971 50 123 4567"  → "+971501234567"
+ *   "0501234567"        → "+971501234567"   (UAE local format)
+ *   "+966 12 345 6789"  → "+966123456789"
+ *
+ * We accept GCC countries: UAE, KSA, Bahrain, Oman, Kuwait, Qatar.
+ * Also reject obvious placeholders (all-zero, repeated digits, 12345...).
+ */
+function normalizePhone(raw) {
+  if (!raw || typeof raw !== 'string') return null;
+  let s = raw.replace(/[\s\-().]/g, '');
+  // Accept "+971..." style E.164 directly
+  if (s.startsWith('+')) {
+    // strip plus for digit checks
+  } else if (s.startsWith('00')) {
+    s = '+' + s.slice(2);
+  } else if (s.startsWith('0') && s.length >= 9 && s.length <= 11) {
+    // Assume UAE local format (most common case for this site)
+    s = '+971' + s.slice(1);
+  } else if (/^\d{9,10}$/.test(s)) {
+    // Bare 9-10 digit local UAE without leading 0
+    s = '+971' + s;
+  } else {
+    return null;
+  }
+
+  // Validate prefix is a supported GCC code
+  const gccPrefixes = ['+971','+966','+973','+968','+965','+974'];
+  if (!gccPrefixes.some(p => s.startsWith(p))) return null;
+
+  // Length sanity: GCC numbers are 11-13 chars including the + and code
+  if (s.length < 11 || s.length > 14) return null;
+
+  // Reject obvious placeholders
+  const digits = s.slice(1);
+  if (/^(\d)\1+$/.test(digits)) return null;             // all same digit
+  if (digits.endsWith('0000000')) return null;
+  if (digits.endsWith('1234567')) return null;
+  if (digits.endsWith('7777777')) return null;
+
+  return s;
+}
+
+/**
+ * POST /api/send-otp
+ * Body: { phone }
+ * Sends an SMS OTP to the given phone. Requires the user to be signed in.
+ */
+async function handleSendOtp(req, res) {
+  if (!twilioConfigured()) {
+    return jsonRes(res, { error: 'Phone verification is currently unavailable.' }, 503);
+  }
+  const user = await getUserFromRequest(req);
+  if (!user) return jsonRes(res, { error: 'Not authenticated' }, 401);
+
+  const body = await parseBody(req);
+  const phone = normalizePhone(body && body.phone);
+  if (!phone) {
+    return jsonRes(res, { error: 'Please enter a valid UAE/GCC phone number.' }, 400);
+  }
+
+  try {
+    const form = new URLSearchParams({ To: phone, Channel: 'sms' });
+    const r = await fetch(
+      `${TWILIO_BASE}/Services/${process.env.TWILIO_VERIFY_SERVICE_SID}/Verifications`,
+      {
+        method: 'POST',
+        headers: {
+          Authorization: twilioAuthHeader(),
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: form.toString(),
+      }
+    );
+    const data = await r.json();
+    if (!r.ok) {
+      // Surface Twilio's error message but keep it friendly for the user
+      const msg = data && data.message ? data.message : 'Could not send code.';
+      console.warn('[otp] Twilio start failed:', r.status, msg);
+      // Specific friendlier message for the most common failure modes
+      let friendly = msg;
+      if (data && (data.code === 60200 || data.code === 60203)) {
+        friendly = 'Invalid phone number — please double-check.';
+      } else if (data && data.code === 60410) {
+        friendly = 'Too many attempts. Wait a minute then try again.';
+      }
+      return jsonRes(res, { error: friendly }, r.status);
+    }
+    // Don't echo back the SID — frontend just needs to know it was sent
+    return jsonRes(res, { ok: true, phone });
+  } catch (e) {
+    console.error('[otp] Twilio request error:', e.message);
+    return jsonRes(res, { error: 'Network error sending code.' }, 500);
+  }
+}
+
+/**
+ * POST /api/verify-otp
+ * Body: { phone, code }
+ * Checks the OTP. On success, stamps profiles.verified_phone +
+ * profiles.phone_verified_at and returns ok=true.
+ */
+async function handleVerifyOtp(req, res) {
+  if (!twilioConfigured()) {
+    return jsonRes(res, { error: 'Phone verification is currently unavailable.' }, 503);
+  }
+  const user = await getUserFromRequest(req);
+  if (!user) return jsonRes(res, { error: 'Not authenticated' }, 401);
+
+  const body = await parseBody(req);
+  const phone = normalizePhone(body && body.phone);
+  const code  = (body && body.code || '').toString().trim();
+  if (!phone) return jsonRes(res, { error: 'Invalid phone number.' }, 400);
+  if (!/^\d{4,8}$/.test(code)) return jsonRes(res, { error: 'Invalid code format.' }, 400);
+
+  try {
+    const form = new URLSearchParams({ To: phone, Code: code });
+    const r = await fetch(
+      `${TWILIO_BASE}/Services/${process.env.TWILIO_VERIFY_SERVICE_SID}/VerificationCheck`,
+      {
+        method: 'POST',
+        headers: {
+          Authorization: twilioAuthHeader(),
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: form.toString(),
+      }
+    );
+    const data = await r.json();
+    if (!r.ok) {
+      const msg = data && data.message ? data.message : 'Verification failed.';
+      console.warn('[otp] Twilio check failed:', r.status, msg);
+      return jsonRes(res, { error: msg }, r.status);
+    }
+    if (data.status !== 'approved') {
+      return jsonRes(res, { error: 'Code incorrect or expired. Please try again.' }, 400);
+    }
+
+    // Stamp profile. Use admin client so RLS doesn't block.
+    const supa = getSupabaseAdmin();
+    if (supa) {
+      const { error: upErr } = await supa
+        .from('profiles')
+        .update({
+          verified_phone: phone,
+          phone_verified_at: new Date().toISOString(),
+        })
+        .eq('id', user.id);
+      if (upErr) {
+        console.warn('[otp] profile update failed:', upErr.message);
+      }
+    }
+
+    return jsonRes(res, { ok: true, phone });
+  } catch (e) {
+    console.error('[otp] Twilio verify error:', e.message);
+    return jsonRes(res, { error: 'Network error checking code.' }, 500);
   }
 }
 
@@ -1681,6 +1880,8 @@ const server = http.createServer(async (req, res) => {
     if (url === '/api/price-estimate') return handlePriceEstimate(req, res);
     if (url === '/api/suggest-features') return handleSuggestFeatures(req, res);
     if (url === '/api/verify-listing') return handleVerifyListing(req, res);
+    if (url === '/api/send-otp') return handleSendOtp(req, res);
+    if (url === '/api/verify-otp') return handleVerifyOtp(req, res);
     if (url === '/api/send-welcome-email') return handleSendWelcomeEmail(req, res);
     if (url === '/api/send-verification-email') return handleSendVerificationEmail(req, res);
     if (url === '/api/send-listing-approved-email') return handleSendListingApprovedEmail(req, res);
