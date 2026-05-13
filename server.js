@@ -246,7 +246,7 @@ Return ONLY a valid JSON object with NO markdown:
   "trim": "EXACT trim variant — e.g. M Competition, AMG C63 S, GT3 RS, GTI, Limited Edition, EX Premium. NEVER return empty string or null. If uncertain use the most likely trim for this model year.",
   "year": "4-digit model year based on design generation and facelift details",
   "exteriorColor": "Specific paint color — e.g. Obsidian Black, Polar White, Nardo Grey, Misano Red. Use manufacturer color names when identifiable.",
-  "interiorColor": "Interior color — e.g. Black, Cognac, Red, Beige, Brown",
+  "interiorColor": "Interior color — return one of: Black, Beige, Brown, Grey, Red, Cream, White, Tan, Blue, Orange, Green, Yellow, Cognac, Two-Tone. Be especially careful with vivid interiors (orange Alcantara, red leather, etc.) — match what you actually see in the photo, not what's typical for the car.",
   "bodyType": "SUV, Sedan, Coupe, Hatchback, Convertible, Pickup, Van, or Wagon",
   "engine": "Engine spec — e.g. 3.0L Inline-6 TwinPower Turbo, 4.0L V8 Biturbo",
   "transmission": "Automatic or Manual",

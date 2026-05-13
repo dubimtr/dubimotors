@@ -14,10 +14,10 @@
   <script src="https://www.google.com/recaptcha/api.js" async defer></script>
   <style>
     /* ── Hero ── */
-    .place-ad-hero { background: var(--dark); padding: 48px 0; text-align: center; }
-    .place-ad-hero-title { font-size: 38px; font-weight: 900; color: var(--white); margin-bottom: 10px; }
+    .place-ad-hero { background: var(--dark); padding: 24px 0; text-align: center; }
+    .place-ad-hero-title { font-size: 22px; font-weight: 900; color: var(--white); margin-bottom: 4px; }
     .place-ad-hero-title span { color: var(--orange); }
-    .place-ad-hero-sub { font-size: 15px; color: #666; max-width: 480px; margin: 0 auto; }
+    .place-ad-hero-sub { font-size: 13px; color: #888; max-width: 480px; margin: 0 auto; }
 
     /* ── Mode selector landing ── */
     #mode-select-screen { padding: 60px 0 80px; }
@@ -246,7 +246,9 @@
       .form-grid-2, .form-grid-3 { grid-template-columns: 1fr; }
       .cat-grid { grid-template-columns: repeat(2,1fr); }
       .ai-preview-grid { grid-template-columns: repeat(3,1fr); }
-      .place-ad-hero-title { font-size: 26px; }
+      .place-ad-hero { padding: 18px 0; }
+      .place-ad-hero-title { font-size: 18px; }
+      .place-ad-hero-sub { font-size: 11px; }
     }
 
     /* ── Photo drag-to-reorder ── */
@@ -429,8 +431,8 @@
   <!-- Steps bar -->
   <div class="steps-bar">
     <div class="container">
-      <div class="step-item active" id="step1"><div class="step-circle">1</div><div class="step-label">Vehicle Details</div></div>
-      <div class="step-item" id="step2"><div class="step-circle">2</div><div class="step-label">Photos</div></div>
+      <div class="step-item active" id="step1"><div class="step-circle">1</div><div class="step-label">Photos</div></div>
+      <div class="step-item" id="step2"><div class="step-circle">2</div><div class="step-label">Vehicle Details</div></div>
       <div class="step-item" id="step3"><div class="step-circle">3</div><div class="step-label">Pricing</div></div>
       <div class="step-item" id="step4"><div class="step-circle">4</div><div class="step-label">Review &amp; Publish</div></div>
     </div>
@@ -748,7 +750,8 @@
                 <option value="">Select Interior Color</option>
                 <option>Black</option><option>Beige</option><option>Brown</option><option>Grey</option>
                 <option>Red</option><option>Cream</option><option>White</option><option>Tan</option>
-                <option>Blue</option><option>Two-Tone</option>
+                <option>Blue</option><option>Orange</option><option>Green</option><option>Yellow</option>
+                <option>Cognac</option><option>Two-Tone</option>
               </select>
             </div>
             <div class="form-group">
@@ -935,7 +938,7 @@
         </div>
 
         <!-- Asking Price -->
-        <div class="form-card">
+        <div class="form-card" id="pricing-card">
           <div class="form-card-title">Asking Price</div>
           <div class="form-card-sub">Set your price in AED. Use the AI estimator below to check the current market value.</div>
           <div class="form-group" style="margin-bottom:20px;">
@@ -960,7 +963,7 @@
         </div>
 
         <!-- Contact -->
-        <div class="form-card">
+        <div class="form-card" id="review-card">
           <div class="form-card-title">Contact Information</div>
           <div class="form-card-sub">How buyers will reach you.</div>
           <div class="form-grid-2">
@@ -987,15 +990,18 @@
             <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-top:4px;">
               <label style="display:flex;align-items:center;gap:10px;background:var(--light-grey);border:1px solid var(--border);border-radius:10px;padding:12px 14px;cursor:pointer;font-size:14px;font-weight:600;color:var(--dark);transition:border-color .2s;" onmouseover="this.style.borderColor='var(--orange)'" onmouseout="this.style.borderColor='var(--border)'">
                 <input type="checkbox" id="chk-contact-call" checked onchange="validateContactPrefs()" style="width:18px;height:18px;accent-color:var(--orange);cursor:pointer;" />
-                <span>📞 Call</span>
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="#16a34a" aria-hidden="true"><path d="M20 15.5c-1.2 0-2.4-.2-3.6-.6-.3-.1-.7 0-1 .2l-2.2 2.2c-2.8-1.4-5.1-3.8-6.6-6.6l2.2-2.2c.3-.3.4-.7.2-1-.3-1.1-.5-2.3-.5-3.5 0-.6-.4-1-1-1H4c-.6 0-1 .4-1 1 0 9.4 7.6 17 17 17 .6 0 1-.4 1-1v-3.5c0-.6-.4-1-1-1z"/></svg>
+                <span>Call</span>
               </label>
               <label style="display:flex;align-items:center;gap:10px;background:var(--light-grey);border:1px solid var(--border);border-radius:10px;padding:12px 14px;cursor:pointer;font-size:14px;font-weight:600;color:var(--dark);transition:border-color .2s;" onmouseover="this.style.borderColor='var(--orange)'" onmouseout="this.style.borderColor='var(--border)'">
                 <input type="checkbox" id="chk-contact-whatsapp" checked onchange="validateContactPrefs()" style="width:18px;height:18px;accent-color:var(--orange);cursor:pointer;" />
-                <span>💬 WhatsApp</span>
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="#25D366" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.263.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.464 3.488"/></svg>
+                <span>WhatsApp</span>
               </label>
               <label style="display:flex;align-items:center;gap:10px;background:var(--light-grey);border:1px solid var(--border);border-radius:10px;padding:12px 14px;cursor:pointer;font-size:14px;font-weight:600;color:var(--dark);transition:border-color .2s;" onmouseover="this.style.borderColor='var(--orange)'" onmouseout="this.style.borderColor='var(--border)'">
                 <input type="checkbox" id="chk-contact-message" checked onchange="validateContactPrefs()" style="width:18px;height:18px;accent-color:var(--orange);cursor:pointer;" />
-                <span>✉️ In-App Messages</span>
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="var(--orange)" aria-hidden="true"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 9h12v2H6V9zm8 5H6v-2h8v2zm4-6H6V6h12v2z"/></svg>
+                <span>In-App Messages</span>
               </label>
             </div>
             <div id="contact-prefs-error" style="font-size:12px;color:#e53e3e;margin-top:6px;display:none;">
@@ -1887,19 +1893,73 @@
      AI PHOTO ANALYSIS
   ══════════════════════════════════════════════════════════════ */
   function handleAIPhotos(files) {
-    aiUploadedFiles = Array.from(files);
+    // Append rather than replace, so the user can pick photos in multiple
+    // selections (e.g. dropbox photos + camera roll photos). De-dup by
+    // name+size+lastModified — File objects from a re-pick of the same
+    // image have identical fingerprints.
+    const incoming = Array.from(files);
+    function fp(f) { return `${f.name}|${f.size}|${f.lastModified}`; }
+    const existing = new Set(aiUploadedFiles.map(fp));
+    incoming.forEach(f => {
+      if (!existing.has(fp(f))) {
+        aiUploadedFiles.push(f);
+        existing.add(fp(f));
+      }
+    });
+    // Cap at 10 (the AI uploader uses first 3 for analysis; rest are stored
+    // as listing photos at submit time)
+    if (aiUploadedFiles.length > 10) aiUploadedFiles = aiUploadedFiles.slice(0, 10);
+
+    // Clear input value so picking the same file again works
+    const inp = document.getElementById('ai-file-input');
+    if (inp) inp.value = '';
+
+    renderAIPhotoGrid();
+
+    // Only auto-analyze if this is the FIRST batch (user just chose photos
+    // for the first time). Subsequent adds shouldn't re-run AI — they're
+    // just adding more photos to the eventual listing.
+    if (!handleAIPhotos._analyzed && aiUploadedFiles.length > 0) {
+      handleAIPhotos._analyzed = true;
+      analyzeWithAI();
+    }
+  }
+
+  function renderAIPhotoGrid() {
     const grid = document.getElementById('ai-preview-grid');
+    if (!grid) return;
     grid.innerHTML = '';
-    aiUploadedFiles.slice(0, 8).forEach((f, idx) => {
+    aiUploadedFiles.forEach((f, idx) => {
+      const wrap = document.createElement('div');
+      wrap.style.cssText = 'position:relative;display:inline-block;';
       const img = document.createElement('img');
       img.className = 'ai-preview-thumb';
       const objUrl = URL.createObjectURL(f);
       img.src = objUrl;
-      grid.appendChild(img);
+      img.style.cssText += 'width:100%;height:100%;object-fit:cover;border-radius:8px;display:block;';
+      wrap.appendChild(img);
+      // X button — top-right corner of the thumb
+      const x = document.createElement('button');
+      x.type = 'button';
+      x.textContent = '×';
+      x.title = 'Remove photo';
+      x.style.cssText = 'position:absolute;top:4px;right:4px;width:22px;height:22px;background:rgba(0,0,0,0.75);color:#fff;border:none;border-radius:50%;font-size:16px;font-weight:700;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;';
+      x.onclick = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        aiUploadedFiles.splice(idx, 1);
+        renderAIPhotoGrid();
+        // If we removed the cover photo (first), update the live preview
+        if (idx === 0) {
+          if (aiUploadedFiles[0]) updatePreviewImage(URL.createObjectURL(aiUploadedFiles[0]));
+          else updatePreviewImage(null);
+        }
+      };
+      wrap.appendChild(x);
+      grid.appendChild(wrap);
       // Show first photo in live preview
       if (idx === 0) updatePreviewImage(objUrl);
     });
-    if (aiUploadedFiles.length > 0) analyzeWithAI();
   }
 
   async function analyzeWithAI() {
@@ -3193,21 +3253,43 @@
 
   // Observe form sections to update step indicator
   function initStepObserver() {
+    // Pick the photo card that's actually visible — depends on which mode the
+    // seller picked (AI uploader, VIN, or manual). All three resolve to the
+    // "photos" step on the stepper.
+    function visiblePhotosCard() {
+      const candidates = ['ai-upload-card', 'manual-photos-card', 'vin-lookup-card'];
+      for (const id of candidates) {
+        const el = document.getElementById(id);
+        if (el && el.offsetParent !== null) return el; // visible
+      }
+      return document.getElementById('manual-photos-card') ||
+             document.getElementById('ai-upload-card');
+    }
+
+    // New section order: Photos → Vehicle Details → Pricing → Review
     const sections = [
-      document.querySelector('.form-card:nth-of-type(2)'), // Vehicle Details
-      document.getElementById('photos-card'),
-      document.getElementById('pricing-card'),
-      document.getElementById('review-card')
+      visiblePhotosCard(),                        // step 1: Photos
+      document.getElementById('vehicle-details-card'), // step 2: Vehicle Details
+      document.getElementById('pricing-card'),    // step 3: Pricing
+      document.getElementById('review-card'),     // step 4: Review & Publish
     ];
     if (!('IntersectionObserver' in window)) return;
+    // Track each section's current intersection ratio. We highlight the
+    // section with the highest ratio (most visible) rather than just any
+    // intersecting one, because multiple cards can intersect at once.
+    const ratios = new Array(sections.length).fill(0);
     const obs = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          const idx = sections.indexOf(entry.target);
-          if (idx >= 0) updateActiveStep(idx + 1);
-        }
+        const idx = sections.indexOf(entry.target);
+        if (idx >= 0) ratios[idx] = entry.intersectionRatio;
       });
-    }, { threshold: 0.3 });
+      let bestIdx = 0;
+      let bestRatio = -1;
+      ratios.forEach((r, i) => {
+        if (r > bestRatio) { bestRatio = r; bestIdx = i; }
+      });
+      if (bestRatio > 0) updateActiveStep(bestIdx + 1);
+    }, { threshold: [0, 0.15, 0.3, 0.5, 0.75, 1] });
     sections.forEach(s => { if (s) obs.observe(s); });
   }
 
