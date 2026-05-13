@@ -54,14 +54,17 @@
     /* ── Steps bar ── */
     .steps-bar {
       background: var(--white); border-bottom: 1px solid var(--border);
-      padding: 18px 0; position: sticky; top: 68px; z-index: 50;
+      padding: 14px 0; position: sticky; top: 68px; z-index: 50;
     }
     .steps-bar .container { display: flex; align-items: center; justify-content: center; gap: 0; }
-    /* On phone/tablet, drop the sticky behavior — it competes with the navbar
-       hide/show on scroll and creates the "floating in the middle of the page"
-       look users reported. Inline at the top of the form is cleaner. */
+    /* On mobile the navbar is shorter (60px); stick to that height so the
+       stepper anchors right below it. Stays sticky on every breakpoint —
+       a previous attempt at `position: static` made it scroll off-screen,
+       which is what the user pushed back on. */
     @media (max-width: 768px) {
-      .steps-bar { position: static; top: auto; padding: 14px 0; }
+      .steps-bar { top: 60px; padding: 10px 0; }
+      .step-item { padding: 0 8px; }
+      .step-label { font-size: 11px; }
     }
     .step-item { display: flex; align-items: center; gap: 10px; padding: 0 20px; position: relative; }
     .step-item:not(:last-child)::after {
@@ -250,6 +253,23 @@
       .place-ad-hero-title { font-size: 18px; }
       .place-ad-hero-sub { font-size: 11px; }
     }
+
+    /* ── Card visual order ──
+       Photos go first (whether AI mode, VIN mode, or Manual mode), then
+       Vehicle Details, then Pricing, then Review (the contact card).
+       Hidden helper cards (plate-details, accessory-details) take the
+       Vehicle Details slot since they're its replacement for those
+       categories. Using CSS `order` so the markup stays as-is. */
+    #ai-upload-card,
+    #vin-lookup-card,
+    #manual-photos-card { order: 1; }
+    #plate-details-card,
+    #accessory-details-card,
+    #vehicle-details-card { order: 2; }
+    #pricing-card { order: 3; }
+    #review-card { order: 4; }
+    /* The hidden category card sits at 0 so it doesn't get in the way. */
+    .form-card[style*="display:none"] { /* no-op selector — kept for clarity */ }
 
     /* ── Photo drag-to-reorder ── */
     .dm-photo-item { transition: transform 0.15s ease, box-shadow 0.15s ease; }
@@ -441,11 +461,14 @@
   <div class="container">
     <div class="ad-form-layout">
 
-      <!-- ── MAIN FORM COLUMN ── -->
-      <div>
+      <!-- ── MAIN FORM COLUMN ──
+           Display flex+column so individual cards can be reordered with
+           CSS `order` (we want Photos first, Vehicle Details second).
+           This avoids physically moving the markup. -->
+      <div style="display:flex;flex-direction:column;">
 
         <!-- Mode chip -->
-        <div class="mode-chip" onclick="backToModeSelect()" id="mode-chip">← Change method</div>
+        <div class="mode-chip" onclick="backToModeSelect()" id="mode-chip" style="order:0;">← Change method</div>
 
         <!-- ── AI MODE: Photo Upload ── -->
         <div class="form-card" id="ai-upload-card" style="display:none;">
@@ -510,8 +533,15 @@
           </div>
         </div>
 
-        <!-- Category -->
-        <div class="form-card">
+        <!-- Category — removed from form view. The seller already picked
+             their category on the previous screen (the category landing),
+             and `currentCat` is set by pickCategory(). Showing this card
+             again was confusing and felt repetitive. To change category,
+             the user uses the back arrow or browser back.
+             Keep the markup in a hidden block so the existing IDs
+             (tile-icon-cars, etc.) still resolve in case other code touches
+             them — display:none means they're inert. -->
+        <div class="form-card" style="display:none;">
           <div class="form-card-title">What are you selling?</div>
           <div class="form-card-sub">Select the category that best fits your listing.</div>
           <div class="cat-grid-7">

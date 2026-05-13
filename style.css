@@ -26,7 +26,12 @@ body {
   background: var(--white);
   color: var(--dark);
   min-width: 320px;
+  /* `overflow-x: clip` is the modern equivalent of `overflow-x: hidden`
+     but unlike `hidden` it doesn't break `position: sticky` on descendants
+     (iOS Safari especially). Fallback to hidden for very old browsers
+     that don't support clip (~2021 and older). */
   overflow-x: hidden;
+  overflow-x: clip;
   /* Sticky-footer pattern: column flexbox so main pushes footer to bottom on short pages */
   min-height: 100vh;
   display: flex;
