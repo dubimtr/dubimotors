@@ -983,8 +983,37 @@
     // can fire, so we make sure renderListing runs only once.
     if (_rendered) return;
     _rendered = true;
+
+    // Fire-and-forget view-count increment. Only counted when the viewer is
+    // NOT the listing owner. We use the listing's UUID (not legacy_id) and
+    // call the security-definer RPC so RLS doesn't block the UPDATE.
+    (async () => {
+      try {
+        const targetUuid = listing.uuid || (
+          /^[0-9a-f]{8}-/i.test(listing.id) ? listing.id : null
+        );
+        if (!targetUuid || !window.supa) return;
+        let viewerId = null;
+        try {
+          const { data: { user } } = await window.supa.auth.getUser();
+          viewerId = user ? user.id : null;
+        } catch {}
+        // Skip own listings (don't inflate your own view count). Handle both
+        // shapes since DM.toLegacyShape uses ownerId and the inline mapper
+        // uses owner_id.
+        const ownerId = listing.owner_id || listing.ownerId;
+        if (viewerId && ownerId && viewerId === ownerId) return;
+        await window.supa.rpc('increment_view_count', { p_listing_id: targetUuid });
+      } catch (e) {
+        // Non-fatal: view tracking is bonus telemetry
+        console.warn('[listing] view_count increment failed:', e.message);
+      }
+    })();
+
     try {
       _renderListingInner(listing);
+      // Notify any post-render hooks (e.g. the rate-seller modal trigger)
+      try { window.dispatchEvent(new CustomEvent('listing:rendered', { detail: { listing } })); } catch {}
     } catch (err) {
       console.error('[listing] render failed:', err, listing);
       // Show a clear error rather than a half-rendered page
@@ -1958,7 +1987,125 @@
     while (!window.Auth && tries < 50) { await new Promise(r => setTimeout(r, 50)); tries++; }
     if (window.Auth) loadFavoriteState();
     if (window.Auth) initMessageButton();
+    // If the buyer clicked the "rate seller back" notification, they land here
+    // with a #rate-seller hash. Open the rate-seller modal once the listing
+    // has loaded and we know the seller's id.
+    if (window.location.hash === '#rate-seller') {
+      // Defer until listing is rendered so we know listing.ownerId
+      window.addEventListener('listing:rendered', () => openRateSellerModal(), { once: true });
+      // Or if already rendered by the time we got here
+      if (_rendered && (typeof listing !== 'undefined') && listing) {
+        openRateSellerModal();
+      }
+    }
   })();
+
+  /**
+   * Buyer-side rating modal. Triggered by the "Rate the seller" notification
+   * link (#rate-seller hash). Inserts a row into reviews where the buyer is
+   * the reviewer and the seller is the reviewee.
+   */
+  async function openRateSellerModal() {
+    const cur = (typeof listing !== 'undefined' && listing) ? listing : DM.getById(id);
+    if (!cur) return;
+    const sellerId = cur.ownerId || cur.owner_id;
+    if (!sellerId) return;
+    // Make sure we have a signed-in viewer who is NOT the seller
+    const me = await window.Auth.getUser();
+    if (!me) return; // auth modal will handle it on its own click trigger
+    if (me.id === sellerId) return; // seller can't rate themselves
+
+    // Already rated? Skip silently — we don't want to nag.
+    try {
+      const { data: existing } = await window.supa
+        .from('reviews')
+        .select('id, rating')
+        .eq('reviewer_id', me.id)
+        .eq('reviewee_id', sellerId)
+        .eq('listing_id', cur.uuid || cur.id)
+        .maybeSingle();
+      if (existing) {
+        // Clear the hash so it doesn't keep firing
+        if (history.replaceState) history.replaceState({}, '', window.location.pathname + window.location.search);
+        return;
+      }
+    } catch { /* fall through to show the modal */ }
+
+    const overlay = document.createElement('div');
+    overlay.id = 'rate-seller-overlay';
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:10000;display:flex;align-items:flex-start;justify-content:center;padding:40px 16px;';
+    overlay.innerHTML = `
+      <div style="background:#fff;border-radius:14px;max-width:460px;width:100%;padding:24px 26px;box-shadow:0 12px 40px rgba(0,0,0,0.3);">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;">
+          <div>
+            <div style="font-size:18px;font-weight:800;color:var(--dark);">Rate this seller</div>
+            <div style="font-size:13px;color:var(--grey);margin-top:2px;">The seller already rated your transaction. Return the favour?</div>
+          </div>
+          <button type="button" id="rs-close" style="background:none;border:none;font-size:24px;color:#999;cursor:pointer;line-height:1;padding:0 4px;">×</button>
+        </div>
+        <div style="display:flex;gap:6px;margin:10px 0 14px;" id="rs-stars">
+          ${[1,2,3,4,5].map(n => `<button type="button" data-rating="${n}" class="rs-star" style="background:none;border:none;font-size:30px;color:#DDD;cursor:pointer;padding:0;line-height:1;">★</button>`).join('')}
+        </div>
+        <textarea id="rs-comment" rows="2" placeholder="Optional — what was the seller like?" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;resize:vertical;font-family:inherit;margin-bottom:14px;"></textarea>
+        <div style="display:flex;gap:10px;justify-content:flex-end;">
+          <button type="button" id="rs-skip" style="background:#fff;border:1.5px solid var(--border);color:var(--dark);padding:10px 18px;border-radius:8px;font-weight:700;font-size:14px;cursor:pointer;">Maybe later</button>
+          <button type="button" id="rs-submit" style="background:var(--orange);border:none;color:#fff;padding:10px 24px;border-radius:8px;font-weight:700;font-size:14px;cursor:pointer;">Submit Rating</button>
+        </div>
+      </div>`;
+    document.body.appendChild(overlay);
+
+    let selectedRating = 0;
+    overlay.querySelectorAll('.rs-star').forEach(btn => {
+      btn.onmouseover = () => {
+        const n = parseInt(btn.dataset.rating);
+        overlay.querySelectorAll('.rs-star').forEach(b => {
+          b.style.color = parseInt(b.dataset.rating) <= n ? '#F5A623' : '#DDD';
+        });
+      };
+      btn.onclick = () => {
+        selectedRating = parseInt(btn.dataset.rating);
+      };
+    });
+    overlay.querySelector('#rs-stars').onmouseleave = () => {
+      overlay.querySelectorAll('.rs-star').forEach(b => {
+        b.style.color = parseInt(b.dataset.rating) <= selectedRating ? '#F5A623' : '#DDD';
+      });
+    };
+
+    function close() {
+      overlay.remove();
+      if (history.replaceState) history.replaceState({}, '', window.location.pathname + window.location.search);
+    }
+    overlay.querySelector('#rs-close').onclick = close;
+    overlay.querySelector('#rs-skip').onclick = close;
+    overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
+
+    overlay.querySelector('#rs-submit').onclick = async () => {
+      if (selectedRating < 1) {
+        alert('Please pick at least 1 star.');
+        return;
+      }
+      const btn = overlay.querySelector('#rs-submit');
+      btn.disabled = true; btn.textContent = 'Saving…';
+      const comment = (overlay.querySelector('#rs-comment').value || '').trim() || null;
+      try {
+        const { error } = await window.supa.from('reviews').insert({
+          reviewer_id: me.id,
+          reviewee_id: sellerId,
+          listing_id: cur.uuid || cur.id,
+          rating: selectedRating,
+          comment,
+        });
+        if (error) throw error;
+        showToast('Thanks — your rating is saved.');
+        close();
+      } catch (e) {
+        btn.disabled = false; btn.textContent = 'Submit Rating';
+        showToast('Could not save: ' + (e.message || 'unknown error'));
+      }
+    };
+  }
+  window.openRateSellerModal = openRateSellerModal;
 
   // ──────────────────────────────────────────────────────────────────
   // SHARE LISTING — native share sheet on mobile, copy-link on desktop

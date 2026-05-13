@@ -1154,14 +1154,32 @@
   document.getElementById('sc-marine').textContent = marineCount + ' listings';
   document.getElementById('sc-bikes').textContent = counts.bikes + ' listings';
 
-  // Render hot deals (first 4 listings)
+  // Hot Deals: sorted by a "trending score" — views per day since posted.
+  // A new ad with 200 views in 1 day ranks above a 3-month-old ad with 500.
+  // Listings with < MIN_VIEWS are excluded to avoid showing brand-new ads
+  // with one or two views (which would score absurdly high on partial days).
+  const HOT_MIN_VIEWS = 5;
+  function hotScore(l) {
+    const views = l.view_count || l.views || 0;
+    if (views < HOT_MIN_VIEWS) return -1; // excluded
+    const created = l.addedDate ? new Date(l.addedDate).getTime() : Date.now();
+    const ageDays = Math.max(1, (Date.now() - created) / 86400000);
+    return views / ageDays;
+  }
   function renderHotDeals() {
     const hotGrid = document.getElementById('hot-deals-grid');
     if (!hotGrid) return;
     hotGrid.innerHTML = '';
-    DM.listings.slice(0, 4).forEach(l => {
-      hotGrid.innerHTML += DM.renderCard(l);
-    });
+    const scored = DM.listings
+      .map(l => ({ l, score: hotScore(l) }))
+      .filter(x => x.score >= 0)
+      .sort((a, b) => b.score - a.score);
+    // If nothing meets the views threshold (early days, low traffic), fall
+    // back to first 4 listings so the section isn't empty.
+    const top = scored.length >= 4
+      ? scored.slice(0, 4).map(x => x.l)
+      : DM.listings.slice(0, 4);
+    top.forEach(l => { hotGrid.innerHTML += DM.renderCard(l); });
   }
   renderHotDeals();
 
@@ -1190,10 +1208,15 @@
     const empty = document.getElementById('recently-sold-empty');
     if (!grid) return;
     try {
+      // Only show listings sold in the last 14 days (matches the public-
+      // visibility window we use everywhere else). Past 14 days, the listing
+      // is still in the owner's My Ads but hidden from public surfaces.
+      const cutoff = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString();
       const { data, error } = await window.supa
         .from('listings')
         .select('*, listing_images(url, is_primary, display_order)')
         .eq('status', 'sold')
+        .gte('sold_at', cutoff)
         .order('sold_at', { ascending: false, nullsFirst: false })
         .order('created_at', { ascending: false })
         .limit(4);

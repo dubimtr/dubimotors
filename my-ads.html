@@ -371,12 +371,261 @@
     }
 
     async function markSold(id) {
-      if (!confirm('Mark this listing as sold? It will be hidden from public search.')) return;
-      const { error } = await window.supa.from('listings').update({ status: 'sold' }).eq('id', id);
-      if (error) { showToast('Could not update: ' + error.message); return; }
-      showToast('Listing marked as sold.');
-      loadMyAds();
+      // Open the sold-questionnaire modal. The modal handles the actual
+      // UPDATE — see openSoldModal() below.
+      openSoldModal(id);
     }
+
+    /**
+     * Sold-questionnaire modal.
+     *
+     * Asks the seller:
+     *   1. Where did you sell it? (DubiMotors / elsewhere)
+     *   2. Final sale price (optional, used for our aggregate price model)
+     *   3. Buyer (if any from their chat list)
+     *   4. Star rating + comment for the buyer (if buyer selected)
+     *
+     * On submit:
+     *   • UPDATE listings SET status='sold', sold_via, final_sale_price
+     *   • If buyer chosen: INSERT into reviews
+     *   • If buyer chosen: INSERT notification for the buyer asking them to
+     *     rate the seller back
+     */
+    async function openSoldModal(listingId) {
+      const listing = myAds.find(a => a.id === listingId);
+      if (!listing) { showToast('Listing not found.'); return; }
+
+      // Fetch all conversations on this listing so we can populate the buyer
+      // picker. A listing typically has 0-10 conversations; in the unusual
+      // case of many, we paginate visually by capping the visible list.
+      let convs = [];
+      try {
+        const { data, error } = await window.supa
+          .from('conversations')
+          .select('id, buyer_id, seller_id, last_message_at')
+          .eq('listing_id', listingId)
+          .order('last_message_at', { ascending: false });
+        if (!error && Array.isArray(data)) convs = data;
+      } catch { /* non-fatal */ }
+
+      // Resolve display names for the buyers in those convos
+      const me = (await window.Auth.getUser())?.id;
+      const buyerIds = [...new Set(
+        convs.map(c => (c.buyer_id === me ? c.seller_id : c.buyer_id))
+             .filter(Boolean)
+      )];
+      let buyersById = {};
+      if (buyerIds.length) {
+        try {
+          const { data: profs } = await window.supa
+            .from('profiles')
+            .select('id, display_name, avatar_url')
+            .in('id', buyerIds);
+          (profs || []).forEach(p => { buyersById[p.id] = p; });
+        } catch { /* non-fatal */ }
+      }
+
+      // Build the modal DOM. Removed on close.
+      const overlay = document.createElement('div');
+      overlay.id = 'sold-modal-overlay';
+      overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:10000;display:flex;align-items:flex-start;justify-content:center;padding:30px 16px;overflow-y:auto;';
+      const buyerOptions = buyerIds.map(id => {
+        const p = buyersById[id] || {};
+        const name = p.display_name || 'Buyer';
+        return `<label class="sold-buyer-row" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--border);border-radius:8px;margin-bottom:6px;cursor:pointer;transition:border-color .15s;">
+          <input type="radio" name="sold-buyer" value="${id}" style="accent-color:var(--orange);" />
+          <div style="width:32px;height:32px;border-radius:50%;background:#F0F0F0;display:flex;align-items:center;justify-content:center;font-weight:700;color:#666;font-size:13px;overflow:hidden;">
+            ${p.avatar_url ? `<img src="${p.avatar_url}" style="width:100%;height:100%;object-fit:cover;" />` : (name[0] || '?').toUpperCase()}
+          </div>
+          <div style="font-weight:600;font-size:14px;color:var(--dark);">${name}</div>
+        </label>`;
+      }).join('');
+
+      overlay.innerHTML = `
+        <div style="background:#fff;border-radius:14px;max-width:540px;width:100%;padding:24px 26px;box-shadow:0 12px 40px rgba(0,0,0,0.3);">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:18px;">
+            <div>
+              <div style="font-size:18px;font-weight:800;color:var(--dark);">Mark as Sold</div>
+              <div style="font-size:13px;color:var(--grey);margin-top:2px;">A few quick questions to help us improve.</div>
+            </div>
+            <button type="button" id="sold-modal-close" style="background:none;border:none;font-size:24px;color:#999;cursor:pointer;line-height:1;padding:0 4px;">×</button>
+          </div>
+
+          <!-- Q1: where -->
+          <div style="margin-bottom:18px;">
+            <div style="font-size:13px;font-weight:700;color:var(--dark);margin-bottom:8px;">Where did you sell it?</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+              <label class="sold-where-row" style="display:flex;align-items:center;gap:8px;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;color:var(--dark);transition:border-color .15s;">
+                <input type="radio" name="sold-where" value="dubimotors" checked style="accent-color:var(--orange);" />
+                On DubiMotors
+              </label>
+              <label class="sold-where-row" style="display:flex;align-items:center;gap:8px;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;color:var(--dark);transition:border-color .15s;">
+                <input type="radio" name="sold-where" value="elsewhere" style="accent-color:var(--orange);" />
+                Elsewhere
+              </label>
+            </div>
+          </div>
+
+          <!-- Q2: final sale price -->
+          <div style="margin-bottom:18px;">
+            <div style="font-size:13px;font-weight:700;color:var(--dark);margin-bottom:4px;">Final sale price <span style="font-weight:400;color:var(--grey);">(optional, kept private)</span></div>
+            <div style="font-size:11px;color:var(--grey);margin-bottom:6px;">We use this anonymously to improve price estimates for other sellers. Never shown publicly.</div>
+            <div style="position:relative;">
+              <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-weight:700;color:var(--grey);font-size:13px;">AED</span>
+              <input type="number" id="sold-final-price" placeholder="${listing.price ? listing.price.toLocaleString() : '85000'}" style="width:100%;padding:10px 12px 10px 50px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-weight:600;" />
+            </div>
+          </div>
+
+          <!-- Q3: buyer picker -->
+          ${buyerIds.length ? `
+          <div style="margin-bottom:18px;" id="sold-buyer-section">
+            <div style="font-size:13px;font-weight:700;color:var(--dark);margin-bottom:8px;">Who did you sell to? <span style="font-weight:400;color:var(--grey);">(optional)</span></div>
+            <div style="max-height:200px;overflow-y:auto;">
+              ${buyerOptions}
+              <label class="sold-buyer-row" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--border);border-radius:8px;cursor:pointer;transition:border-color .15s;color:var(--grey);">
+                <input type="radio" name="sold-buyer" value="" checked style="accent-color:var(--orange);" />
+                <div style="width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-size:18px;">—</div>
+                <div style="font-weight:600;font-size:14px;">Skip / Not from this chat list</div>
+              </label>
+            </div>
+          </div>
+
+          <!-- Q4: buyer rating (hidden until a buyer is selected) -->
+          <div id="sold-rating-section" style="margin-bottom:18px;display:none;">
+            <div style="font-size:13px;font-weight:700;color:var(--dark);margin-bottom:8px;">Rate the buyer</div>
+            <div style="display:flex;gap:6px;margin-bottom:10px;" id="sold-stars">
+              ${[1,2,3,4,5].map(n => `<button type="button" data-rating="${n}" class="sold-star" style="background:none;border:none;font-size:30px;color:#DDD;cursor:pointer;padding:0;line-height:1;transition:transform .1s;">★</button>`).join('')}
+            </div>
+            <textarea id="sold-comment" rows="2" placeholder="Optional comment about the buyer (visible on their profile)" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;resize:vertical;font-family:inherit;"></textarea>
+          </div>
+          ` : `
+          <input type="hidden" id="sold-buyer-section-empty" value="1" />
+          `}
+
+          <div style="display:flex;gap:10px;justify-content:flex-end;border-top:1px solid var(--border);padding-top:16px;">
+            <button type="button" id="sold-modal-cancel" style="background:#fff;border:1.5px solid var(--border);color:var(--dark);padding:10px 20px;border-radius:8px;font-weight:700;font-size:14px;cursor:pointer;">Cancel</button>
+            <button type="button" id="sold-modal-submit" style="background:var(--orange);border:none;color:#fff;padding:10px 24px;border-radius:8px;font-weight:700;font-size:14px;cursor:pointer;">Confirm Sold</button>
+          </div>
+        </div>`;
+      document.body.appendChild(overlay);
+
+      // Local state for the modal
+      let selectedRating = 0;
+
+      // Star click handlers — light up stars up to and including the clicked one
+      overlay.querySelectorAll('.sold-star').forEach(btn => {
+        btn.addEventListener('mouseover', () => {
+          const n = parseInt(btn.dataset.rating);
+          overlay.querySelectorAll('.sold-star').forEach(b => {
+            b.style.color = parseInt(b.dataset.rating) <= n ? '#F5A623' : '#DDD';
+          });
+        });
+        btn.addEventListener('click', () => {
+          selectedRating = parseInt(btn.dataset.rating);
+          overlay.querySelectorAll('.sold-star').forEach(b => {
+            b.style.color = parseInt(b.dataset.rating) <= selectedRating ? '#F5A623' : '#DDD';
+          });
+        });
+      });
+      // When mouse leaves the stars row, return to selectedRating state
+      const starsRow = overlay.querySelector('#sold-stars');
+      if (starsRow) {
+        starsRow.addEventListener('mouseleave', () => {
+          overlay.querySelectorAll('.sold-star').forEach(b => {
+            b.style.color = parseInt(b.dataset.rating) <= selectedRating ? '#F5A623' : '#DDD';
+          });
+        });
+      }
+
+      // Show the rating section when a real buyer is picked
+      function updateRatingVisibility() {
+        const checked = overlay.querySelector('input[name="sold-buyer"]:checked');
+        const buyerId = checked ? checked.value : '';
+        const section = overlay.querySelector('#sold-rating-section');
+        if (section) section.style.display = buyerId ? '' : 'none';
+      }
+      overlay.querySelectorAll('input[name="sold-buyer"]').forEach(r => {
+        r.addEventListener('change', updateRatingVisibility);
+      });
+
+      // Close handlers
+      function close() { overlay.remove(); }
+      overlay.querySelector('#sold-modal-close').onclick = close;
+      overlay.querySelector('#sold-modal-cancel').onclick = close;
+      overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
+
+      // Submit
+      overlay.querySelector('#sold-modal-submit').onclick = async () => {
+        const submitBtn = overlay.querySelector('#sold-modal-submit');
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Saving…';
+
+        const where = overlay.querySelector('input[name="sold-where"]:checked')?.value || 'dubimotors';
+        const priceRaw = overlay.querySelector('#sold-final-price').value.trim();
+        const finalPrice = priceRaw ? parseFloat(priceRaw.replace(/,/g, '')) : null;
+        const buyerRadio = overlay.querySelector('input[name="sold-buyer"]:checked');
+        const buyerId = buyerRadio ? buyerRadio.value : '';
+        const comment = (overlay.querySelector('#sold-comment')?.value || '').trim() || null;
+
+        try {
+          // 1. UPDATE listing — status, sold_via, final_sale_price
+          const patch = { status: 'sold', sold_via: where };
+          if (finalPrice && finalPrice > 0) patch.final_sale_price = finalPrice;
+          // (sold_at is auto-set by the on_listing_sold trigger.)
+          const { error: upErr } = await window.supa
+            .from('listings')
+            .update(patch)
+            .eq('id', listingId);
+          if (upErr) throw upErr;
+
+          // 2. If buyer selected: insert review + notify buyer
+          if (buyerId) {
+            if (selectedRating < 1) {
+              // Star rating is required when a buyer is selected; nudge them
+              submitBtn.disabled = false;
+              submitBtn.textContent = 'Confirm Sold';
+              showToast('Please rate the buyer (1-5 stars) or pick "Skip".');
+              return;
+            }
+            const { error: revErr } = await window.supa
+              .from('reviews')
+              .insert({
+                reviewer_id: me,
+                reviewee_id: buyerId,
+                listing_id: listingId,
+                rating: selectedRating,
+                comment: comment,
+              });
+            if (revErr) {
+              // Don't roll back the sold update — the rating is bonus.
+              console.warn('[sold] review insert failed:', revErr.message);
+            } else {
+              // 3. Insert "Rate the seller back" notification for the buyer.
+              // Link points to the listing with a hash that the listing page
+              // (or a future review page) can act on.
+              await window.supa.from('notifications').insert({
+                user_id: buyerId,
+                type: 'rate_seller',
+                title: 'You rated this listing\'s seller?',
+                body: 'The seller just rated their transaction with you. Tap to rate them back.',
+                link: '/listing.html?id=' + listingId + '#rate-seller',
+              }).then(({ error: nErr }) => {
+                if (nErr) console.warn('[sold] notify buyer failed:', nErr.message);
+              });
+            }
+          }
+
+          showToast('Listing marked as sold. Thanks for the feedback!');
+          close();
+          loadMyAds();
+        } catch (e) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Confirm Sold';
+          showToast('Could not save: ' + (e.message || 'unknown error'));
+        }
+      };
+    }
+    window.markSold = markSold;
 
     async function renewAd(id, btn) {
       // No modal — just do it. Server function checks ownership and resets

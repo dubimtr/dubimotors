@@ -2514,6 +2514,7 @@ const DM = (() => {
       contact_call: row.contact_call,
       contact_whatsapp: row.contact_whatsapp,
       contact_message: row.contact_message,
+      view_count: row.view_count || 0,
       addedDate: row.created_at ? row.created_at.split('T')[0] : null,
       lat: row.latitude,
       lng: row.longitude,
