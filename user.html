@@ -187,26 +187,12 @@
           </div>`;
       } else {
         const cards = activeListings.map(l => {
-          // Reshape supabase row into the shape DM.renderCard expects
-          const imgs = (l.listing_images || [])
-            .slice()
-            .sort((a,b) => (b.is_primary?1:0) - (a.is_primary?1:0) || (a.display_order||0) - (b.display_order||0));
-          const mainImg = imgs[0] ? imgs[0].url : '';
-          const cardData = {
-            id: l.id,
-            title: l.title,
-            price: l.price,
-            year: l.year,
-            kilometers: l.km,
-            km: l.km,
-            location: l.location,
-            mainImg,
-            images: imgs.map(i => i.url),
-            verified: l.verified,
-            warranty: l.warranty,
-            serviceContract: l.service_history,
-            featured: l.featured,
-          };
+          // Use DM.toLegacyShape so the card has every field renderCard
+          // expects (seller name, contact prefs, avatar, etc.). We pass
+          // the profile we already fetched above so the avatar shows up.
+          // toLegacyShape handles image sorting, sellerLogo detection,
+          // null-safe field defaults.
+          const cardData = DM.toLegacyShape(l, profile || null);
           return DM.renderCard(cardData);
         }).join('');
         grid.innerHTML = `<div class="up-listings-grid">${cards}</div>`;
