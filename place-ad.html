@@ -492,6 +492,7 @@
             <button class="ai-upload-btn" onclick="document.getElementById('ai-file-input').click();event.stopPropagation()">Choose Photos</button>
           </div>
           <div class="ai-preview-grid" id="ai-preview-grid"></div>
+          <div id="ai-photo-count" style="font-size:12px;color:var(--grey);margin-top:8px;"></div>
           <div class="ai-analyzing" id="ai-analyzing">
             <div class="ai-spinner"></div>
             <div>
@@ -1967,39 +1968,95 @@
 
   function renderAIPhotoGrid() {
     const grid = document.getElementById('ai-preview-grid');
+    const count = document.getElementById('ai-photo-count');
     if (!grid) return;
     grid.innerHTML = '';
     aiUploadedFiles.forEach((f, idx) => {
       const wrap = document.createElement('div');
-      wrap.style.cssText = 'position:relative;display:inline-block;';
+      // .dm-photo-item is the SortableJS draggable class (CSS defined at top
+      // of the file). cursor:grab + touch-action:none make drag work on both
+      // desktop mice and mobile touch.
+      wrap.className = 'dm-photo-item';
+      wrap.style.cssText = 'position:relative;display:block;border-radius:8px;overflow:hidden;border:2px solid var(--border);cursor:grab;touch-action:none;';
       const img = document.createElement('img');
       img.className = 'ai-preview-thumb';
       const objUrl = URL.createObjectURL(f);
       img.src = objUrl;
-      img.style.cssText += 'width:100%;height:100%;object-fit:cover;border-radius:8px;display:block;';
+      // Override the existing .ai-preview-thumb border (the wrapper has its
+      // own border now) and stop the browser from independently dragging the
+      // <img> while SortableJS is trying to drag the wrapper.
+      img.style.cssText = 'width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:6px;border:none;display:block;pointer-events:none;';
+      img.draggable = false;
       wrap.appendChild(img);
+
+      // Cover badge on the first photo — matches the manual flow's UX
+      if (idx === 0) {
+        const badge = document.createElement('div');
+        badge.textContent = 'Cover';
+        badge.style.cssText = 'position:absolute;bottom:0;left:0;right:0;background:var(--orange);color:#fff;font-size:11px;font-weight:700;text-align:center;padding:3px 0;pointer-events:none;';
+        wrap.appendChild(badge);
+      }
+
       // X button — top-right corner of the thumb
       const x = document.createElement('button');
       x.type = 'button';
       x.textContent = '×';
       x.title = 'Remove photo';
-      x.style.cssText = 'position:absolute;top:4px;right:4px;width:22px;height:22px;background:rgba(0,0,0,0.75);color:#fff;border:none;border-radius:50%;font-size:16px;font-weight:700;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;';
+      x.style.cssText = 'position:absolute;top:4px;right:4px;width:22px;height:22px;background:rgba(0,0,0,0.75);color:#fff;border:none;border-radius:50%;font-size:16px;font-weight:700;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;z-index:2;';
       x.onclick = (e) => {
         e.preventDefault();
         e.stopPropagation();
-        aiUploadedFiles.splice(idx, 1);
+        // idx is captured at render time, so this is safe even after re-order
+        const removeIdx = aiUploadedFiles.indexOf(f);
+        if (removeIdx >= 0) aiUploadedFiles.splice(removeIdx, 1);
         renderAIPhotoGrid();
-        // If we removed the cover photo (first), update the live preview
-        if (idx === 0) {
-          if (aiUploadedFiles[0]) updatePreviewImage(URL.createObjectURL(aiUploadedFiles[0]));
-          else updatePreviewImage(null);
-        }
+        // Re-render handles the live preview update via the idx===0 branch below
+        if (aiUploadedFiles[0]) updatePreviewImage(URL.createObjectURL(aiUploadedFiles[0]));
+        else updatePreviewImage(null);
       };
       wrap.appendChild(x);
       grid.appendChild(wrap);
       // Show first photo in live preview
       if (idx === 0) updatePreviewImage(objUrl);
     });
+
+    // Count + reorder hint
+    if (count) {
+      let countText = '';
+      if (aiUploadedFiles.length > 0) {
+        countText = aiUploadedFiles.length + ' photo' + (aiUploadedFiles.length !== 1 ? 's' : '');
+        if (aiUploadedFiles.length >= 2) {
+          countText += '  ·  Drag to reorder. First photo is the cover.';
+        }
+      }
+      count.textContent = countText;
+    }
+
+    // Initialize SortableJS for drag-to-reorder (mirrors the manual flow).
+    // Re-initialized on every render — SortableJS handles its own cleanup
+    // since we wiped the grid contents above.
+    if (typeof window.Sortable !== 'undefined' && aiUploadedFiles.length >= 2) {
+      window.Sortable.create(grid, {
+        animation: 150,
+        draggable: '.dm-photo-item',
+        ghostClass: 'dm-photo-ghost',
+        chosenClass: 'dm-photo-chosen',
+        dragClass: 'dm-photo-drag',
+        delay: 100,
+        delayOnTouchOnly: true,
+        touchStartThreshold: 4,
+        onEnd: (evt) => {
+          const oldIdx = evt.oldIndex;
+          const newIdx = evt.newIndex;
+          if (oldIdx == null || newIdx == null || oldIdx === newIdx) return;
+          if (oldIdx >= aiUploadedFiles.length || newIdx >= aiUploadedFiles.length) return;
+          const [moved] = aiUploadedFiles.splice(oldIdx, 1);
+          aiUploadedFiles.splice(newIdx, 0, moved);
+          // Re-render to update Cover badge + live preview to the new first photo
+          renderAIPhotoGrid();
+        },
+      });
+    }
   }
 
   async function analyzeWithAI() {
@@ -3117,7 +3174,7 @@
         const verifyRes = await fetch('/api/verify-listing', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ brand, model, trim, year, price, km, condition, desc, location, name, phone, email }),
+          body: JSON.stringify({ brand, model, trim, year, price, km, condition, desc, location, name, phone, email, regionalSpec }),
           signal: ctrl.signal,
         });
         clearTimeout(timer);
@@ -3431,7 +3488,7 @@
         const verifyRes = await fetch('/api/verify-listing', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ brand, model, trim, year, price, km, condition, desc, location, name, phone }),
+          body: JSON.stringify({ brand, model, trim, year, price, km, condition, desc, location, name, phone, regionalSpec }),
           signal: ctrl.signal,
         });
         clearTimeout(timer);

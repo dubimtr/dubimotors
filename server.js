@@ -597,28 +597,30 @@ async function scrapeDubicarsPrice(brand, model, year) {
   return { prices, url, count: prices.length };
 }
 
-async function handlePriceEstimate(req, res) {
-  if (!aiAvailable(res)) return;
-  const { brand, model, trim, year, km, condition, regionalSpec } = await parseBody(req);
-  if (!brand || !model || !year) return jsonRes(res, { error: 'Brand, model and year are required.' }, 400);
+/* ── Shared helper: gather real-world market comps ──
+ * Returns { liveData, internalPrices, allPrices } for the given vehicle.
+ *   - liveData: prices scraped from Dubicars
+ *   - internalPrices: prices from our own DubiMotors listings (±2 years, same regional spec)
+ *   - allPrices: combined + sorted (low → high)
+ * Used by BOTH /api/price-estimate (suggests a price) and /api/verify-listing
+ * (checks if the seller's price is wildly out of band). Single source of truth
+ * means the verifier always sees the same data the estimator does, so they
+ * can't disagree wildly. */
+async function gatherMarketComps({ brand, model, trim, year, regionalSpec }) {
+  // 1. Scrape Dubicars
+  let liveData = [];
+  try {
+    const scraped = await scrapeDubicarsPrice(brand, model, year);
+    liveData = scraped.prices || [];
+  } catch (e) {
+    console.warn('Dubicars scrape failed:', e.message);
+  }
 
-  const vehicleDesc = [year, brand, model, trim].filter(Boolean).join(' ');
-  const kmNum = km ? parseInt(km) : null;
-
-  // Step 1: Scrape real live prices from Dubicars (fast, but may fail/rot)
-  const scraped = await scrapeDubicarsPrice(brand, model, year);
-  const liveData = scraped.prices;
-
-  // Step 2: Also query our OWN listings DB for the same make/model/year ± 2
-  // Far more reliable than third-party scraping over time.
+  // 2. Query our own listings DB
   let internalPrices = [];
   try {
     if (process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY) {
       const yearNum = parseInt(year);
-      // When the AI fills the form with a combined model like "296 GTB",
-      // the data may live in our DB as model="296" trim="GTB" (separate
-      // columns). We can't ilike across both, so we grep on the FIRST word
-      // of the user-supplied model and do the rest of the matching in JS.
       const modelFirstWord = (model || '').trim().split(/\s+/)[0];
       const url = new URL(`${process.env.SUPABASE_URL}/rest/v1/listings`);
       url.searchParams.set('select', 'price,year,model,trim,regional_spec');
@@ -634,12 +636,10 @@ async function handlePriceEstimate(req, res) {
       });
       if (dbRes.ok) {
         const rows = await dbRes.json();
-        // Build the requested model+trim string for finer match
         const wanted = (model + ' ' + (trim || '')).toLowerCase().trim();
         internalPrices = rows
           .filter(r => Math.abs((r.year || 0) - yearNum) <= 2)
           .filter(r => !regionalSpec || !r.regional_spec || r.regional_spec === regionalSpec)
-          // Substring match across model+trim either direction
           .filter(r => {
             const have = ((r.model || '') + ' ' + (r.trim || '')).toLowerCase().trim();
             return have.includes(wanted) || wanted.includes(have) || have.includes(model.toLowerCase());
@@ -652,10 +652,22 @@ async function handlePriceEstimate(req, res) {
     console.warn('Internal price lookup failed:', e.message);
   }
 
-  // Combine all available real-world prices
   const allPrices = [...liveData, ...internalPrices].sort((a, b) => a - b);
+  return { liveData, internalPrices, allPrices };
+}
 
-  // Step 3: Build AI prompt with real data if available
+async function handlePriceEstimate(req, res) {
+  if (!aiAvailable(res)) return;
+  const { brand, model, trim, year, km, condition, regionalSpec } = await parseBody(req);
+  if (!brand || !model || !year) return jsonRes(res, { error: 'Brand, model and year are required.' }, 400);
+
+  const vehicleDesc = [year, brand, model, trim].filter(Boolean).join(' ');
+  const kmNum = km ? parseInt(km) : null;
+
+  // Gather comps via the shared helper (same data the verifier will see)
+  const { liveData, internalPrices, allPrices } = await gatherMarketComps({ brand, model, trim, year, regionalSpec });
+
+  // Build AI prompt with real data if available
   let priceContext = '';
   if (allPrices.length > 0) {
     const low = allPrices[0];
@@ -893,7 +905,7 @@ async function sendVerificationEmail(to, listingData) {
 async function handleVerifyListing(req, res) {
   if (!aiAvailable(res)) return;
   const body = await parseBody(req);
-  const { brand, model, trim, year, price, km, condition, desc, location, name, phone, email } = body;
+  const { brand, model, trim, year, price, km, condition, desc, location, name, phone, email, regionalSpec } = body;
 
   if (!brand || !model || !price) {
     return jsonRes(res, { approved: false, reason: 'Brand, model, and price are required.' }, 400);
@@ -907,6 +919,71 @@ async function handleVerifyListing(req, res) {
     return jsonRes(res, { approved: false, reason: 'The price entered seems unrealistic. Please enter a valid AED price.' });
   }
 
+  // ─── Step 1: Gather real-world comps (Dubicars + DubiMotors DB) ───
+  // We use these to do a DETERMINISTIC price-band check below. This is the
+  // key change vs. the old verifier: we were letting the AI hallucinate
+  // MSRP/market prices from training data, which produced false rejections
+  // (e.g. an 850K F8 Tributo flagged as "below 2M market value" when 850K
+  // is actually within the normal UAE used-market range). With real comps,
+  // the AI doesn't get to guess — we anchor on actual current listings.
+  //
+  // 6s hard cap so a slow Dubicars scrape can't keep the seller waiting.
+  let comps = { liveData: [], internalPrices: [], allPrices: [] };
+  try {
+    comps = await Promise.race([
+      gatherMarketComps({ brand, model, trim, year, regionalSpec }),
+      new Promise(resolve => setTimeout(() => resolve({ liveData: [], internalPrices: [], allPrices: [] }), 6000)),
+    ]);
+  } catch (e) {
+    console.warn('Verifier comp lookup failed:', e.message);
+  }
+
+  // ─── Step 2: Deterministic price-band check ───
+  // Rule (set with the founder): if we have ≥2 real comps, the seller's price
+  // must be ≥ 50% of the lowest comp AND ≤ 200% of the highest comp.
+  // Otherwise the price is so far out of band it's almost certainly a typo,
+  // a fraud attempt, or the wrong vehicle. Anything in band is allowed,
+  // even an aggressive deal price — sellers know their own car.
+  //
+  // If we have <2 comps (rare model, brand new market, scrape failed),
+  // we SKIP the price check entirely rather than guess. Better to let a
+  // weird-priced niche listing through than block a legit one because the
+  // data wasn't there.
+  let priceBandFailure = null; // null = passed (or skipped); otherwise reason text
+  if (comps.allPrices.length >= 2) {
+    const low = comps.allPrices[0];
+    const high = comps.allPrices[comps.allPrices.length - 1];
+    const minAllowed = Math.round(low * 0.5);
+    const maxAllowed = Math.round(high * 2.0);
+    if (priceNum < minAllowed) {
+      const fmt = n => 'AED ' + n.toLocaleString();
+      priceBandFailure = `Your listed price of ${fmt(priceNum)} appears significantly below current market prices for similar ${vehicleDesc} listings in the UAE (we're seeing comparable cars from ${fmt(low)} to ${fmt(high)}). Please double-check your price — if it's correct, our team will review and approve shortly.`;
+    } else if (priceNum > maxAllowed) {
+      const fmt = n => 'AED ' + n.toLocaleString();
+      priceBandFailure = `Your listed price of ${fmt(priceNum)} appears significantly above current market prices for similar ${vehicleDesc} listings in the UAE (we're seeing comparable cars from ${fmt(low)} to ${fmt(high)}). Please double-check your price — if it's correct, our team will review and approve shortly.`;
+    }
+  }
+
+  if (priceBandFailure) {
+    // Price is wildly out of band — route to manual review. Don't even
+    // bother asking the AI about category/spam; the price alone is enough
+    // to warrant a human look.
+    return jsonRes(res, {
+      approved: false,
+      needs_review: true,
+      reason: priceBandFailure,
+    });
+  }
+
+  // ─── Step 3: AI check for the NON-price issues ───
+  // Price is now either validated against comps OR we had no comps (so we
+  // skip price judgement entirely). The AI's job is now narrower: catch
+  // wrong-category, spam, placeholder text, impossible specs. We EXPLICITLY
+  // tell the AI not to judge price — that's already handled deterministically.
+  const compNote = comps.allPrices.length >= 2
+    ? `(The seller's price has already been validated against ${comps.allPrices.length} comparable UAE listings — do NOT second-guess the price.)`
+    : `(We have no comparable listings to validate price against. Do not flag based on price unless it's absurd, e.g. AED 500 for a luxury car or AED 50,000,000 for a normal sedan.)`;
+
   const prompt = `You are a listing verification AI for DubiMotors, a UAE vehicle marketplace. Your job is to detect low-quality, irrelevant, or suspicious listings.
 
 Listing details:
@@ -919,18 +996,19 @@ Listing details:
 - Seller name: ${name || 'not provided'}
 - Phone: ${phone || 'not provided'}
 
+${compNote}
+
 Check for these issues:
-1. PRICING: Price seems unrealistic for the vehicle (e.g. AED 500 for a car, AED 1000 for a yacht)
-2. WRONG CATEGORY: Item is clearly not a vehicle (e.g. a house, phone, or job listing)
-3. SPAM/IRRELEVANT: Description contains unrelated content, excessive links, or promotional spam
-4. IMPOSSIBLE SPECS: Year is beyond 2027, mileage is negative, or specs are nonsensical
-5. PLACEHOLDER TEXT: Generic placeholder like "test", "aaa", "xxx", "asdf" in title or description
-6. MISSING CRITICAL INFO: Brand is unknown or model doesn't exist for that brand
+1. WRONG CATEGORY: Item is clearly not a vehicle (e.g. a house, phone, or job listing)
+2. SPAM/IRRELEVANT: Description contains unrelated content, excessive links, or promotional spam
+3. IMPOSSIBLE SPECS: Year is beyond 2027, mileage is negative, or specs are nonsensical
+4. PLACEHOLDER TEXT: Generic placeholder like "test", "aaa", "xxx", "asdf" in title or description
+5. MISSING CRITICAL INFO: Brand is unknown or model doesn't exist for that brand
 
 Approve if it looks like a genuine vehicle listing, even if some details are missing.
-Reject only if there are clear issues.
+Reject only if there are clear issues. DO NOT reject based on price — pricing has already been validated separately.
 
-IMPORTANT — when writing the rejection reason, use professional, neutral language. Address the seller directly. Do NOT use words like "scam", "fake", or "fraud" — these are accusatory. Instead, describe the issue factually: "the price seems too low for this vehicle", "the listing appears to be missing key details", "the description contains placeholder text", etc.
+IMPORTANT — when writing the rejection reason, use professional, neutral language. Address the seller directly. Do NOT use words like "scam", "fake", or "fraud" — these are accusatory. Instead, describe the issue factually: "the listing appears to be missing key details", "the description contains placeholder text", etc.
 
 Return ONLY this JSON:
 {
