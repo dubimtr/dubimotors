@@ -51,35 +51,44 @@
     .mode-btn:hover { background: var(--orange-hover); }
     .mode-btn.outline:hover { background: var(--orange); color: #fff; }
 
-    /* ── Steps bar ── */
+    /* ── Steps bar ──
+       Desktop (>= 901px): vertical sticky column at the left of the form,
+       180px wide. Sits inside .ad-form-layout as the first grid item.
+       Mobile (<= 900px): the grid collapses to one column, so this naturally
+       sits at the top, and we render the items horizontally as a sticky bar
+       below the navbar (matches the previous design). */
     .steps-bar {
       background: var(--white); border-bottom: 1px solid var(--border);
       padding: 14px 0;
-      /* -webkit-sticky for older iOS Safari (12 and earlier); modern browsers
-         use the unprefixed value. Listed in this order so old Safari picks up
-         the first, modern browsers cascade to the second. */
       position: -webkit-sticky;
       position: sticky;
-      top: 68px;
-      /* z-index 1100 keeps the stepper above the navbar (which is 1000) so
-         when both are stuck, the stepper renders flush below it without the
-         navbar's bottom border clipping the stepper's top. */
-      z-index: 1100;
+      top: 88px;       /* navbar (68px) + 20px gap */
+      z-index: 100;
+      /* Desktop default = vertical stack */
+      display: flex; flex-direction: column;
+      align-items: stretch;
+      gap: 14px;
+      align-self: start;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px 14px;
     }
-    .steps-bar .container { display: flex; align-items: center; justify-content: center; gap: 0; }
-    /* On mobile the navbar is shorter (60px); stick to that height so the
-       stepper anchors right below it. Stays sticky on every breakpoint —
-       a previous attempt at `position: static` made it scroll off-screen,
-       which is what the user pushed back on. */
-    @media (max-width: 768px) {
-      .steps-bar { top: 60px; padding: 10px 0; }
-      .step-item { padding: 0 8px; }
-      .step-label { font-size: 11px; }
+    .step-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 8px 10px;
+      position: relative;
+      border-radius: 8px;
     }
-    .step-item { display: flex; align-items: center; gap: 10px; padding: 0 20px; position: relative; }
+    .step-item.active { background: #FFF8F6; }
+    /* Vertical connector line between steps on desktop */
     .step-item:not(:last-child)::after {
-      content: ''; position: absolute; right: -1px; top: 50%;
-      transform: translateY(-50%); width: 36px; height: 1px; background: var(--border);
+      content: '';
+      position: absolute;
+      left: 23px;          /* aligns with center of 30px step-circle (10 padding + 13) */
+      top: 100%;
+      width: 1px; height: 14px;
+      background: var(--border);
+      transform: none;     /* override the horizontal-mode transform */
     }
     .step-circle {
       width: 30px; height: 30px; border-radius: 50%;
@@ -88,12 +97,49 @@
       font-size: 12px; font-weight: 800; color: var(--grey); flex-shrink: 0;
     }
     .step-item.active .step-circle { background: var(--orange); border-color: var(--orange); color: #fff; }
-    .step-item.done .step-circle { background: #00B450; border-color: #00B450; color: #fff; }
-    .step-label { font-size: 12px; font-weight: 600; color: var(--grey); }
+    .step-item.done   .step-circle { background: #00B450;     border-color: #00B450;     color: #fff; }
+    .step-label { font-size: 13px; font-weight: 600; color: var(--grey); }
     .step-item.active .step-label { color: var(--dark); }
 
-    /* ── Main form layout ── */
-    .ad-form-layout { display: grid; grid-template-columns: 1fr 320px; gap: 28px; padding: 36px 0 80px; align-items: start; }
+    /* Mobile: steps-bar reverts to horizontal sticky bar at top */
+    @media (max-width: 900px) {
+      .steps-bar {
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+        gap: 0;
+        padding: 10px 8px;
+        border-radius: 0;
+        border: none;
+        border-bottom: 1px solid var(--border);
+        top: 60px;       /* mobile navbar is shorter */
+        z-index: 1100;   /* above any other content on mobile */
+        /* Span the full grid row (the grid is single-column on mobile,
+           so this naturally happens — explicit for clarity) */
+        margin: 0 -16px 12px -16px;
+      }
+      .step-item { padding: 0 8px; }
+      .step-item.active { background: transparent; }
+      .step-item:not(:last-child)::after {
+        /* Horizontal connector line between steps on mobile */
+        position: absolute;
+        left: auto; right: -1px; top: 50%;
+        transform: translateY(-50%);
+        width: 18px; height: 1px;
+      }
+      .step-label { font-size: 11px; }
+    }
+
+    /* ── Main form layout ──
+       Desktop: 3-column grid — stepper (180px) | form (1fr) | sidebar (320px).
+       Mobile: 1 column, everything stacks. */
+    .ad-form-layout {
+      display: grid;
+      grid-template-columns: 180px 1fr 320px;
+      gap: 28px;
+      padding: 24px 0 80px;
+      align-items: start;
+    }
     .form-card { background: var(--white); border: 1px solid var(--border); border-radius: 16px; padding: 28px; margin-bottom: 18px; }
     .form-card-title { font-size: 17px; font-weight: 800; color: var(--dark); margin-bottom: 4px; }
     .form-card-sub { font-size: 13px; color: var(--grey); margin-bottom: 22px; }
@@ -205,10 +251,12 @@
     .sidebar-col {
       display: flex; flex-direction: column; gap: 16px;
       position: sticky;
-      /* Top offset = navbar (~64px) + steps-bar (~70px) + small gap */
-      top: 150px;
+      /* Top offset = navbar (68px) + small gap. The horizontal sticky
+         stepper bar that used to live here is gone on desktop — it's now
+         a left column instead. */
+      top: 88px;
       align-self: start;
-      max-height: calc(100vh - 170px);
+      max-height: calc(100vh - 110px);
       overflow-y: auto;
       /* Hide the scrollbar visually for a cleaner look — content still scrolls */
       scrollbar-width: thin;
@@ -458,18 +506,20 @@
 ══════════════════════════════════════════════════════════════ -->
 <div id="form-screen" style="display:none;">
 
-  <!-- Steps bar -->
-  <div class="steps-bar">
-    <div class="container">
-      <div class="step-item active" id="step1"><div class="step-circle">1</div><div class="step-label">Photos</div></div>
-      <div class="step-item" id="step2"><div class="step-circle">2</div><div class="step-label">Vehicle Details</div></div>
-      <div class="step-item" id="step3"><div class="step-circle">3</div><div class="step-label">Pricing</div></div>
-      <div class="step-item" id="step4"><div class="step-circle">4</div><div class="step-label">Review &amp; Publish</div></div>
-    </div>
-  </div>
-
   <div class="container">
     <div class="ad-form-layout">
+
+      <!-- ── STEPS BAR ──
+           Sticky stepper. Desktop = vertical left column (180px wide).
+           Mobile = horizontal sticky bar spanning the full grid (single
+           column on mobile means it naturally fills the row). The CSS at
+           the top of the file handles both modes. -->
+      <div class="steps-bar">
+        <div class="step-item active" id="step1"><div class="step-circle">1</div><div class="step-label">Photos</div></div>
+        <div class="step-item" id="step2"><div class="step-circle">2</div><div class="step-label">Vehicle Details</div></div>
+        <div class="step-item" id="step3"><div class="step-circle">3</div><div class="step-label">Pricing</div></div>
+        <div class="step-item" id="step4"><div class="step-circle">4</div><div class="step-label">Review &amp; Publish</div></div>
+      </div>
 
       <!-- ── MAIN FORM COLUMN ──
            Display flex+column so individual cards can be reordered with
@@ -1005,21 +1055,30 @@
 
         <!-- Contact -->
         <div class="form-card" id="review-card">
-          <div class="form-card-title">Contact Information</div>
-          <div class="form-card-sub">How buyers will reach you.</div>
-          <div class="form-grid-2">
-            <div class="form-group">
-              <label class="form-label">Your Name <span style="color:var(--orange)">*</span></label>
-              <input class="form-input" id="inp-name" type="text" placeholder="Full name" />
+          <div class="form-card-title">Contact Preferences</div>
+          <div class="form-card-sub">How buyers can reach you about this listing.</div>
+
+          <!-- ── HIDDEN INPUTS ──
+               The form values still live in these inputs so the submit
+               functions can read them. They are populated from the user's
+               profile when the page loads (see hydrateContactFromProfile()
+               below). Email is unused on the listing itself; we keep the
+               input so any legacy code that reads it won't crash. -->
+          <input type="hidden" id="inp-name"  />
+          <input type="hidden" id="inp-phone" />
+          <input type="hidden" id="inp-email" />
+
+          <!-- "Listing as" info chip — shows the seller WHO will appear
+               on the listing. If profile has no phone, the chip swaps in
+               a "Add phone number" button instead. -->
+          <div id="listing-as-chip" style="background:var(--light-grey);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:18px;display:flex;align-items:center;gap:12px;">
+            <div style="width:38px;height:38px;border-radius:50%;background:var(--orange);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;flex-shrink:0;" id="listing-as-avatar">?</div>
+            <div style="flex:1;min-width:0;">
+              <div style="font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--grey);font-weight:700;margin-bottom:2px;">Listing as</div>
+              <div style="font-size:14px;font-weight:700;color:var(--dark);" id="listing-as-name">—</div>
+              <div style="font-size:12.5px;color:var(--grey);" id="listing-as-phone">No phone on file</div>
             </div>
-            <div class="form-group">
-              <label class="form-label">Phone Number <span style="color:var(--orange)">*</span></label>
-              <input class="form-input" id="inp-phone" type="tel" placeholder="+971 50 000 0000" />
-            </div>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Email</label>
-            <input class="form-input" id="inp-email" type="email" placeholder="your@email.com" />
+            <a href="profile.html" style="font-size:12px;font-weight:700;color:var(--orange);text-decoration:none;flex-shrink:0;" title="Edit your profile">Edit profile</a>
           </div>
 
           <!-- ── CONTACT PREFERENCES — at least 2 required ── -->
@@ -1162,6 +1221,12 @@
     _currentUser = user;
     _emailVerified = await window.Auth.isEmailVerified();
 
+    // Pull seller name + phone from the profile and hydrate the hidden
+    // inputs. The form no longer asks for these — they're sourced from
+    // the user's profile (single source of truth). The "Listing as" chip
+    // shows the user what will appear on the listing.
+    await hydrateContactFromProfile();
+
     // After auth is ready, check if we should enter edit mode.
     const urlParams = new URLSearchParams(window.location.search);
     const editId = urlParams.get('edit');
@@ -1261,6 +1326,18 @@
     setVal('inp-price', L.price);
     setVal('inp-name',  L.contact_name);
     setVal('inp-phone', L.contact_phone);
+
+    // Also refresh the "Listing as" chip in edit mode so it reflects what
+    // was published, not the seller's current profile (which may differ).
+    const nameEl   = document.getElementById('listing-as-name');
+    const phoneEl  = document.getElementById('listing-as-phone');
+    const avatarEl = document.getElementById('listing-as-avatar');
+    if (nameEl  && L.contact_name)  nameEl.textContent  = L.contact_name;
+    if (avatarEl && L.contact_name) avatarEl.textContent = (L.contact_name.charAt(0) || '?').toUpperCase();
+    if (phoneEl && L.contact_phone) {
+      phoneEl.textContent = L.contact_phone;
+      phoneEl.style.color = 'var(--grey)';
+    }
 
     if (currentCat === 'plates') {
       setVal('sel-plate-emirate', L.emirate || L.location || '');
@@ -2589,6 +2666,130 @@
   }
 
   /**
+   * Read seller info from the profile and populate the hidden form inputs
+   * and the "Listing as" chip. Runs once at page load and again after the
+   * "Add phone" modal completes successfully.
+   *
+   * Source of truth: profiles.display_name, profiles.verified_phone (if set,
+   * else profiles.phone), auth.users.email. The Contact Information form
+   * fields no longer exist — they were redundant with profile data and
+   * created a data-consistency risk.
+   */
+  async function hydrateContactFromProfile() {
+    if (!_currentUser) return;
+    let profile = null;
+    try {
+      profile = await (window.Auth.getProfile ? window.Auth.getProfile() : Promise.resolve(null));
+    } catch { /* non-fatal */ }
+
+    const displayName = (profile && profile.display_name) || (_currentUser.user_metadata && _currentUser.user_metadata.full_name) || (_currentUser.email || '').split('@')[0] || '';
+    const phone = (profile && (profile.verified_phone || profile.phone)) || '';
+    const email = _currentUser.email || '';
+
+    // Push into the hidden inputs that the submit code reads
+    const ni = document.getElementById('inp-name');  if (ni) ni.value  = displayName;
+    const pi = document.getElementById('inp-phone'); if (pi) pi.value  = phone;
+    const ei = document.getElementById('inp-email'); if (ei) ei.value  = email;
+
+    // Refresh the "Listing as" chip
+    const nameEl   = document.getElementById('listing-as-name');
+    const phoneEl  = document.getElementById('listing-as-phone');
+    const avatarEl = document.getElementById('listing-as-avatar');
+    if (nameEl)  nameEl.textContent = displayName || 'Set your display name';
+    if (avatarEl) avatarEl.textContent = (displayName.charAt(0) || '?').toUpperCase();
+    if (phoneEl) {
+      if (phone) {
+        phoneEl.textContent = phone + (profile && profile.verified_phone === phone ? '  ·  ✓ verified' : '  ·  not yet verified');
+        phoneEl.style.color = (profile && profile.verified_phone === phone) ? '#16a34a' : 'var(--grey)';
+      } else {
+        phoneEl.innerHTML = '<button type="button" id="add-phone-btn" style="background:none;border:none;color:var(--orange);font-weight:700;font-size:12.5px;cursor:pointer;padding:0;text-decoration:underline;">+ Add your phone number</button>';
+        const btn = document.getElementById('add-phone-btn');
+        if (btn) btn.onclick = () => ensureProfilePhone();
+      }
+    }
+  }
+
+  /**
+   * One-time popup for new sellers who don't have a phone on their profile
+   * yet. Opens a small modal asking for the number, validates GCC format,
+   * saves it to profiles.phone, then triggers OTP verification via
+   * ensurePhoneVerified.
+   *
+   * Returns:
+   *   true  → phone is now on profile AND verified
+   *   false → user cancelled, or save/verify failed
+   *
+   * Called from two places:
+   *   1. The "+ Add your phone number" button in the Listing-as chip
+   *   2. The submitAd() pre-flight when the profile has no phone
+   */
+  async function ensureProfilePhone() {
+    // If profile already has a phone, nothing to do.
+    let profile = null;
+    try { profile = await window.Auth.getProfile(); } catch {}
+    const existing = (profile && (profile.verified_phone || profile.phone)) || '';
+    if (existing) return true;
+
+    // Build the modal
+    const phone = await new Promise((resolve) => {
+      const overlay = document.createElement('div');
+      overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:10001;display:flex;align-items:flex-start;justify-content:center;padding:60px 16px;overflow-y:auto;';
+      overlay.innerHTML = `
+        <div style="background:#fff;border-radius:14px;max-width:440px;width:100%;padding:24px 26px;box-shadow:0 12px 40px rgba(0,0,0,0.3);">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;">
+            <div>
+              <div style="font-size:18px;font-weight:800;color:var(--dark);">Add your phone number</div>
+              <div style="font-size:13px;color:var(--grey);margin-top:4px;">Buyers reach you through this number. We'll send a one-time code to verify it.</div>
+            </div>
+            <button type="button" id="ap-close" style="background:none;border:none;font-size:24px;color:#999;cursor:pointer;line-height:1;padding:0 4px;">×</button>
+          </div>
+          <label style="display:block;font-size:12px;font-weight:700;color:var(--grey);margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em;">Phone number</label>
+          <input type="tel" id="ap-phone" placeholder="+971 50 000 0000"
+                 style="width:100%;padding:12px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:15px;margin-bottom:12px;" autocomplete="tel" />
+          <div id="ap-error" style="display:none;background:#FEF1F1;border:1px solid #FDB1B1;color:#9F1A1A;padding:9px 12px;border-radius:8px;font-size:12.5px;margin-bottom:12px;"></div>
+          <button type="button" id="ap-save" style="width:100%;background:var(--orange);border:none;color:#fff;padding:12px;border-radius:8px;font-weight:700;font-size:14px;cursor:pointer;">Continue</button>
+        </div>`;
+      document.body.appendChild(overlay);
+      const inp   = overlay.querySelector('#ap-phone');
+      const err   = overlay.querySelector('#ap-error');
+      const close = overlay.querySelector('#ap-close');
+      const save  = overlay.querySelector('#ap-save');
+      function showErr(m) { err.textContent = m; err.style.display = ''; }
+      function done(v) { overlay.remove(); resolve(v); }
+      close.onclick = () => done(null);
+      inp.focus();
+      save.onclick = () => {
+        const norm = clientNormalizePhone(inp.value);
+        if (!norm) { showErr('Please enter a valid UAE/GCC phone number (e.g. +971501234567 or 0501234567).'); return; }
+        done(norm);
+      };
+      inp.addEventListener('keydown', (e) => { if (e.key === 'Enter') save.click(); });
+    });
+
+    if (!phone) return false;
+
+    // Save to profile (unverified for now — OTP will flip it to verified)
+    try {
+      const result = await window.Auth.updateProfile({ phone });
+      if (result.error) {
+        showToast('Could not save phone: ' + result.error, 5000);
+        return false;
+      }
+    } catch (e) {
+      showToast('Could not save phone. Try again.');
+      return false;
+    }
+
+    // Now run OTP verification on that same number
+    const verified = await ensurePhoneVerified(phone);
+    if (verified) {
+      // Refresh the chip to show the new phone
+      await hydrateContactFromProfile();
+    }
+    return verified;
+  }
+
+  /**
    * Ensure the seller has OTP-verified this phone number. Returns true on
    * success, false if the user aborted. On success, future submissions
    * using the same phone won't re-prompt (cached in profiles.verified_phone).
@@ -2888,20 +3089,32 @@
     }
 
     // ─── 1b. Phone verification gate ───
-    // The seller's phone number must be OTP-verified before we'll publish the
-    // listing. If their profile already has a verified phone matching the one
-    // they typed, we skip. Otherwise we open the OTP modal.
-    const typedPhoneRaw = document.getElementById('inp-phone').value.trim();
+    // The seller's phone must be OTP-verified before publishing. Source of
+    // truth is the profile, not a form input — we removed the contact
+    // section. Three cases:
+    //   • Profile has verified_phone matching the hidden input → skip OTP
+    //   • Profile has phone (unverified) → run OTP modal on that number
+    //   • Profile has no phone at all → run the "add phone" popup which
+    //     saves to profile then verifies in one flow
+    let typedPhoneRaw = document.getElementById('inp-phone').value.trim();
     if (!typedPhoneRaw) {
-      showToast('Please enter a phone number.');
-      document.getElementById('inp-phone').focus();
-      return;
+      const added = await ensureProfilePhone();
+      if (!added) {
+        // User dismissed the add-phone modal
+        return;
+      }
+      // ensureProfilePhone calls hydrateContactFromProfile on success,
+      // so the hidden input is now populated.
+      typedPhoneRaw = document.getElementById('inp-phone').value.trim();
     }
     const phoneOk = await ensurePhoneVerified(typedPhoneRaw);
     if (!phoneOk) {
       // User closed the OTP modal without verifying — abort submit
       return;
     }
+    // Phone is verified — refresh the hidden input from profile in case
+    // ensurePhoneVerified normalized/changed the canonical number.
+    await hydrateContactFromProfile();
 
     // ─── 2. Common required fields ───
     const price = parseInt(document.getElementById('inp-price').value, 10);
@@ -2910,7 +3123,12 @@
     const email = document.getElementById('inp-email').value.trim();
 
     if (!price || price <= 0) { showToast('Please enter a valid price.'); return; }
-    if (!name || !phone)      { showToast('Please fill in your Name and Phone Number.'); return; }
+    if (!name || !phone)      {
+      // This shouldn't happen now (hydration above guarantees both),
+      // but keep the guard as a safety net.
+      showToast('Could not load your name and phone from your profile. Please update your profile and try again.');
+      return;
+    }
 
     // ─── 3. Category-specific fields ───
     let brand='', model='', trim='', year=null, km=null, condition='', desc='';
@@ -3287,6 +3505,37 @@
     let location='', emirate=null, lat=null, lng=null;
     let bodyType=null, doors=null, seats=null, color=null, regionalSpec=null;
     let transmission=null, fuelType=null, engine=null, hp=null, cylinders=null;
+
+    // ── Booleans + contact prefs + features ──
+    // These were missing from this function's scope; they're referenced by
+    // updateRow further down (warranty, service_history, no_accidents,
+    // first_owner, features, contact_call/whatsapp/message). Their absence
+    // caused "hasWarranty is not defined" on Save Changes.
+    const hasWarranty     = !!(document.getElementById('chk-warranty')      || {}).checked;
+    const hasService      = !!(document.getElementById('chk-service')       || {}).checked;
+    const noAccidents     = !!(document.getElementById('chk-no-accidents')  || {}).checked;
+    const firstOwner      = !!(document.getElementById('chk-first-owner')   || {}).checked;
+    const contactCall     = !!(document.getElementById('chk-contact-call')     || {}).checked;
+    const contactWhatsapp = !!(document.getElementById('chk-contact-whatsapp') || {}).checked;
+    const contactMessage  = !!(document.getElementById('chk-contact-message')  || {}).checked;
+    // Contact prefs: at least 2 required (same rule as new listing)
+    const contactPrefsCount = (contactCall ? 1 : 0) + (contactWhatsapp ? 1 : 0) + (contactMessage ? 1 : 0);
+    if (contactPrefsCount < 2) {
+      showToast('Please select at least 2 contact methods.');
+      return;
+    }
+    // Features payload — read whatever the seller currently has ticked.
+    // Mirrors what submitAd() does. Empty groups → null so we don't store
+    // empty arrays everywhere.
+    const featuresGroups = ['safety', 'comfort', 'tech'];
+    const features = {};
+    let featuresTotal = 0;
+    featuresGroups.forEach(g => {
+      const checks = document.querySelectorAll(`#features-${g} input[type="checkbox"]:checked`);
+      const items = Array.from(checks).map(c => c.value).filter(Boolean);
+      if (items.length) { features[g] = items; featuresTotal += items.length; }
+    });
+    const featuresPayload = featuresTotal > 0 ? features : null;
 
     if (currentCat === 'plates') {
       const e = document.getElementById('sel-plate-emirate').value;
